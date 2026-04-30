@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toBlob } from "html-to-image";
 import { Analysis, formatTime } from "@/lib/analysis";
+import { buildReportExportText } from "@/lib/reportExport";
 import { CalculationExplainer } from "./CalculationExplainer";
 import { Hint } from "./Hint";
 import { TargetSimulator } from "./TargetSimulator";
@@ -35,30 +37,142 @@ export function ReportPanel({
   onStationGainChange,
   onTransitionGainChange,
 }: ReportPanelProps) {
+  const reportCaptureRef = useRef<HTMLElement>(null);
   const [generatedDate, setGeneratedDate] = useState("");
+  const [exportMessage, setExportMessage] = useState("");
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const visibleLeaks = fullReportUnlocked
     ? analysis.topLeaks
     : analysis.topLeaks.slice(0, 2);
+
+  const exportText = buildReportExportText(analysis, generatedDate);
 
   useEffect(() => {
     setGeneratedDate(new Date().toLocaleDateString());
   }, []);
 
+  async function copyReport() {
+    try {
+      await navigator.clipboard.writeText(exportText);
+      setExportMessage("Report copied.");
+      setExportMenuOpen(false);
+    } catch {
+      setExportMessage("Copy was blocked by the browser.");
+    }
+  }
+
+  async function shareReport() {
+    try {
+      const reportBlob = reportCaptureRef.current
+        ? await toBlob(reportCaptureRef.current, {
+            backgroundColor: "#ffffff",
+            cacheBust: true,
+            filter: (node) => {
+              if (!(node instanceof HTMLElement)) {
+                return true;
+              }
+
+              return !(
+                node.classList.contains("report-actions") ||
+                node.classList.contains("report__print")
+              );
+            },
+            pixelRatio: 2,
+          })
+        : null;
+
+      if (reportBlob && navigator.share) {
+        const reportFile = new File([reportBlob], "reprun-race-report.png", {
+          type: "image/png",
+        });
+        const shareData = {
+          files: [reportFile],
+          text: "RepRun race report",
+          title: "RepRun Race Report",
+        };
+
+        if (!navigator.canShare || navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          setExportMessage("Report image shared.");
+          setExportMenuOpen(false);
+          return;
+        }
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: "RepRun Race Report",
+          text: exportText,
+        });
+        setExportMessage("Share sheet opened.");
+        setExportMenuOpen(false);
+        return;
+      }
+
+      await copyReport();
+    } catch {
+      setExportMessage("Share was cancelled or blocked.");
+    }
+  }
+
+  function downloadReport() {
+    try {
+      const reportBlob = new Blob([exportText], { type: "text/plain" });
+      const reportUrl = URL.createObjectURL(reportBlob);
+      const reportLink = document.createElement("a");
+
+      reportLink.href = reportUrl;
+      reportLink.download = "reprun-race-report.txt";
+      reportLink.click();
+      URL.revokeObjectURL(reportUrl);
+      setExportMessage("Report downloaded.");
+      setExportMenuOpen(false);
+    } catch {
+      setExportMessage("Download was blocked by the browser.");
+    }
+  }
+
   return (
-    <aside className="report" aria-live="polite">
+    <aside className="report" aria-live="polite" ref={reportCaptureRef}>
       <div className="report__header">
         <div className="section-heading">
           <p className="eyebrow">Math Engine</p>
           <h2>{hasGeneratedReport ? "Your race breakdown" : "Live preview"}</h2>
         </div>
-        <button
-          className="report__print"
-          type="button"
-          onClick={() => window.print()}
-          disabled={!fullReportUnlocked}
-        >
-          Print report
-        </button>
+        <div className="report-actions report-actions--header">
+          {fullReportUnlocked ? (
+            <div className="export-menu">
+              <button
+                type="button"
+                onClick={() => setExportMenuOpen((isOpen) => !isOpen)}
+                aria-expanded={exportMenuOpen}
+              >
+                Export
+              </button>
+              {exportMenuOpen ? (
+                <div className="export-menu__options">
+                  <button type="button" onClick={() => void copyReport()}>
+                    Copy summary
+                  </button>
+                  <button type="button" onClick={() => void shareReport()}>
+                    Share image
+                  </button>
+                  <button type="button" onClick={downloadReport}>
+                    Download .txt
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          <button
+            className="report__print"
+            type="button"
+            onClick={() => window.print()}
+            disabled={!fullReportUnlocked}
+          >
+            Print report
+          </button>
+        </div>
       </div>
       <p className="report__date">
         {generatedDate ? `Generated ${generatedDate} - RepRun` : "RepRun"}
@@ -133,6 +247,11 @@ export function ReportPanel({
         </div>
       ) : (
         <>
+          <p className="helper-text" aria-live="polite">
+            {exportMessage ||
+              "Export includes the full leak list, training plan, target, and station ranking."}
+          </p>
+
           <h3>Training priorities</h3>
           <ol>
             {analysis.priorities.map((priority) => (

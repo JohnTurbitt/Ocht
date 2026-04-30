@@ -68,6 +68,24 @@
     width: 100%;
   }
 
+  .report-actions {
+    display: grid;
+  }
+
+  .report-actions button {
+    width: 100%;
+  }
+
+  .export-menu,
+  .export-menu__options {
+    position: static;
+    width: 100%;
+  }
+
+  .export-menu__options {
+    margin-top: 8px;
+  }
+
   .station-table div {
     align-items: flex-start;
   }

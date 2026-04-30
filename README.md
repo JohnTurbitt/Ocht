@@ -30,17 +30,22 @@ Backend foundation:
 - server-backed saved report history
 - Stripe checkout route and subscription webhook
 - Stripe customer portal for subscription management
+- paid report copy, share, download, and print actions
 
 Planned additions:
 
-- paid report export and sharing
+- sample race onboarding
+- profile defaults
+- richer report history
 
 ## Paid Report Boundary
 
 Free users see the projected finish, run summary, target gap, and the first two
 ranked leaks. Paid users unlock the full leak list, training priorities,
 four-week focus, target simulator, station ranking, print view, and calculation
-breakdown.
+breakdown. Paid users can also copy a coach-friendly summary, share a report
+image when the browser supports native file sharing, download a text report, or
+print the report.
 
 ## Stripe Setup
 

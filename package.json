@@ -17,6 +17,7 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
+    "html-to-image": "^1.11.13",
     "next": "^15.4.0",
     "pg": "^8.20.0",
     "react": "^19.1.0",
