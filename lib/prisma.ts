@@ -9,6 +9,11 @@ function createPrismaClient() {
   const connectionString =
     process.env.DATABASE_URL ??
     "postgresql://postgres:postgres@localhost:5432/reprun?schema=public";
+
+  if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is required in production.");
+  }
+
   const adapter = new PrismaPg(connectionString);
 
   return new PrismaClient({

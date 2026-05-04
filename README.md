@@ -103,6 +103,35 @@ To test cancellation:
 5. Confirm the account panel changes from `Paid access` to the updated
    subscription status and paid report sections lock again.
 
+## Going Live Checklist
+
+Set these production environment variables on the deployment host:
+
+```bash
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_ID=price_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+NEXT_PUBLIC_STRIPE_PRICE_ID=price_...
+```
+
+Before launch:
+
+1. Use live Stripe keys and a live recurring `price_...` value, not a `prod_...`
+   product id.
+2. Set `NEXT_PUBLIC_APP_URL` to the exact public site origin. Checkout success,
+   cancellation, and billing portal return URLs are built from this value.
+3. Configure the Stripe webhook endpoint as
+   `https://your-domain.com/api/billing/webhook`.
+4. Subscribe the webhook to checkout and customer subscription events.
+5. Run database migrations against the production database before serving
+   traffic.
+6. Run `npm run build` in the production environment and confirm it completes.
+7. Review `/privacy`, `/terms`, `/refunds`, and `/contact`, including the
+   support email address, before public launch.
+
 ## Getting Started
 
 Install dependencies:
