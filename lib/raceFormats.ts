@@ -1,7 +1,7 @@
 import type { Station, StationKey } from "./analysis";
 import { stations } from "./analysis";
 
-export type RaceFormat = "hyrox" | "tryka800" | "tryka500";
+export type RaceFormat = "hyrox" | "tryka800" | "tryka500" | "custom";
 
 export type RaceFormatOption = {
   id: RaceFormat;
@@ -67,15 +67,25 @@ export const raceFormatOptions: RaceFormatOption[] = [
   },
 ];
 
-export const raceFormatLabels = raceFormatOptions.reduce(
-  (labels, option) => ({
-    ...labels,
-    [option.id]: option.label,
-  }),
-  {} as Record<RaceFormat, string>,
-);
+export const raceFormatLabels: Record<RaceFormat, string> = {
+  hyrox: "HYROX",
+  tryka800: "TRYKA 800",
+  tryka500: "TRYKA 500",
+  custom: "Custom",
+};
 
 export function getRaceFormatOption(format: RaceFormat) {
+  if (format === "custom") {
+    return {
+      id: "custom",
+      label: "Custom",
+      description: "Build your own race format.",
+      runLabel: "run",
+      stationHeading: "Custom stations",
+      stations: [],
+    } satisfies RaceFormatOption;
+  }
+
   return raceFormatOptions.find((option) => option.id === format) ??
     raceFormatOptions[0];
 }
@@ -85,5 +95,17 @@ export function getRaceFormatStations(format: RaceFormat) {
 }
 
 export function isRaceFormat(value: string): value is RaceFormat {
-  return raceFormatOptions.some((option) => option.id === value);
+  return value === "custom" || raceFormatOptions.some((option) => option.id === value);
+}
+
+export function createCustomStation(key: string, label: string): Station {
+  return {
+    key,
+    label,
+    benchmarkSec: { starter: 300, competitive: 300, elite: 300 },
+    recoverability: 0.5,
+    raceImpact: 0.8,
+    guidance:
+      "Use repeatable technique and record a benchmark once this station is part of your template.",
+  };
 }

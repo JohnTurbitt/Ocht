@@ -6,10 +6,12 @@ import {
   StationKey,
   levelLabels,
 } from "@/lib/analysis";
+import { CustomTemplate } from "@/lib/customTemplates";
 import { RaceFormat, raceFormatOptions } from "@/lib/raceFormats";
 
 type SplitFormProps = {
   raceFormat: RaceFormat;
+  fullReportUnlocked: boolean;
   goal: string;
   targetTime: string;
   level: Level;
@@ -18,8 +20,17 @@ type SplitFormProps = {
   stationSplits: Record<StationKey, string>;
   errors: string[];
   fieldErrors: Record<string, string>;
+  customTemplates: CustomTemplate[];
   onRaceFormatChange: (value: RaceFormat) => void;
   onCustomFormatClick: () => void;
+  onAddRun: () => void;
+  onRemoveRun: (index: number) => void;
+  onAddCustomStation: () => void;
+  onRemoveCustomStation: (key: StationKey) => void;
+  onCustomStationLabelChange: (key: StationKey, value: string) => void;
+  onSaveCustomTemplate: () => void;
+  onLoadCustomTemplate: (template: CustomTemplate) => void;
+  onDeleteCustomTemplate: (templateId: string) => void;
   onGoalChange: (value: string) => void;
   onTargetTimeChange: (value: string) => void;
   onLevelChange: (value: Level) => void;
@@ -33,6 +44,7 @@ type SplitFormProps = {
 
 export function SplitForm({
   raceFormat,
+  fullReportUnlocked,
   goal,
   targetTime,
   level,
@@ -41,8 +53,17 @@ export function SplitForm({
   stationSplits,
   errors,
   fieldErrors,
+  customTemplates,
   onRaceFormatChange,
   onCustomFormatClick,
+  onAddRun,
+  onRemoveRun,
+  onAddCustomStation,
+  onRemoveCustomStation,
+  onCustomStationLabelChange,
+  onSaveCustomTemplate,
+  onLoadCustomTemplate,
+  onDeleteCustomTemplate,
   onGoalChange,
   onTargetTimeChange,
   onLevelChange,
@@ -53,6 +74,8 @@ export function SplitForm({
   onClearForm,
   onSubmit,
 }: SplitFormProps) {
+  const isCustom = raceFormat === "custom";
+
   return (
     <form className="split-form" onSubmit={onSubmit}>
       <div className="form-heading">
@@ -84,10 +107,63 @@ export function SplitForm({
             {option.label}
           </button>
         ))}
-        <button type="button" onClick={onCustomFormatClick}>
+        <button
+          className={isCustom ? "is-active" : undefined}
+          type="button"
+          onClick={onCustomFormatClick}
+        >
           Custom <PremiumBadge />
         </button>
       </div>
+
+      {isCustom ? (
+        <div className="custom-builder">
+          <div>
+            <h3>Custom race builder</h3>
+            <p>
+              Add the runs and stations for this race setup, then save it as a
+              reusable template.
+            </p>
+          </div>
+          <div className="custom-builder__actions">
+            <button type="button" onClick={onAddRun}>
+              Add run
+            </button>
+            <button type="button" onClick={onAddCustomStation}>
+              Add station
+            </button>
+            <button
+              type="button"
+              onClick={onSaveCustomTemplate}
+              disabled={!fullReportUnlocked}
+            >
+              Save template <PremiumBadge />
+            </button>
+          </div>
+          {customTemplates.length > 0 ? (
+            <div className="custom-template-list">
+              {customTemplates.map((template) => (
+                <div className="custom-template-list__item" key={template.id}>
+                  <button
+                    type="button"
+                    onClick={() => onLoadCustomTemplate(template)}
+                  >
+                    {template.name}
+                  </button>
+                  <button
+                    className="custom-template-list__delete"
+                    type="button"
+                    onClick={() => onDeleteCustomTemplate(template.id)}
+                    aria-label={`Delete ${template.name}`}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {errors.length > 0 ? (
         <div className="form-errors" role="alert">
@@ -159,6 +235,15 @@ export function SplitForm({
                   {fieldErrors[`run-${index}`]}
                 </small>
               ) : null}
+              {isCustom && runs.length > 1 ? (
+                <button
+                  className="field-action"
+                  type="button"
+                  onClick={() => onRemoveRun(index)}
+                >
+                  Remove
+                </button>
+              ) : null}
             </label>
           ))}
         </div>
@@ -169,7 +254,30 @@ export function SplitForm({
         <div className="split-grid">
           {stationDefinitions.map((station) => (
             <label className="field" key={station.key}>
-              <span>{station.label}</span>
+              {isCustom ? (
+                <input
+                  className={
+                    fieldErrors[`station-${station.key}-label`]
+                      ? "station-name-input is-invalid"
+                      : "station-name-input"
+                  }
+                  value={station.label}
+                  onChange={(event) =>
+                    onCustomStationLabelChange(station.key, event.target.value)
+                  }
+                  aria-label="Station name"
+                  aria-invalid={Boolean(
+                    fieldErrors[`station-${station.key}-label`],
+                  )}
+                />
+              ) : (
+                <span>{station.label}</span>
+              )}
+              {fieldErrors[`station-${station.key}-label`] ? (
+                <small className="field-error">
+                  {fieldErrors[`station-${station.key}-label`]}
+                </small>
+              ) : null}
               <input
                 className={
                   fieldErrors[`station-${station.key}`] ? "is-invalid" : undefined
@@ -186,6 +294,15 @@ export function SplitForm({
                 <small className="field-error">
                   {fieldErrors[`station-${station.key}`]}
                 </small>
+              ) : null}
+              {isCustom && stationDefinitions.length > 1 ? (
+                <button
+                  className="field-action"
+                  type="button"
+                  onClick={() => onRemoveCustomStation(station.key)}
+                >
+                  Remove
+                </button>
               ) : null}
             </label>
           ))}

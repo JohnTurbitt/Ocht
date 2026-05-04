@@ -1,4 +1,4 @@
-import { Analysis, Level, StationKey } from "./analysis";
+import { Analysis, Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 import { SavedReport } from "./reportStorage";
 
@@ -8,6 +8,7 @@ export type PersistableReportInput = {
   targetTime: string;
   level: Level;
   runs: string[];
+  stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
   analysis: Analysis;
 };
@@ -92,20 +93,40 @@ function readRaceFormatFromSnapshot(snapshot: unknown): RaceFormat {
 // Server-backed history should look like the existing local-storage history so
 // the frontend can switch storage backends without changing report rendering.
 export function toSavedReport(report: PersistedReportSummary): SavedReport {
+  const raceFormat =
+    report.raceFormat ?? readRaceFormatFromSnapshot(report.analysisSnapshot);
+
   return {
     id: report.id,
     createdAt:
       report.createdAt instanceof Date
         ? report.createdAt.toISOString()
         : report.createdAt,
-    raceFormat: report.raceFormat ?? readRaceFormatFromSnapshot(report.analysisSnapshot),
+    raceFormat,
     goal: report.goal,
     targetTime: report.targetTime,
     level: levelByAthleteLevel[report.athleteLevel],
     runs: report.runSplits,
+    stationDefinitions:
+      raceFormat === "custom"
+        ? readStationDefinitionsFromSnapshot(report.analysisSnapshot)
+        : undefined,
     stationSplits: report.stationSplits,
     finishSeconds: report.finishSeconds,
     predictedTargetSeconds: report.predictedTargetSeconds,
     topLeakLabel: report.topLeakLabel,
   };
+}
+
+function readStationDefinitionsFromSnapshot(snapshot: unknown) {
+  if (
+    typeof snapshot === "object" &&
+    snapshot &&
+    "stationDefinitions" in snapshot &&
+    Array.isArray(snapshot.stationDefinitions)
+  ) {
+    return snapshot.stationDefinitions as Station[];
+  }
+
+  return undefined;
 }

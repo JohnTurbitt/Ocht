@@ -10,6 +10,7 @@ import { Toast, ToastMessage } from "@/components/Toast";
 import {
   Analysis,
   Level,
+  Station,
   StationKey,
   buildAnalysis,
   formatTime,
@@ -22,6 +23,7 @@ import {
 import {
   ReportPreset,
   cloneReportPreset,
+  defaultCustomReportPreset,
   defaultReportPreset,
   emptyReportPreset,
   sampleReportPreset,
@@ -30,9 +32,15 @@ import {
 } from "@/lib/reportPresets";
 import {
   RaceFormat,
+  createCustomStation,
   getRaceFormatStations,
   raceFormatLabels,
 } from "@/lib/raceFormats";
+import {
+  CustomTemplate,
+  loadCustomTemplates,
+  saveCustomTemplates,
+} from "@/lib/customTemplates";
 import {
   AuthFormInput,
   AuthUser,
@@ -68,6 +76,10 @@ export default function Home() {
   const [raceFormat, setRaceFormat] = useState<RaceFormat>(
     defaultReportPreset.raceFormat,
   );
+  const [customStations, setCustomStations] = useState<Station[]>(
+    defaultCustomReportPreset.stationDefinitions ?? [],
+  );
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [goal, setGoal] = useState(defaultReportPreset.goal);
   const [targetTime, setTargetTime] = useState(defaultReportPreset.targetTime);
   const [level, setLevel] = useState<Level>(defaultReportPreset.level);
@@ -91,6 +103,10 @@ export default function Home() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+  const activeStationDefinitions =
+    raceFormat === "custom"
+      ? customStations
+      : getRaceFormatStations(raceFormat);
 
   const preview = useMemo(
     () =>
@@ -100,10 +116,10 @@ export default function Home() {
         level,
         runs,
         stationSplits,
-        getRaceFormatStations(raceFormat),
+        activeStationDefinitions,
         raceFormat,
       ),
-    [goal, targetTime, level, raceFormat, runs, stationSplits],
+    [activeStationDefinitions, goal, targetTime, level, raceFormat, runs, stationSplits],
   );
 
   function updateRun(index: number, value: string) {
@@ -113,12 +129,65 @@ export default function Home() {
     clearFieldError(`run-${index}`);
   }
 
+  function addRunSplit() {
+    setRuns((current) => [...current, ""]);
+  }
+
+  function removeRunSplit(index: number) {
+    setRuns((current) =>
+      current.length > 1
+        ? current.filter((_, splitIndex) => splitIndex !== index)
+        : current,
+    );
+  }
+
   function updateStation(key: StationKey, value: string) {
     setStationSplits((current) => ({
       ...current,
       [key]: value,
     }));
     clearFieldError(`station-${key}`);
+  }
+
+  function replaceCustomStations(nextStations: Station[]) {
+    setCustomStations(nextStations);
+    setStationSplits((current) =>
+      nextStations.reduce(
+        (splits, station) => ({
+          ...splits,
+          [station.key]: current[station.key] ?? "",
+        }),
+        {} as Record<StationKey, string>,
+      ),
+    );
+  }
+
+  function updateCustomStationLabel(key: StationKey, label: string) {
+    replaceCustomStations(
+      customStations.map((station) =>
+        station.key === key
+          ? { ...station, label }
+          : station,
+      ),
+    );
+  }
+
+  function addCustomStation() {
+    const nextIndex = customStations.length + 1;
+    const key = `station-${Date.now()}`;
+
+    replaceCustomStations([
+      ...customStations,
+      createCustomStation(key, `Station ${nextIndex}`),
+    ]);
+  }
+
+  function removeCustomStation(key: StationKey) {
+    if (customStations.length <= 1) {
+      return;
+    }
+
+    replaceCustomStations(customStations.filter((station) => station.key !== key));
   }
 
   function updateTargetTime(value: string) {
@@ -142,6 +211,12 @@ export default function Home() {
     const nextPreset = cloneReportPreset(preset);
 
     setRaceFormat(nextPreset.raceFormat);
+    setCustomStations(
+      nextPreset.stationDefinitions ??
+        (nextPreset.raceFormat === "custom"
+          ? defaultCustomReportPreset.stationDefinitions ?? []
+          : customStations),
+    );
     setGoal(nextPreset.goal);
     setTargetTime(nextPreset.targetTime);
     setLevel(nextPreset.level);
@@ -164,12 +239,71 @@ export default function Home() {
       hyrox: buildUserDefaultPreset(user),
       tryka800: tryka800Preset,
       tryka500: tryka500Preset,
+      custom: defaultCustomReportPreset,
     };
 
     applyReportPreset(
       formatPresetByFormat[nextRaceFormat],
       `${raceFormatLabels[nextRaceFormat]} loaded`,
     );
+  }
+
+  function activateCustomFormat() {
+    if (!fullReportUnlocked) {
+      setToast({
+        id: Date.now(),
+        title: "Custom formats are paid",
+        message: "Unlock RepRun premium to build and save custom race formats.",
+        tone: "error",
+      });
+      return;
+    }
+
+    applyRaceFormat("custom");
+  }
+
+  function saveCurrentCustomTemplate() {
+    if (raceFormat !== "custom") {
+      return;
+    }
+
+    const template: CustomTemplate = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      name: goal || "Custom race template",
+      raceFormat: "custom",
+      goal,
+      targetTime,
+      level,
+      runs,
+      stationDefinitions: customStations,
+      stationSplits,
+    };
+    const nextTemplates = [template, ...customTemplates].slice(0, 12);
+
+    setCustomTemplates(nextTemplates);
+    saveCustomTemplates(nextTemplates);
+    setToast({
+      id: Date.now(),
+      title: "Template saved",
+      message: "Your custom race setup is saved on this device.",
+      tone: "success",
+    });
+  }
+
+  function deleteCustomTemplate(templateId: string) {
+    const nextTemplates = customTemplates.filter(
+      (template) => template.id !== templateId,
+    );
+
+    setCustomTemplates(nextTemplates);
+    saveCustomTemplates(nextTemplates);
+    setToast({
+      id: Date.now(),
+      title: "Template deleted",
+      message: "The custom race template has been removed.",
+      tone: "success",
+    });
   }
 
   async function refreshRemoteReports() {
@@ -366,7 +500,7 @@ export default function Home() {
       targetTime,
       runs,
       stationSplits,
-      stationDefinitions: getRaceFormatStations(raceFormat),
+      stationDefinitions: activeStationDefinitions,
     });
 
     if (!validation.valid) {
@@ -390,7 +524,7 @@ export default function Home() {
       level,
       runs,
       stationSplits,
-      getRaceFormatStations(raceFormat),
+      activeStationDefinitions,
       raceFormat,
     );
     const savedReport: SavedReport = {
@@ -401,6 +535,8 @@ export default function Home() {
       targetTime,
       level,
       runs,
+      stationDefinitions:
+        raceFormat === "custom" ? activeStationDefinitions : undefined,
       stationSplits,
       finishSeconds: generatedAnalysis.finishSeconds,
       predictedTargetSeconds: generatedAnalysis.predictedTargetSeconds,
@@ -417,6 +553,8 @@ export default function Home() {
           level,
           raceFormat,
           runs,
+          stationDefinitions:
+            raceFormat === "custom" ? activeStationDefinitions : undefined,
           stationSplits,
         });
 
@@ -473,11 +611,15 @@ export default function Home() {
       report.level,
       report.runs,
       report.stationSplits,
-      getRaceFormatStations(report.raceFormat ?? "hyrox"),
+      report.stationDefinitions ??
+        getRaceFormatStations(report.raceFormat ?? "hyrox"),
       report.raceFormat ?? "hyrox",
     );
 
     setRaceFormat(report.raceFormat ?? "hyrox");
+    if (report.raceFormat === "custom" && report.stationDefinitions) {
+      setCustomStations(report.stationDefinitions);
+    }
     setGoal(report.goal);
     setTargetTime(report.targetTime);
     setLevel(report.level);
@@ -522,6 +664,10 @@ export default function Home() {
 
   const activeAnalysis = analysis ?? preview;
   const fullReportUnlocked = user?.subscription === "ACTIVE";
+
+  useEffect(() => {
+    setCustomTemplates(loadCustomTemplates());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -715,24 +861,28 @@ export default function Home() {
           <>
             <SplitForm
               raceFormat={raceFormat}
+              fullReportUnlocked={fullReportUnlocked}
               goal={goal}
               targetTime={targetTime}
               level={level}
               runs={runs}
-              stationDefinitions={getRaceFormatStations(raceFormat)}
+              stationDefinitions={activeStationDefinitions}
               stationSplits={stationSplits}
               errors={validationErrors}
               fieldErrors={fieldErrors}
+              customTemplates={customTemplates}
               onRaceFormatChange={applyRaceFormat}
-              onCustomFormatClick={() =>
-                setToast({
-                  id: Date.now(),
-                  title: "Custom formats are paid",
-                  message:
-                    "Custom race setup is planned as a RepRun premium feature.",
-                  tone: "error",
-                })
+              onCustomFormatClick={activateCustomFormat}
+              onAddRun={addRunSplit}
+              onRemoveRun={removeRunSplit}
+              onAddCustomStation={addCustomStation}
+              onRemoveCustomStation={removeCustomStation}
+              onCustomStationLabelChange={updateCustomStationLabel}
+              onSaveCustomTemplate={saveCurrentCustomTemplate}
+              onLoadCustomTemplate={(template) =>
+                applyReportPreset(template, "Custom template loaded")
               }
+              onDeleteCustomTemplate={deleteCustomTemplate}
               onGoalChange={setGoal}
               onTargetTimeChange={updateTargetTime}
               onLevelChange={setLevel}

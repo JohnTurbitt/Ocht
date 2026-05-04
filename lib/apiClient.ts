@@ -1,4 +1,4 @@
-import { Level, StationKey } from "./analysis";
+import { Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 import { SavedReport } from "./reportStorage";
 
@@ -30,6 +30,7 @@ export type ReportRequestInput = {
   level: Level;
   raceFormat: RaceFormat;
   runs: string[];
+  stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
 };
 

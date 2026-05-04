@@ -30,6 +30,7 @@ describe("race formats", () => {
 
   it("validates race format ids", () => {
     expect(isRaceFormat("tryka800")).toBe(true);
-    expect(isRaceFormat("custom")).toBe(false);
+    expect(isRaceFormat("custom")).toBe(true);
+    expect(isRaceFormat("unknown")).toBe(false);
   });
 });

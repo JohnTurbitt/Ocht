@@ -68,6 +68,64 @@
   color: var(--lime);
 }
 
+.custom-builder {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #eff3e8;
+}
+
+.custom-builder h3,
+.custom-builder p {
+  margin: 0;
+}
+
+.custom-builder p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.custom-builder__actions,
+.custom-template-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.custom-template-list__item {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.custom-builder__actions button,
+.custom-template-list button,
+.field-action {
+  width: auto;
+  min-height: 36px;
+  margin: 0;
+  border-color: var(--line);
+  padding: 0 12px;
+  background: #fbfcf8;
+  color: var(--ink);
+}
+
+.custom-template-list__delete {
+  border-color: rgba(216, 75, 58, 0.42) !important;
+  color: var(--red) !important;
+}
+
+.custom-builder__actions button:hover,
+.custom-template-list button:hover,
+.field-action:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--lime);
+}
+
 .form-errors {
   display: grid;
   gap: 10px;
@@ -140,6 +198,11 @@
   background: #fbfcf8;
   color: var(--ink);
   outline: none;
+}
+
+.field .station-name-input {
+  min-height: 38px;
+  font-weight: 800;
 }
 
 .field input:focus,

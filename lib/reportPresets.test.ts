@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cloneReportPreset,
+  defaultCustomReportPreset,
   defaultReportPreset,
   emptyReportPreset,
   sampleReportPreset,
@@ -14,6 +15,7 @@ describe("report presets", () => {
     expect(sampleReportPreset.runs).toHaveLength(8);
     expect(tryka800Preset.runs).toHaveLength(8);
     expect(tryka500Preset.runs).toHaveLength(8);
+    expect(defaultCustomReportPreset.runs).toHaveLength(3);
     expect(Object.values(defaultReportPreset.stationSplits)).toHaveLength(8);
     expect(Object.values(sampleReportPreset.stationSplits)).toHaveLength(8);
     expect(Object.values(tryka800Preset.stationSplits)).toHaveLength(8);
@@ -24,6 +26,7 @@ describe("report presets", () => {
     expect(defaultReportPreset.raceFormat).toBe("hyrox");
     expect(tryka800Preset.raceFormat).toBe("tryka800");
     expect(tryka500Preset.raceFormat).toBe("tryka500");
+    expect(defaultCustomReportPreset.raceFormat).toBe("custom");
   });
 
   it("provides an empty preset for clearing the form", () => {

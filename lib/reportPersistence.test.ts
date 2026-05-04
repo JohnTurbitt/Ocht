@@ -18,6 +18,7 @@ describe("report persistence mapping", () => {
       targetTime: "1:25:00",
       level: "competitive",
       runs: initialRuns,
+      stationDefinitions: analysis.stationDefinitions,
       stationSplits: initialStations,
       analysis,
     });

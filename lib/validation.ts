@@ -66,6 +66,12 @@ export function validateReportInput({
   });
 
   stationDefinitions.forEach((station) => {
+    if (!station.label.trim()) {
+      const message = "Each custom station needs a name.";
+      errors.push(message);
+      fieldErrors[`station-${station.key}-label`] = message;
+    }
+
     if (!isValidTime(stationSplits[station.key])) {
       const message = `${station.label} needs a valid time, for example 5:00.`;
       errors.push(message);

@@ -2,15 +2,7 @@ import type { RaceFormat } from "./raceFormats";
 
 export type Level = "starter" | "competitive" | "elite";
 
-export type StationKey =
-  | "ski"
-  | "sledPush"
-  | "sledPull"
-  | "burpees"
-  | "row"
-  | "farmers"
-  | "lunges"
-  | "wallBalls";
+export type StationKey = string;
 
 export type Station = {
   key: StationKey;
@@ -49,6 +41,7 @@ export type TrainingWeek = {
 
 export type Analysis = {
   raceFormat: RaceFormat;
+  stationDefinitions: Station[];
   level: Level;
   levelLabel: string;
   finishSeconds: number;
@@ -419,6 +412,7 @@ export function buildAnalysis(
 
   return {
     raceFormat,
+    stationDefinitions,
     level,
     levelLabel: levelLabels[level],
     finishSeconds,

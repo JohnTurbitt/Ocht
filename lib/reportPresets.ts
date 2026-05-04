@@ -1,5 +1,5 @@
-import { Level, StationKey, initialRuns, initialStations } from "./analysis";
-import { RaceFormat } from "./raceFormats";
+import { Level, Station, StationKey, initialRuns, initialStations } from "./analysis";
+import { RaceFormat, createCustomStation } from "./raceFormats";
 
 export type ReportPreset = {
   raceFormat: RaceFormat;
@@ -7,6 +7,7 @@ export type ReportPreset = {
   targetTime: string;
   level: Level;
   runs: string[];
+  stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
 };
 
@@ -55,6 +56,24 @@ export const emptyReportPreset: ReportPreset = {
   },
 };
 
+export const defaultCustomReportPreset: ReportPreset = {
+  raceFormat: "custom",
+  goal: "Build a custom race simulation",
+  targetTime: "45:00",
+  level: "competitive",
+  runs: ["5:00", "5:00", "5:00"],
+  stationDefinitions: [
+    createCustomStation("station-1", "Station 1"),
+    createCustomStation("station-2", "Station 2"),
+    createCustomStation("station-3", "Station 3"),
+  ],
+  stationSplits: {
+    "station-1": "5:00",
+    "station-2": "5:00",
+    "station-3": "5:00",
+  },
+};
+
 export const tryka800Preset: ReportPreset = {
   raceFormat: "tryka800",
   goal: "Strong TRYKA 800 finish with controlled running",
@@ -95,6 +114,9 @@ export function cloneReportPreset(preset: ReportPreset): ReportPreset {
   return {
     ...preset,
     runs: [...preset.runs],
+    stationDefinitions: preset.stationDefinitions
+      ? preset.stationDefinitions.map((station) => ({ ...station }))
+      : undefined,
     stationSplits: { ...preset.stationSplits },
   };
 }

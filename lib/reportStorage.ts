@@ -1,4 +1,4 @@
-import { Level, StationKey } from "./analysis";
+import { Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 
 export type SavedReport = {
@@ -9,6 +9,7 @@ export type SavedReport = {
   targetTime: string;
   level: Level;
   runs: string[];
+  stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
   finishSeconds: number;
   predictedTargetSeconds: number;

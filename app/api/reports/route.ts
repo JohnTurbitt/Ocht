@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildAnalysis, Level, StationKey, stations } from "@/lib/analysis";
+import { buildAnalysis, Level, Station, StationKey } from "@/lib/analysis";
 import { requireCurrentUser } from "@/lib/apiAuth";
 import { readString } from "@/lib/apiValidation";
 import { prisma } from "@/lib/prisma";
@@ -22,8 +22,30 @@ type ReportPayload = {
   targetTime: string;
   level: Level;
   runs: string[];
+  stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
 };
+
+function parseStationDefinitions(value: unknown): Station[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => (typeof item === "object" && item ? item : null))
+    .filter(Boolean)
+    .map((item) => item as Record<string, unknown>)
+    .map((item) => ({
+      key: readString(item.key),
+      label: readString(item.label),
+      benchmarkSec: { starter: 300, competitive: 300, elite: 300 },
+      recoverability: 0.5,
+      raceImpact: 0.8,
+      guidance:
+        "Use repeatable technique and record a benchmark once this station is part of your template.",
+    }))
+    .filter((station) => station.key && station.label);
+}
 
 function parseReportPayload(payload: unknown): {
   errors: string[];
@@ -41,7 +63,13 @@ function parseReportPayload(payload: unknown): {
   const raceFormat = isRaceFormat(raceFormatValue) ? raceFormatValue : "hyrox";
   const runsValue = (record as Record<string, unknown>).runs;
   const stationValue = (record as Record<string, unknown>).stationSplits;
+  const stationDefinitionsValue = (record as Record<string, unknown>)
+    .stationDefinitions;
   const errors: string[] = [];
+  const stationDefinitions =
+    raceFormat === "custom"
+      ? parseStationDefinitions(stationDefinitionsValue)
+      : getRaceFormatStations(raceFormat);
 
   if (!goal) {
     errors.push("Goal is required.");
@@ -51,8 +79,19 @@ function parseReportPayload(payload: unknown): {
     errors.push("Choose a valid athlete level.");
   }
 
-  if (!Array.isArray(runsValue) || runsValue.length !== 8) {
-    errors.push("Add exactly eight run splits.");
+  if (
+    !Array.isArray(runsValue) ||
+    (raceFormat === "custom" ? runsValue.length < 1 : runsValue.length !== 8)
+  ) {
+    errors.push(
+      raceFormat === "custom"
+        ? "Add at least one run split."
+        : "Add exactly eight run splits.",
+    );
+  }
+
+  if (raceFormat === "custom" && stationDefinitions.length === 0) {
+    errors.push("Add at least one custom station.");
   }
 
   const runs = Array.isArray(runsValue) ? runsValue.map(readString) : [];
@@ -60,7 +99,7 @@ function parseReportPayload(payload: unknown): {
     typeof stationValue === "object" && stationValue
       ? (stationValue as Record<string, unknown>)
       : {};
-  const stationSplits = stations.reduce(
+  const stationSplits = stationDefinitions.reduce(
     (splits, station) => ({
       ...splits,
       [station.key]: readString(stationRecord[station.key]),
@@ -71,7 +110,7 @@ function parseReportPayload(payload: unknown): {
     targetTime,
     runs,
     stationSplits,
-    stationDefinitions: getRaceFormatStations(raceFormat),
+    stationDefinitions,
   });
 
   errors.push(...timeValidation.errors);
@@ -88,6 +127,7 @@ function parseReportPayload(payload: unknown): {
       level: levelValue as Level,
       raceFormat,
       runs,
+      stationDefinitions,
       stationSplits,
     },
   };
