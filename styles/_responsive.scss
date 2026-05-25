@@ -3,6 +3,10 @@
     grid-template-columns: 1fr;
   }
 
+  .onboarding__steps {
+    grid-template-columns: 1fr;
+  }
+
   .site-header {
     display: grid;
     padding-top: 10px;
@@ -71,7 +75,8 @@
   }
 
   .intro,
-  .workspace {
+  .workspace,
+  .onboarding {
     padding-right: 14px;
     padding-left: 14px;
   }
@@ -142,6 +147,29 @@
 
   .input-row {
     grid-template-columns: 1fr;
+  }
+
+  .onboarding__header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .onboarding__progress {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .onboarding__dismiss {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .onboarding__step {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .onboarding__step button {
+    width: 100%;
   }
 
   .form-heading {
