@@ -30,6 +30,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ errors: validation.errors }, { status: 400 });
   }
 
+  const betaSignupCode = process.env.BETA_SIGNUP_CODE?.trim();
+
+  if (
+    betaSignupCode &&
+    validation.value.signupCode?.trim() !== betaSignupCode
+  ) {
+    return NextResponse.json(
+      { errors: ["Enter a valid beta signup code."] },
+      { status: 403 },
+    );
+  }
+
   try {
     const email = normalizeEmail(validation.value.email);
     const existingUser = await prisma.user.findUnique({ where: { email } });

@@ -2,6 +2,7 @@ export type AuthPayload = {
   email: string;
   password: string;
   name?: string;
+  signupCode?: string;
 };
 
 export type ProfilePayload = {
@@ -29,6 +30,7 @@ export function validateAuthPayload(payload: unknown): {
   const email = readString((record as Record<string, unknown>).email);
   const password = readString((record as Record<string, unknown>).password);
   const name = readString((record as Record<string, unknown>).name);
+  const signupCode = readString((record as Record<string, unknown>).signupCode);
   const errors: string[] = [];
 
   if (!emailPattern.test(email)) {
@@ -50,6 +52,7 @@ export function validateAuthPayload(payload: unknown): {
       email,
       password,
       name: name || undefined,
+      signupCode: signupCode || undefined,
     },
   };
 }

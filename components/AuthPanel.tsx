@@ -37,6 +37,7 @@ export function AuthPanel({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [signupCode, setSignupCode] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -52,12 +53,13 @@ export function AuthPanel({
 
     try {
       if (mode === "signup") {
-        await onSignup({ email, password, name });
+        await onSignup({ email, password, name, signupCode });
       } else {
         await onLogin({ email, password });
       }
 
       setPassword("");
+      setSignupCode("");
     } finally {
       setSubmitting(false);
     }
@@ -243,6 +245,16 @@ export function AuthPanel({
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   placeholder="Test Runner"
+                />
+              </label>
+            ) : null}
+            {mode === "signup" ? (
+              <label className="field">
+                <span>Beta code</span>
+                <input
+                  value={signupCode}
+                  onChange={(event) => setSignupCode(event.target.value)}
+                  placeholder="Invite code"
                 />
               </label>
             ) : null}

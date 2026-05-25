@@ -16,6 +16,7 @@ export type AuthFormInput = {
   email: string;
   password: string;
   name?: string;
+  signupCode?: string;
 };
 
 export type ProfileFormInput = {
