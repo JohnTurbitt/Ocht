@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeEmail, verifyPassword } from "@/lib/auth";
 import { authServiceError } from "@/lib/apiErrors";
 import { validateAuthPayload } from "@/lib/apiValidation";
+import { logServerError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { toPublicUser } from "@/lib/profile";
 import { guardBrowserMutation } from "@/lib/security";
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Login failed", error);
+    logServerError("Login failed", error);
 
     return authServiceError();
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe, subscriptionStatusFromStripe } from "@/lib/billing";
+import { logServerError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
       webhookSecret,
     );
   } catch (error) {
-    console.error("Stripe webhook verification failed", error);
+    logServerError("Stripe webhook verification failed", error);
 
     return NextResponse.json(
       { errors: ["Stripe webhook signature is invalid."] },
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Stripe webhook handling failed", error);
+    logServerError("Stripe webhook handling failed", error);
 
     return NextResponse.json(
       { errors: ["Stripe webhook could not be handled."] },

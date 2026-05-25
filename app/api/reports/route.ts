@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildAnalysis, Level, Station, StationKey } from "@/lib/analysis";
 import { requireCurrentUser } from "@/lib/apiAuth";
 import { readString } from "@/lib/apiValidation";
+import { logServerError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import {
   RaceFormat,
@@ -176,7 +177,7 @@ export async function GET(request: NextRequest) {
       ),
     });
   } catch (error) {
-    console.error("Report history load failed", error);
+    logServerError("Report history load failed", error);
 
     return NextResponse.json(
       { errors: ["Report history could not be loaded."] },
@@ -247,7 +248,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Report save failed", error);
+    logServerError("Report save failed", error);
 
     return NextResponse.json(
       { errors: ["Report could not be saved to your account."] },

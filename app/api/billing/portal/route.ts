@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/billing";
 import { billingPortalError } from "@/lib/apiErrors";
 import { requireCurrentUser } from "@/lib/apiAuth";
+import { logServerError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { guardBrowserMutation } from "@/lib/security";
 
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Customer portal creation failed", error);
+    logServerError("Customer portal creation failed", error);
 
     return billingPortalError(error);
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCheckoutPriceId, getStripe } from "@/lib/billing";
 import { checkoutError } from "@/lib/apiErrors";
 import { requireCurrentUser } from "@/lib/apiAuth";
+import { logServerError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { guardBrowserMutation } from "@/lib/security";
 
@@ -65,6 +66,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      limit: 10,
+      status: "all",
+    });
+    const hasPaidAccess = existingSubscriptions.data.some((subscription) =>
+      subscription.status === "active" || subscription.status === "trialing",
+    );
+
+    if (hasPaidAccess) {
+      await prisma.user.update({
+        where: { id: databaseUser.id },
+        data: { subscription: "ACTIVE" },
+      });
+
+      return NextResponse.json(
+        { errors: ["Your account already has paid access. Refresh the page."] },
+        { status: 400 },
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
@@ -80,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Checkout creation failed", error);
+    logServerError("Checkout creation failed", error);
 
     return checkoutError(error);
   }

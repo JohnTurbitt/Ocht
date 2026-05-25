@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { guardBrowserMutation } from "@/lib/security";
 import { validateAuthPayload } from "@/lib/apiValidation";
 import { toPublicUser } from "@/lib/profile";
+import { logServerError } from "@/lib/logging";
 import {
   createSessionToken,
   getSessionCookieOptions,
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Signup failed", error);
+    logServerError("Signup failed", error);
 
     return signupError(error);
   }
