@@ -6,6 +6,7 @@ type SubscriptionStatus = "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
 export type PublicUser = {
   id: string;
   email: string;
+  emailVerified: boolean;
   name: string | null;
   subscription: SubscriptionStatus;
   defaultLevel: Level;
@@ -28,6 +29,7 @@ export const levelByAthleteLevel: Record<AthleteLevel, Level> = {
 export function toPublicUser(user: {
   id: string;
   email: string;
+  emailVerifiedAt: Date | string | null;
   name: string | null;
   subscription: SubscriptionStatus;
   defaultLevel: AthleteLevel;
@@ -37,6 +39,7 @@ export function toPublicUser(user: {
   return {
     id: user.id,
     email: user.email,
+    emailVerified: Boolean(user.emailVerifiedAt),
     name: user.name,
     subscription: user.subscription,
     defaultLevel: levelByAthleteLevel[user.defaultLevel],

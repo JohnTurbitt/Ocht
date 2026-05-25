@@ -40,3 +40,34 @@ export function subscriptionStatusFromStripe(
 
   return "FREE";
 }
+
+export function subscriptionStatusFromStripeSubscriptions(
+  subscriptions: Stripe.Subscription[],
+): SubscriptionStatus {
+  if (
+    subscriptions.some((subscription) =>
+      subscription.status === "active" || subscription.status === "trialing",
+    )
+  ) {
+    return "ACTIVE";
+  }
+
+  if (
+    subscriptions.some((subscription) =>
+      subscription.status === "past_due" || subscription.status === "unpaid",
+    )
+  ) {
+    return "PAST_DUE";
+  }
+
+  if (
+    subscriptions.some((subscription) =>
+      subscription.status === "canceled" ||
+      subscription.status === "incomplete_expired",
+    )
+  ) {
+    return "CANCELED";
+  }
+
+  return "FREE";
+}

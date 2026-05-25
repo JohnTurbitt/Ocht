@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { guardBrowserMutation } from "@/lib/security";
 import { validateAuthPayload } from "@/lib/apiValidation";
 import { toPublicUser } from "@/lib/profile";
+import { trySendVerificationEmailForUser } from "@/lib/emailVerification";
 import { logServerError } from "@/lib/logging";
 import {
   createSessionToken,
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        emailVerifiedAt: true,
         name: true,
         subscription: true,
         defaultLevel: true,
@@ -85,6 +87,11 @@ export async function POST(request: NextRequest) {
     );
 
     response.cookies.set(sessionCookieName, token, getSessionCookieOptions());
+    await trySendVerificationEmailForUser({
+      userId: user.id,
+      email: user.email,
+      request,
+    });
 
     return response;
   } catch (error) {

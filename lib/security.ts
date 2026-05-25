@@ -29,7 +29,25 @@ function getClientIp(request: NextRequest) {
 
 function sameOrigin(request: NextRequest, origin: string) {
   try {
-    return new URL(origin).origin === request.nextUrl.origin;
+    const requestUrl = request.nextUrl;
+    const originUrl = new URL(origin);
+
+    if (originUrl.origin === requestUrl.origin) {
+      return true;
+    }
+
+    if (process.env.NODE_ENV === "development") {
+      const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+      return (
+        originUrl.protocol === requestUrl.protocol &&
+        originUrl.port === requestUrl.port &&
+        loopbackHosts.has(originUrl.hostname) &&
+        loopbackHosts.has(requestUrl.hostname)
+      );
+    }
+
+    return false;
   } catch {
     return false;
   }

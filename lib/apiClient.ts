@@ -5,6 +5,7 @@ import { SavedReport } from "./reportStorage";
 export type AuthUser = {
   id: string;
   email: string;
+  emailVerified: boolean;
   name: string | null;
   subscription: "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
   defaultLevel: Level;
@@ -113,6 +114,44 @@ export async function logIn(input: AuthFormInput) {
   return body.user;
 }
 
+export async function requestPasswordReset(email: string) {
+  const response = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  await readApiResponse<{ ok: true }>(response);
+}
+
+export async function resetPassword(input: { token: string; password: string }) {
+  const response = await fetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  await readApiResponse<{ ok: true }>(response);
+}
+
+export async function verifyEmail(token: string) {
+  const response = await fetch("/api/auth/verify-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+
+  await readApiResponse<{ ok: true }>(response);
+}
+
+export async function resendEmailVerification() {
+  const response = await fetch("/api/auth/resend-verification", {
+    method: "POST",
+  });
+
+  await readApiResponse<{ ok: true }>(response);
+}
+
 export async function logOut() {
   const response = await fetch("/api/auth/logout", { method: "POST" });
 
@@ -163,4 +202,11 @@ export async function openBillingPortal() {
   }
 
   return body.url;
+}
+
+export async function syncBillingStatus() {
+  const response = await fetch("/api/billing/sync", { method: "POST" });
+  const body = await readApiResponse<{ user: AuthUser }>(response);
+
+  return body.user;
 }

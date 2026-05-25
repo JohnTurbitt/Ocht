@@ -19,6 +19,7 @@ export async function getCurrentUser(request: NextRequest) {
         select: {
           id: true,
           email: true,
+          emailVerifiedAt: true,
           name: true,
           subscription: true,
           defaultLevel: true,

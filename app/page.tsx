@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { Hint } from "@/components/Hint";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { ReportHistory } from "@/components/ReportHistory";
 import { ReportPanel } from "@/components/ReportPanel";
 import { SettingsMenu } from "@/components/SettingsMenu";
@@ -52,9 +53,11 @@ import {
   logOut,
   openBillingPortal,
   ProfileFormInput,
+  resendEmailVerification,
   saveRemoteReport,
   signUp,
   startCheckout,
+  syncBillingStatus,
   updateProfile,
 } from "@/lib/apiClient";
 import { trackEvent } from "@/lib/analytics";
@@ -65,6 +68,7 @@ type ActiveTab = "new" | "history";
 
 const billingRefreshAttempts = 6;
 const billingRefreshDelayMs = 1600;
+const onboardingDismissedKey = "ocht.onboardingDismissed";
 
 function buildUserDefaultPreset(user: AuthUser | null): ReportPreset {
   return {
@@ -102,6 +106,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(true);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -339,6 +344,19 @@ export default function Home() {
 
     for (let attempt = 0; attempt < billingRefreshAttempts; attempt += 1) {
       try {
+        const syncedUser = await syncBillingStatus().catch(() => null);
+
+        if (syncedUser) {
+          setUser(syncedUser);
+
+          if (
+            expectedPaidAccess === undefined ||
+            Boolean(syncedUser.subscription === "ACTIVE") === expectedPaidAccess
+          ) {
+            return;
+          }
+        }
+
         const currentUser = await getCurrentUser();
 
         setUser(currentUser);
@@ -494,6 +512,51 @@ export default function Home() {
       setBillingLoading(false);
       trackEvent("billing_portal_failed");
     }
+  }
+
+  async function handleResendVerification() {
+    trackEvent("email_verification_resend_started");
+
+    try {
+      await resendEmailVerification();
+      setToast({
+        id: Date.now(),
+        title: "Verification email sent",
+        message: "Check your inbox for the Ocht verification link.",
+        tone: "success",
+      });
+      trackEvent("email_verification_resend_completed");
+    } catch (error) {
+      setToast({
+        id: Date.now(),
+        title: "Verification not sent",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Ocht could not send the verification email.",
+        tone: "error",
+      });
+      trackEvent("email_verification_resend_failed");
+    }
+  }
+
+  function handleCreateOnboardingReport() {
+    setActiveTab("new");
+    trackEvent("onboarding_create_report_clicked", {
+      signed_in: Boolean(user),
+    });
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>(".split-form")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
+  function dismissOnboarding() {
+    setOnboardingDismissed(true);
+    window.localStorage.setItem(onboardingDismissedKey, "true");
+    trackEvent("onboarding_dismissed");
   }
 
   async function handleSaveProfile(input: ProfileFormInput) {
@@ -712,6 +775,9 @@ export default function Home() {
 
   useEffect(() => {
     setCustomTemplates(loadCustomTemplates());
+    setOnboardingDismissed(
+      window.localStorage.getItem(onboardingDismissedKey) === "true",
+    );
   }, []);
 
   useEffect(() => {
@@ -850,7 +916,9 @@ export default function Home() {
             onLogin={handleLogin}
             onSignup={handleSignup}
             onLogout={handleLogout}
+            onStartCheckout={handleStartCheckout}
             onManageBilling={handleManageBilling}
+            onResendVerification={handleResendVerification}
             onSaveProfile={handleSaveProfile}
           />
           <SettingsMenu
@@ -901,6 +969,18 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {user && !onboardingDismissed ? (
+        <OnboardingChecklist
+          user={user}
+          savedReportCount={savedReports.length}
+          billingLoading={billingLoading}
+          onCreateReport={handleCreateOnboardingReport}
+          onResendVerification={handleResendVerification}
+          onStartCheckout={handleStartCheckout}
+          onDismiss={dismissOnboarding}
+        />
+      ) : null}
 
       <section className="workspace">
         <nav className="tab-bar" aria-label="Report navigation">

@@ -185,22 +185,22 @@
 }
 
 .report-jump-nav-shell {
-  min-height: 50px;
-  margin: 0 0 18px;
+  min-height: 68px;
+  margin: 4px 0 22px;
 }
 
 .report-jump-nav {
   position: relative;
   z-index: 35;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 2px solid var(--action-bg);
+  border-radius: 12px;
+  padding: 8px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
   backdrop-filter: blur(14px);
   box-shadow: 0 10px 28px rgba(22, 28, 18, 0.12);
 }
@@ -216,14 +216,15 @@
 .report-jump-nav button {
   flex: 0 0 auto;
   width: auto;
-  min-height: 36px;
+  min-height: 42px;
   margin: 0;
-  border-color: transparent;
-  border-radius: 999px;
-  padding: 0 13px;
-  background: transparent;
+  border-color: var(--line);
+  border-radius: 8px;
+  padding: 0 15px;
+  background: var(--field);
   color: var(--ink);
-  font-size: 0.84rem;
+  font-size: 0.92rem;
+  font-weight: 900;
 }
 
 .report-jump-nav button:hover,
@@ -491,7 +492,7 @@
 }
 
 .positive-grid strong {
-  color: var(--lime);
+  color: var(--teal);
   font-size: 0.95rem;
 }
 
@@ -1032,19 +1033,24 @@
 
 .station-table div {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid var(--line);
-  padding: 9px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--field);
 }
 
 .station-table span {
-  color: var(--muted);
+  color: var(--ink);
   min-width: 0;
   overflow-wrap: anywhere;
+  font-weight: 800;
 }
 
 .station-table strong {
+  color: var(--teal);
   text-align: right;
 }
 

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCheckoutPriceId, getStripe } from "@/lib/billing";
+import {
+  getCheckoutPriceId,
+  getStripe,
+  subscriptionStatusFromStripeSubscriptions,
+} from "@/lib/billing";
 import { checkoutError } from "@/lib/apiErrors";
 import { requireCurrentUser } from "@/lib/apiAuth";
 import { logServerError } from "@/lib/logging";
@@ -71,14 +75,15 @@ export async function POST(request: NextRequest) {
       limit: 10,
       status: "all",
     });
-    const hasPaidAccess = existingSubscriptions.data.some((subscription) =>
-      subscription.status === "active" || subscription.status === "trialing",
+    const stripeSubscriptionStatus = subscriptionStatusFromStripeSubscriptions(
+      existingSubscriptions.data,
     );
+    const hasPaidAccess = stripeSubscriptionStatus === "ACTIVE";
 
     if (hasPaidAccess) {
       await prisma.user.update({
         where: { id: databaseUser.id },
-        data: { subscription: "ACTIVE" },
+        data: { subscription: stripeSubscriptionStatus },
       });
 
       return NextResponse.json(
