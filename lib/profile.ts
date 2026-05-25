@@ -1,5 +1,7 @@
-import { AthleteLevel, SubscriptionStatus } from "@prisma/client";
 import { Level } from "./analysis";
+
+type AthleteLevel = "STARTER" | "COMPETITIVE" | "ELITE";
+type SubscriptionStatus = "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
 
 export type PublicUser = {
   id: string;

@@ -1,5 +1,6 @@
-import { SubscriptionStatus } from "@prisma/client";
 import Stripe from "stripe";
+
+export type SubscriptionStatus = "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
 
 export function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;

@@ -69,12 +69,6 @@ type SegmentInsightPanelProps = {
   onClose: () => void;
 };
 
-function topVisualSegments(analysis: Analysis) {
-  return [...analysis.raceSegments]
-    .sort((a, b) => b.leakSeconds - a.leakSeconds)
-    .slice(0, 5);
-}
-
 function statusLabel(status: RaceSegment["status"]) {
   if (status === "leak") {
     return "Leak";
