@@ -105,6 +105,24 @@ export function AuthPanel({
     }
   }
 
+  if (!user && loading) {
+    return (
+      <aside
+        className="auth-panel auth-panel--signed-in auth-panel--loading"
+        aria-busy="true"
+      >
+        <div className="auth-panel__account-trigger auth-panel__account-trigger--loading">
+          <span className="auth-panel__avatar auth-panel__avatar--loading" aria-hidden="true" />
+          <div>
+            <span className="auth-panel__meta">Account</span>
+            <strong>Checking session</strong>
+            <p>Loading account status</p>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   if (user) {
     const canManageBilling = user.subscription !== "FREE";
     const canUpgrade = user.subscription === "FREE" || user.subscription === "CANCELED";

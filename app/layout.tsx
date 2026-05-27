@@ -7,6 +7,17 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
 const appName = "Ocht";
 const appDescription =
   "Trace hybrid race splits, find time leaks, and build a realistic next target.";
+const themeScript = `
+(function () {
+  try {
+    var theme = localStorage.getItem("ocht.theme") || localStorage.getItem("reprun.theme");
+    if (theme !== "light" && theme !== "dark") {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.dataset.theme = theme;
+  } catch (_) {}
+})();
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -66,7 +77,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         {children}
         <SiteFooter />

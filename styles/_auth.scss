@@ -154,7 +154,7 @@
   position: relative;
   display: grid;
   width: auto;
-  min-width: 0;
+  min-width: min(360px, calc(100vw - 28px));
 }
 
 .auth-panel--signed-in strong {
@@ -192,10 +192,22 @@
   box-shadow: 0 8px 22px rgba(22, 28, 18, 0.06);
 }
 
+.auth-panel--signed-in .auth-panel__account-trigger {
+  min-width: min(360px, calc(100vw - 28px));
+}
+
 .auth-panel__account-trigger:hover,
 .auth-panel__account-trigger[aria-expanded="true"] {
   border-color: var(--teal);
   background: var(--field);
+}
+
+.auth-panel__account-trigger--loading {
+  pointer-events: none;
+}
+
+.auth-panel__avatar--loading {
+  background: var(--disabled);
 }
 
 .auth-panel__account-trigger > div {
