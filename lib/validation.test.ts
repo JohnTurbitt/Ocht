@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { initialRuns, initialStations } from "./analysis";
-import { isValidTime, validateReportInput } from "./validation";
+import { isValidTime, normalizeTimeInput, validateReportInput } from "./validation";
+
+describe("normalizeTimeInput", () => {
+  it("normalizes compact time entry into minute and race formats", () => {
+    expect(normalizeTimeInput("530")).toBe("5:30");
+    expect(normalizeTimeInput("45")).toBe("0:45");
+    expect(normalizeTimeInput("12500", "race")).toBe("1:25:00");
+    expect(normalizeTimeInput("1:25:00", "race")).toBe("1:25:00");
+  });
+});
 
 describe("isValidTime", () => {
   it("accepts seconds, minute splits and race times", () => {

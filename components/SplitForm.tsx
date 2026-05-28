@@ -8,6 +8,7 @@ import {
 } from "@/lib/analysis";
 import { CustomTemplate } from "@/lib/customTemplates";
 import { RaceFormat, raceFormatOptions } from "@/lib/raceFormats";
+import { normalizeTimeInput } from "@/lib/validation";
 
 type SplitFormProps = {
   raceFormat: RaceFormat;
@@ -99,13 +100,13 @@ export function SplitForm({
       <div className="start-guide" aria-label="How to start">
         <article>
           <span>1</span>
-          <strong>Choose format</strong>
-          <p>Pick HYROX, TRYKA, or a premium custom setup.</p>
+          <strong>Start simple</strong>
+          <p>Load the sample race if you are not sure what to enter yet.</p>
         </article>
         <article>
           <span>2</span>
           <strong>Add splits</strong>
-          <p>Enter race or simulation times exactly as recorded.</p>
+          <p>Use times from runs and workout stations, like 530 for 5:30.</p>
         </article>
         <article>
           <span>3</span>
@@ -210,6 +211,9 @@ export function SplitForm({
             className={fieldErrors.targetTime ? "is-invalid" : undefined}
             value={targetTime}
             onChange={(event) => onTargetTimeChange(event.target.value)}
+            onBlur={(event) =>
+              onTargetTimeChange(normalizeTimeInput(event.target.value, "race"))
+            }
             inputMode="numeric"
             placeholder="1:25:00"
             aria-invalid={Boolean(fieldErrors.targetTime)}
@@ -244,6 +248,9 @@ export function SplitForm({
                 className={fieldErrors[`run-${index}`] ? "is-invalid" : undefined}
                 value={split}
                 onChange={(event) => onRunChange(index, event.target.value)}
+                onBlur={(event) =>
+                  onRunChange(index, normalizeTimeInput(event.target.value))
+                }
                 inputMode="numeric"
                 placeholder="5:30"
                 aria-invalid={Boolean(fieldErrors[`run-${index}`])}
@@ -303,6 +310,12 @@ export function SplitForm({
                 value={stationSplits[station.key]}
                 onChange={(event) =>
                   onStationChange(station.key, event.target.value)
+                }
+                onBlur={(event) =>
+                  onStationChange(
+                    station.key,
+                    normalizeTimeInput(event.target.value),
+                  )
                 }
                 inputMode="numeric"
                 placeholder="5:00"

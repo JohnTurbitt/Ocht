@@ -20,7 +20,7 @@ type AuthPanelProps = {
 type AuthMode = "login" | "signup";
 
 const subscriptionLabels: Record<AuthUser["subscription"], string> = {
-  ACTIVE: "Paid access",
+  ACTIVE: "Premium",
   CANCELED: "Subscription canceled",
   FREE: "Free account",
   PAST_DUE: "Payment past due",
@@ -108,16 +108,12 @@ export function AuthPanel({
   if (!user && loading) {
     return (
       <aside
-        className="auth-panel auth-panel--signed-in auth-panel--loading"
+        className="auth-panel auth-panel--signed-in auth-panel--loading auth-panel--compact"
         aria-busy="true"
       >
         <div className="auth-panel__account-trigger auth-panel__account-trigger--loading">
           <span className="auth-panel__avatar auth-panel__avatar--loading" aria-hidden="true" />
-          <div>
-            <span className="auth-panel__meta">Account</span>
-            <strong>Checking session</strong>
-            <p>Loading account status</p>
-          </div>
+          <span className="auth-panel__chevron" aria-hidden="true" />
         </div>
       </aside>
     );
@@ -128,7 +124,7 @@ export function AuthPanel({
     const canUpgrade = user.subscription === "FREE" || user.subscription === "CANCELED";
 
     return (
-      <aside className="auth-panel auth-panel--signed-in" ref={accountRef}>
+      <aside className="auth-panel auth-panel--signed-in auth-panel--compact" ref={accountRef}>
         <button
           className="auth-panel__account-trigger"
           type="button"
@@ -138,23 +134,30 @@ export function AuthPanel({
           <span className="auth-panel__avatar" aria-hidden="true">
             {userInitial}
           </span>
-          <div>
-            <span className="auth-panel__meta">Signed in</span>
-            <strong>{displayName}</strong>
-            <p>
-              {subscriptionLabels[user.subscription]}{" "}
-              {user.subscription === "ACTIVE" ? <PremiumBadge /> : null}
-            </p>
-            {!user.emailVerified ? (
-              <p className="auth-panel__verification-status">Email unverified</p>
-            ) : null}
-          </div>
+          <span className="auth-panel__chevron" aria-hidden="true" />
         </button>
 
         {accountOpen ? (
           <div className="auth-panel__account-menu">
+            <div className="auth-panel__account-summary">
+              <span className="auth-panel__avatar" aria-hidden="true">
+                {userInitial}
+              </span>
+              <div>
+                <span className="auth-panel__meta">Signed in</span>
+                <strong>{displayName}</strong>
+                <span className="auth-panel__email">{user.email}</span>
+                <p>
+                  {subscriptionLabels[user.subscription]}{" "}
+                  {user.subscription === "ACTIVE" ? <PremiumBadge /> : null}
+                </p>
+                {!user.emailVerified ? (
+                  <p className="auth-panel__verification-status">Email unverified</p>
+                ) : null}
+              </div>
+            </div>
             <p className="auth-panel__defaults">
-              Defaults: {levelLabels[user.defaultLevel]} · {user.defaultTargetTime}
+              Defaults: {levelLabels[user.defaultLevel]} - {user.defaultTargetTime}
             </p>
             {!user.emailVerified ? (
               <div className="auth-panel__verify">
@@ -189,6 +192,10 @@ export function AuthPanel({
                   }
                 }}
               >
+                <label className="field">
+                  <span>Email</span>
+                  <input value={user.email} readOnly aria-readonly="true" />
+                </label>
                 <label className="field">
                   <span>Name</span>
                   <input
@@ -235,7 +242,7 @@ export function AuthPanel({
               </form>
             ) : (
               <button
-                className="button-secondary"
+                className="button-secondary auth-panel__menu-item"
                 type="button"
                 onClick={() => {
                   setProfileName(user.name ?? "");
@@ -250,7 +257,7 @@ export function AuthPanel({
             )}
             {canUpgrade ? (
               <button
-                className="button-secondary auth-panel__upgrade"
+                className="button-secondary auth-panel__menu-item auth-panel__upgrade"
                 type="button"
                 onClick={onStartCheckout}
                 disabled={loading || billingLoading}
@@ -260,7 +267,7 @@ export function AuthPanel({
             ) : null}
             {canManageBilling ? (
               <button
-                className="button-secondary"
+                className="button-secondary auth-panel__menu-item"
                 type="button"
                 onClick={onManageBilling}
                 disabled={loading || billingLoading}
@@ -269,7 +276,7 @@ export function AuthPanel({
               </button>
             ) : null}
             <button
-              className="button-secondary"
+              className="button-secondary auth-panel__menu-item"
               type="button"
               onClick={() => void onLogout()}
               disabled={loading}
@@ -323,7 +330,7 @@ export function AuthPanel({
               onClick={() => setMode(null)}
               aria-label="Close account form"
             >
-              ×
+              x
             </button>
           </div>
           <p className="auth-panel__lead">
@@ -391,3 +398,5 @@ export function AuthPanel({
     </aside>
   );
 }
+
+

@@ -513,11 +513,17 @@ export function ReportPanel({
           <button type="button" onClick={() => scrollToReportSection("race-flow-map")}>
             Flow
           </button>
-          <button type="button" onClick={() => scrollToReportSection("report-leaks")}>
-            Leaks
+          <button type="button" onClick={() => scrollToReportSection("report-target-path")}>
+            Target
+          </button>
+          <button type="button" onClick={() => scrollToReportSection("report-readiness")}>
+            Readiness
           </button>
           <button type="button" onClick={() => scrollToReportSection("report-strengths")}>
             Strengths
+          </button>
+          <button type="button" onClick={() => scrollToReportSection("report-leaks")}>
+            Leaks
           </button>
           <button type="button" onClick={() => scrollToReportSection("report-training")}>
             Training
@@ -604,49 +610,51 @@ export function ReportPanel({
         </ReportSection>
       </div>
 
-      <ReportSection title="Readiness" defaultOpen>
-        <div className="readiness-card">
-          <div className="readiness-card__score">
-            <span>{readinessLabel(readiness.overall)}</span>
-            <strong>{readiness.overall}</strong>
-            <small>/100</small>
-          </div>
-          <div className="readiness-card__body">
-            <h3>How prepared this race profile looks</h3>
-            <p>
-              All numbers are out of 100. Higher means that part of the race is
-              closer to target, more repeatable, or already well protected.
-            </p>
-            <div className="readiness-card__grid">
-              <ReadinessMetric
-                label="Run control"
-                score={readiness.runControl}
-                detail="split variation"
-              />
-              <ReadinessMetric
-                label="Station control"
-                score={readiness.stationControl}
-                detail="benchmark gap"
-              />
-              <ReadinessMetric
-                label="Durability"
-                score={readiness.durability}
-                detail="late-race fade"
-              />
-              <ReadinessMetric
-                label="Target realism"
-                score={readiness.targetRealism}
-                detail="required gain"
-              />
-              <ReadinessMetric
-                label="Execution base"
-                score={readiness.executionBase}
-                detail="protected splits"
-              />
+      <div id="report-readiness" className="report-scroll-anchor">
+        <ReportSection title="Readiness" defaultOpen>
+          <div className="readiness-card">
+            <div className="readiness-card__score">
+              <span>{readinessLabel(readiness.overall)}</span>
+              <strong>{readiness.overall}</strong>
+              <small>/100</small>
+            </div>
+            <div className="readiness-card__body">
+              <h3>How prepared this race profile looks</h3>
+              <p>
+                All numbers are out of 100. Higher means that part of the race is
+                closer to target, more repeatable, or already well protected.
+              </p>
+              <div className="readiness-card__grid">
+                <ReadinessMetric
+                  label="Run control"
+                  score={readiness.runControl}
+                  detail="split variation"
+                />
+                <ReadinessMetric
+                  label="Station control"
+                  score={readiness.stationControl}
+                  detail="benchmark gap"
+                />
+                <ReadinessMetric
+                  label="Durability"
+                  score={readiness.durability}
+                  detail="late-race fade"
+                />
+                <ReadinessMetric
+                  label="Target realism"
+                  score={readiness.targetRealism}
+                  detail="required gain"
+                />
+                <ReadinessMetric
+                  label="Execution base"
+                  score={readiness.executionBase}
+                  detail="protected splits"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </ReportSection>
+        </ReportSection>
+      </div>
 
       <div id="report-strengths" className="report-scroll-anchor">
         <ReportSection title="Strengths" defaultOpen>

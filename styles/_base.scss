@@ -59,6 +59,22 @@
   color-scheme: dark;
 }
 
+[data-theme="dark"] .tab-bar__tab,
+[data-theme="dark"] .preset-actions button,
+[data-theme="dark"] .format-picker button,
+[data-theme="dark"] .custom-builder__actions button,
+[data-theme="dark"] .custom-template-list button,
+[data-theme="dark"] .field-action,
+[data-theme="dark"] .settings-menu__switch button,
+[data-theme="dark"] .auth-panel--signed-in .button-secondary,
+[data-theme="dark"] .intro-guide__actions button,
+[data-theme="dark"] .demo-modal__actions .button-secondary,
+[data-theme="dark"] .empty-state--report button {
+  border-color: #8ea999;
+  background: #f4f7ef;
+  color: #0a1711;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -75,7 +91,7 @@ body {
     Arial,
     Helvetica,
     sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 button,
@@ -103,7 +119,7 @@ button:hover {
 main {
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 ol {
@@ -132,22 +148,30 @@ li {
 }
 
 .premium-badge {
-  display: inline-grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border: 0;
-  border-radius: 0;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--action-bg);
+  border-radius: 4px;
   padding: 0;
-  background: transparent;
+  background: var(--lime);
+  color: #0a1711;
+  flex: 0 0 auto;
   line-height: 1;
-  vertical-align: middle;
+  vertical-align: -0.18em;
 }
 
-.premium-badge img {
+.premium-badge svg {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
 }
 
 .not-found {
