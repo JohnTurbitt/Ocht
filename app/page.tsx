@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPanel } from "@/components/AuthPanel";
-import { Hint } from "@/components/Hint";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { ReportHistory } from "@/components/ReportHistory";
 import { ReportPanel } from "@/components/ReportPanel";
@@ -15,7 +14,6 @@ import {
   Station,
   StationKey,
   buildAnalysis,
-  formatTime,
 } from "@/lib/analysis";
 import {
   SavedReport,
@@ -27,7 +25,6 @@ import {
   cloneReportPreset,
   defaultCustomReportPreset,
   defaultReportPreset,
-  emptyReportPreset,
   sampleReportPreset,
   tryka500Preset,
   tryka800Preset,
@@ -69,6 +66,7 @@ type ActiveTab = "new" | "history";
 const billingRefreshAttempts = 6;
 const billingRefreshDelayMs = 1600;
 const onboardingDismissedKey = "ocht.onboardingDismissed";
+const beginnerGuideDismissedKey = "ocht.beginnerGuideDismissed";
 
 function buildUserDefaultPreset(user: AuthUser | null): ReportPreset {
   return {
@@ -78,21 +76,59 @@ function buildUserDefaultPreset(user: AuthUser | null): ReportPreset {
   };
 }
 
+function buildEmptyPresetForCurrentFormat({
+  raceFormat,
+  level,
+  runCount,
+  stationDefinitions,
+}: {
+  raceFormat: RaceFormat;
+  level: Level;
+  runCount: number;
+  stationDefinitions: Station[];
+}): ReportPreset {
+  return {
+    raceFormat,
+    goal: "",
+    targetTime: "",
+    level,
+    runs: Array.from({ length: runCount }, () => ""),
+    stationDefinitions:
+      raceFormat === "custom"
+        ? stationDefinitions.map((station) => ({ ...station }))
+        : undefined,
+    stationSplits: stationDefinitions.reduce(
+      (splits, station) => ({
+        ...splits,
+        [station.key]: "",
+      }),
+      {} as Record<StationKey, string>,
+    ),
+  };
+}
+
+const initialEmptyReportPreset = buildEmptyPresetForCurrentFormat({
+  raceFormat: defaultReportPreset.raceFormat,
+  level: defaultReportPreset.level,
+  runCount: defaultReportPreset.runs.length,
+  stationDefinitions: getRaceFormatStations(defaultReportPreset.raceFormat),
+});
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("new");
   const [raceFormat, setRaceFormat] = useState<RaceFormat>(
-    defaultReportPreset.raceFormat,
+    initialEmptyReportPreset.raceFormat,
   );
   const [customStations, setCustomStations] = useState<Station[]>(
     defaultCustomReportPreset.stationDefinitions ?? [],
   );
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
-  const [goal, setGoal] = useState(defaultReportPreset.goal);
-  const [targetTime, setTargetTime] = useState(defaultReportPreset.targetTime);
-  const [level, setLevel] = useState<Level>(defaultReportPreset.level);
-  const [runs, setRuns] = useState(defaultReportPreset.runs);
+  const [goal, setGoal] = useState(initialEmptyReportPreset.goal);
+  const [targetTime, setTargetTime] = useState(initialEmptyReportPreset.targetTime);
+  const [level, setLevel] = useState<Level>(initialEmptyReportPreset.level);
+  const [runs, setRuns] = useState(initialEmptyReportPreset.runs);
   const [stationSplits, setStationSplits] = useState(
-    defaultReportPreset.stationSplits,
+    initialEmptyReportPreset.stationSplits,
   );
   const [runGainPerKm, setRunGainPerKm] = useState("8");
   const [stationGain, setStationGain] = useState("2:30");
@@ -107,6 +143,8 @@ export default function Home() {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [beginnerGuideDismissed, setBeginnerGuideDismissed] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -385,7 +423,6 @@ export default function Home() {
 
       setUser(authenticatedUser);
       setLevel(authenticatedUser.defaultLevel);
-      setTargetTime(authenticatedUser.defaultTargetTime);
       await refreshRemoteReports();
       setToast({
         id: Date.now(),
@@ -415,7 +452,6 @@ export default function Home() {
 
       setUser(authenticatedUser);
       setLevel(authenticatedUser.defaultLevel);
-      setTargetTime(authenticatedUser.defaultTargetTime);
       await refreshRemoteReports();
       setToast({
         id: Date.now(),
@@ -559,6 +595,18 @@ export default function Home() {
     trackEvent("onboarding_dismissed");
   }
 
+  function dismissBeginnerGuide(eventName = "beginner_guide_dismissed") {
+    setBeginnerGuideDismissed(true);
+    setDemoOpen(false);
+    window.localStorage.setItem(beginnerGuideDismissedKey, "true");
+    trackEvent(eventName);
+  }
+
+  function loadSampleFromDemo() {
+    dismissBeginnerGuide("beginner_demo_sample_loaded");
+    applyReportPreset(sampleReportPreset, "Sample race loaded");
+  }
+
   async function handleSaveProfile(input: ProfileFormInput) {
     try {
       const updatedUser = await updateProfile(input);
@@ -679,6 +727,9 @@ export default function Home() {
     }
 
     setAnalysis(generatedAnalysis);
+    if (!beginnerGuideDismissed) {
+      dismissBeginnerGuide("beginner_guide_completed_by_report");
+    }
     setValidationErrors([]);
     setFieldErrors({});
     setToast({
@@ -772,11 +823,19 @@ export default function Home() {
 
   const activeAnalysis = analysis ?? preview;
   const fullReportUnlocked = user?.subscription === "ACTIVE";
+  const hasReportInput =
+    Boolean(analysis) ||
+    Boolean(targetTime.trim()) ||
+    runs.some((split) => Boolean(split.trim())) ||
+    Object.values(stationSplits).some((split) => Boolean(split?.trim()));
 
   useEffect(() => {
     setCustomTemplates(loadCustomTemplates());
     setOnboardingDismissed(
       window.localStorage.getItem(onboardingDismissedKey) === "true",
+    );
+    setBeginnerGuideDismissed(
+      window.localStorage.getItem(beginnerGuideDismissedKey) === "true",
     );
   }, []);
 
@@ -795,7 +854,6 @@ export default function Home() {
 
         if (currentUser) {
           setLevel(currentUser.defaultLevel);
-          setTargetTime(currentUser.defaultTargetTime);
           setSavedReports(await loadRemoteReports());
         } else {
           setSavedReports(loadSavedReports());
@@ -900,6 +958,22 @@ export default function Home() {
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
 
+  useEffect(() => {
+    if (!demoOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setDemoOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [demoOpen]);
+
   return (
     <main>
       <header className="site-header">
@@ -932,9 +1006,39 @@ export default function Home() {
         <div className="intro__copy">
           <h1>Find the time leaks between your reps and runs.</h1>
           <p>
-            Enter your splits to get a deterministic race breakdown, ranked weak
-            points, and a realistic next target without AI guesswork.
+            Add the times from your race or training simulation and Ocht shows
+            where you lost time, what is already strong, and what target looks
+            realistic next.
           </p>
+          {!beginnerGuideDismissed ? (
+            <div className="intro-guide" aria-label="How Ocht helps">
+              <div>
+                <strong>New to hybrid racing?</strong>
+                <span>
+                  Use Load sample race first, then replace the example times with
+                  your own run and station splits.
+                </span>
+              </div>
+              <div className="intro-guide__actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDemoOpen(true);
+                    trackEvent("beginner_demo_opened");
+                  }}
+                >
+                  Show quick demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dismissBeginnerGuide()}
+                  aria-label="Hide beginner guide"
+                >
+                  Do not show again
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div className="intro-trust" aria-label="Launch trust signals">
             <span>Deterministic formulas</span>
             <span>Coach-friendly exports</span>
@@ -950,23 +1054,6 @@ export default function Home() {
             />
             <span>Show beginner hints</span>
           </label>
-        </div>
-        <div className="quick-stats" aria-label="Current split summary">
-          <div>
-            <span>Projected finish</span>
-            <strong>{formatTime(activeAnalysis.finishSeconds)}</strong>
-          </div>
-          <div>
-            <span>
-              <Hint enabled={showHints} hint="recoverable" term="Realistic" />{" "}
-              gain
-            </span>
-            <strong>{formatTime(activeAnalysis.recoverableSeconds)}</strong>
-          </div>
-          <div>
-            <span>Next target</span>
-            <strong>{formatTime(activeAnalysis.predictedTargetSeconds)}</strong>
-          </div>
         </div>
       </section>
 
@@ -1048,7 +1135,12 @@ export default function Home() {
               }
               onClearForm={() =>
                 applyReportPreset(
-                  { ...emptyReportPreset, raceFormat },
+                  buildEmptyPresetForCurrentFormat({
+                    raceFormat,
+                    level,
+                    runCount: runs.length,
+                    stationDefinitions: activeStationDefinitions,
+                  }),
                   "Form cleared",
                 )
               }
@@ -1056,22 +1148,42 @@ export default function Home() {
             />
 
             <div ref={reportRef} className="report-anchor">
-              <ReportPanel
-              analysis={activeAnalysis}
-              distanceUnit={distanceUnit}
-              hasGeneratedReport={Boolean(analysis)}
-                fullReportUnlocked={fullReportUnlocked}
-                canStartCheckout={Boolean(user) && !fullReportUnlocked}
-                billingLoading={billingLoading}
-                showHints={showHints}
-                runGainPerKm={runGainPerKm}
-                stationGain={stationGain}
-                transitionGain={transitionGain}
-                onStartCheckout={handleStartCheckout}
-                onRunGainPerKmChange={setRunGainPerKm}
-                onStationGainChange={setStationGain}
-                onTransitionGainChange={setTransitionGain}
-              />
+              {hasReportInput ? (
+                <ReportPanel
+                  analysis={activeAnalysis}
+                  distanceUnit={distanceUnit}
+                  hasGeneratedReport={Boolean(analysis)}
+                  fullReportUnlocked={fullReportUnlocked}
+                  canStartCheckout={Boolean(user) && !fullReportUnlocked}
+                  billingLoading={billingLoading}
+                  showHints={showHints}
+                  runGainPerKm={runGainPerKm}
+                  stationGain={stationGain}
+                  transitionGain={transitionGain}
+                  onStartCheckout={handleStartCheckout}
+                  onRunGainPerKmChange={setRunGainPerKm}
+                  onStationGainChange={setStationGain}
+                  onTransitionGainChange={setTransitionGain}
+                />
+              ) : (
+                <div className="empty-state empty-state--report">
+                  <h3>No report data yet</h3>
+                  <p>
+                    Add a target, run splits, and station times to load the math
+                    engine, race flow, target path, readiness, strengths, and
+                    leaks.
+                  </p>
+                  <button
+                    className="button-secondary"
+                    type="button"
+                    onClick={() =>
+                      applyReportPreset(sampleReportPreset, "Sample race loaded")
+                    }
+                  >
+                    Load sample race
+                  </button>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -1097,6 +1209,85 @@ export default function Home() {
       </button>
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
+      {demoOpen ? (
+        <div
+          className="demo-modal"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setDemoOpen(false);
+            }
+          }}
+        >
+          <section
+            className="demo-modal__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Hybrid race demo"
+          >
+            <header className="demo-modal__header">
+              <div>
+                <p className="eyebrow">Quick demo</p>
+                <h2>How to use Ocht</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDemoOpen(false)}
+                aria-label="Close demo"
+              >
+                x
+              </button>
+            </header>
+            <div className="demo-modal__steps">
+              <article>
+                <span>1</span>
+                <strong>Enter your goal</strong>
+                <p>Pick a target finish time and athlete level.</p>
+              </article>
+              <article>
+                <span>2</span>
+                <strong>Add race splits</strong>
+                <p>Use run times and station times from a race or simulation.</p>
+              </article>
+              <article>
+                <span>3</span>
+                <strong>Read the report</strong>
+                <p>Start with target path, strengths, leaks, and next action.</p>
+              </article>
+            </div>
+            <div className="demo-modal__example" aria-label="Example split input">
+              <div>
+                <span>Target</span>
+                <strong>1:20:00</strong>
+              </div>
+              <div>
+                <span>Run 1</span>
+                <strong>4:55</strong>
+              </div>
+              <div>
+                <span>Sled push</span>
+                <strong>5:45</strong>
+              </div>
+              <div>
+                <span>Output</span>
+                <strong>Find leaks</strong>
+              </div>
+            </div>
+            <div className="demo-modal__actions">
+              <button type="button" onClick={loadSampleFromDemo}>
+                Load sample race
+              </button>
+              <button
+                className="button-secondary"
+                type="button"
+                onClick={() => dismissBeginnerGuide("beginner_demo_enter_own")}
+              >
+                I will enter my own
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

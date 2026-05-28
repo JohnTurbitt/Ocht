@@ -7,6 +7,11 @@
     grid-template-columns: 1fr;
   }
 
+  .demo-modal__steps,
+  .demo-modal__example {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .site-header {
     display: grid;
     padding-top: 10px;
@@ -49,6 +54,15 @@
 
   .site-header__actions {
     display: contents;
+  }
+
+  .site-header__actions:has(.auth-panel--compact) {
+    display: flex;
+    grid-column: 2;
+    grid-row: 1;
+    gap: 8px;
+    align-items: center;
+    justify-self: end;
   }
 
   .auth-panel {
@@ -172,6 +186,37 @@
     width: 100%;
   }
 
+  .demo-modal {
+    align-items: start;
+    padding: 12px;
+  }
+
+  .demo-modal__panel {
+    max-height: calc(100dvh - 24px);
+    padding: 14px;
+  }
+
+  .demo-modal__steps,
+  .demo-modal__example {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-modal__actions {
+    display: grid;
+  }
+
+  .intro-guide__actions {
+    display: grid;
+  }
+
+  .intro-guide__actions button {
+    width: 100%;
+  }
+
+  .demo-modal__actions button {
+    width: 100%;
+  }
+
   .form-heading {
     display: grid;
   }
@@ -192,6 +237,11 @@
   .auth-panel {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .auth-panel--compact {
+    grid-column: auto;
+    width: auto;
   }
 
   .auth-panel__signed-out {
@@ -230,6 +280,11 @@
   .auth-panel__account-trigger {
     width: 100%;
     min-width: 0;
+  }
+
+  .auth-panel--compact .auth-panel__account-trigger {
+    width: auto;
+    min-width: 58px;
   }
 
   .auth-panel__account-menu,
