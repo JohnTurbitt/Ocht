@@ -23,6 +23,27 @@
     justify-content: flex-end;
   }
 
+  .site-header__nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .events-menu,
+  .events-menu__trigger {
+    width: 100%;
+  }
+
+  .events-menu__trigger {
+    justify-content: center;
+    border-color: var(--line);
+    background: var(--field);
+  }
+
+  .events-menu__panel {
+    left: 0;
+    width: min(520px, calc(100vw - 28px));
+  }
+
   .site-header__logo {
     width: min(190px, 58vw);
   }
@@ -63,6 +84,12 @@
     gap: 8px;
     align-items: center;
     justify-self: end;
+  }
+
+  .site-header__nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
   }
 
   .auth-panel {

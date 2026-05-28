@@ -33,11 +33,129 @@
   flex: 0 0 auto;
 }
 
+.site-header__nav {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+}
+
 .site-header__actions {
   display: flex;
   gap: 12px;
   align-items: center;
   justify-content: flex-end;
+}
+
+.events-menu {
+  position: relative;
+}
+
+.events-menu__trigger {
+  display: inline-flex;
+  width: auto;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  border-color: transparent;
+  border-radius: 0;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--ink);
+}
+
+.events-menu__trigger:hover,
+.events-menu__trigger[aria-expanded="true"] {
+  border-color: var(--line);
+  background: var(--field);
+}
+
+.events-menu__trigger span {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.events-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 110;
+  display: grid;
+  width: min(430px, calc(100vw - 32px));
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 14px;
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(22, 28, 18, 0.16);
+}
+
+.events-menu__header strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.2rem;
+}
+
+.events-menu__list {
+  display: grid;
+  gap: 8px;
+}
+
+.events-menu__list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--field);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.events-menu__list a:hover {
+  border-color: var(--action-bg);
+}
+
+.events-menu__badge {
+  display: inline-grid;
+  min-width: 58px;
+  min-height: 28px;
+  place-items: center;
+  border-radius: 4px;
+  padding: 0 8px;
+  background: var(--action-bg);
+  color: var(--action-text);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.events-menu__badge--tryka {
+  background: var(--lime);
+  color: #0a1711;
+}
+
+.events-menu__list strong,
+.events-menu__list p,
+.events-menu__list small,
+.events-menu__source {
+  margin: 0;
+}
+
+.events-menu__list p,
+.events-menu__list small,
+.events-menu__source {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.events-menu__list small,
+.events-menu__source {
+  font-size: 0.78rem;
 }
 
 .settings-menu {

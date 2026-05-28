@@ -8,6 +8,7 @@ import { ReportPanel } from "@/components/ReportPanel";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { SplitForm } from "@/components/SplitForm";
 import { Toast, ToastMessage } from "@/components/Toast";
+import { UpcomingEventsMenu } from "@/components/UpcomingEventsMenu";
 import {
   Analysis,
   Level,
@@ -982,6 +983,9 @@ export default function Home() {
           src="/brand/ocht-logo-wordmark.svg"
           alt="Ocht"
         />
+        <nav className="site-header__nav" aria-label="Race calendar">
+          <UpcomingEventsMenu />
+        </nav>
         <div className="site-header__actions">
           <AuthPanel
             user={user}
