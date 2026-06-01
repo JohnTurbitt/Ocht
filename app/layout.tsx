@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { Inter, Saira_Condensed } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.scss";
 
@@ -7,6 +8,17 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
 const appName = "Ocht";
 const appDescription =
   "Trace hybrid race splits, find time leaks, and build a realistic next target.";
+const bodyFont = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+});
+const displayFont = Saira_Condensed({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-display",
+  weight: ["600", "700", "800", "900"],
+});
 const themeScript = `
 (function () {
   try {
@@ -81,7 +93,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>
+      <body className={`${bodyFont.variable} ${displayFont.variable}`}>
         {children}
         <SiteFooter />
         <Analytics />

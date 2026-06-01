@@ -65,6 +65,22 @@ function ReportSection({
   );
 }
 
+function TrainingPriority({ priority }: { priority: string }) {
+  const [focus, ...detailParts] = priority.split(": ");
+  const detail = detailParts.join(": ");
+
+  if (!detail) {
+    return <li>{priority}</li>;
+  }
+
+  return (
+    <li className="training-priority">
+      <strong className="training-priority__focus">{focus}</strong>
+      <span>{detail}</span>
+    </li>
+  );
+}
+
 function describeGoodGap(gapSeconds: number) {
   if (gapSeconds <= 0) {
     return "Ahead of benchmark";
@@ -120,6 +136,10 @@ export function ReportPanel({
   const [generatedDate, setGeneratedDate] = useState("");
   const [exportMessage, setExportMessage] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [flowModalRequest, setFlowModalRequest] = useState({
+    segmentId: "",
+    signal: 0,
+  });
   const [jumpNavFloating, setJumpNavFloating] = useState(false);
   const [jumpNavTop, setJumpNavTop] = useState(92);
   const visibleLeaks = fullReportUnlocked
@@ -164,9 +184,37 @@ export function ReportPanel({
   const biggestLeakDetail = primaryLeak
     ? `${formatTime(primaryLeak.leakSeconds)} leak / ${formatTime(primaryLeak.recoverableSeconds)} realistic gain`
     : "Add splits to identify the highest-value leak.";
+  const realisticGainDetail =
+    analysis.targetGapSeconds > 0
+      ? `${Math.round(
+          Math.min(100, (analysis.recoverableSeconds / analysis.targetGapSeconds) * 100),
+        )}% of target gap`
+      : "protect this target";
 
-  function scrollToRaceFlow() {
-    scrollToReportSection("race-flow-map");
+  function openRaceFlowSegment(segmentId?: string) {
+    if (!segmentId) {
+      scrollToReportSection("race-flow-map");
+      return;
+    }
+
+    setFlowModalRequest((current) => ({
+      segmentId,
+      signal: current.signal + 1,
+    }));
+  }
+
+  function getPrimaryLeakSegmentId() {
+    if (!primaryLeak) {
+      return bestSegment?.id;
+    }
+
+    if (primaryLeak.type === "station") {
+      return `station-${primaryLeak.id}`;
+    }
+
+    return [...analysis.raceSegments]
+      .filter((segment) => segment.type === "run")
+      .sort((a, b) => b.leakSeconds - a.leakSeconds)[0]?.id;
   }
 
   function scrollToReportSection(sectionId: string) {
@@ -465,25 +513,27 @@ export function ReportPanel({
           <div className="race-cockpit__stat">
             <span>Realistic gain</span>
             <strong>{formatTime(analysis.recoverableSeconds)}</strong>
-            <small>from the top ranked leaks</small>
+            <small>{realisticGainDetail}</small>
           </div>
           <button
             className="race-cockpit__stat race-cockpit__stat--button"
             type="button"
-            onClick={scrollToRaceFlow}
+            onClick={() => openRaceFlowSegment(getPrimaryLeakSegmentId())}
           >
             <span>Biggest leak</span>
             <strong>{primaryLeak?.label ?? "Not clear"}</strong>
             <small>{biggestLeakDetail}</small>
+            <em>Click for more info</em>
           </button>
           <button
             className="race-cockpit__stat race-cockpit__stat--button"
             type="button"
-            onClick={scrollToRaceFlow}
+            onClick={() => openRaceFlowSegment(bestSegment?.id)}
           >
             <span>Most controlled split</span>
             <strong>{bestSegment?.label ?? "Not clear"}</strong>
             <small>{bestSplitDetail}</small>
+            <em>Click for more info</em>
           </button>
         </div>
         <div className="race-cockpit__action">
@@ -543,7 +593,12 @@ export function ReportPanel({
 
       <div id="race-flow-map" className="report-scroll-anchor">
         <ReportSection title="Race flow map" defaultOpen>
-          <RaceFlowMap analysis={analysis} distanceUnit={distanceUnit} />
+          <RaceFlowMap
+            analysis={analysis}
+            distanceUnit={distanceUnit}
+            openSegmentId={flowModalRequest.segmentId}
+            openSignal={flowModalRequest.signal}
+          />
         </ReportSection>
       </div>
 
@@ -776,7 +831,7 @@ export function ReportPanel({
           <ReportSection title="Training priorities" defaultOpen premium>
             <ol>
               {analysis.priorities.map((priority) => (
-                <li key={priority}>{priority}</li>
+                <TrainingPriority key={priority} priority={priority} />
               ))}
             </ol>
           </ReportSection>

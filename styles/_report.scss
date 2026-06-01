@@ -78,11 +78,13 @@
 .race-cockpit__hero strong {
   margin-top: 10px;
   color: var(--ink);
-  font-size: clamp(2.9rem, 8vw, 5.8rem);
+  font-size: clamp(2.6rem, 6.2cqw, 5rem);
   font-variant-numeric: tabular-nums;
-  line-height: 0.92;
+  line-height: 1;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .race-cockpit__hero p {
@@ -96,6 +98,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  align-items: stretch;
 }
 
 .race-cockpit__stat {
@@ -110,9 +113,42 @@
 
 .race-cockpit__stat--button {
   width: 100%;
+  height: auto;
+  min-height: 118px;
   margin: 0;
   color: inherit;
   cursor: pointer;
+}
+
+.race-cockpit__stat--button strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  text-wrap: wrap;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.race-cockpit__stat--button em {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--surface);
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.race-cockpit__stat--button em::after {
+  content: " ->";
 }
 
 .race-cockpit__stat--button:hover {
@@ -134,8 +170,18 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.06;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-wrap: nowrap;
+  white-space: nowrap;
   word-break: normal;
+}
+
+.race-cockpit__stats .race-cockpit__stat--button strong {
+  overflow: visible;
+  text-wrap: wrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .race-cockpit__stats span,
@@ -197,12 +243,12 @@
   width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  border: 2px solid var(--action-bg);
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   padding: 8px;
   background: color-mix(in srgb, var(--panel) 94%, transparent);
   backdrop-filter: blur(14px);
-  box-shadow: 0 10px 28px rgba(22, 28, 18, 0.12);
+  box-shadow: 0 10px 28px rgba(22, 28, 18, 0.08);
 }
 
 .report-jump-nav--floating {
@@ -219,9 +265,9 @@
   min-height: 42px;
   margin: 0;
   border-color: var(--line);
-  border-radius: 8px;
+  border-radius: 7px;
   padding: 0 15px;
-  background: var(--field);
+  background: transparent;
   color: var(--ink);
   font-size: 0.92rem;
   font-weight: 900;
@@ -229,9 +275,9 @@
 
 .report-jump-nav button:hover,
 .report-jump-nav button:focus-visible {
-  border-color: var(--action-bg);
-  background: var(--action-bg);
-  color: var(--action-text);
+  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .report-strip {
@@ -335,6 +381,11 @@
   margin: 0;
 }
 
+.target-plan__header h3 {
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .target-plan__header > strong {
   flex: 0 0 auto;
   border: 1px solid var(--teal);
@@ -402,7 +453,10 @@
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  font-family: var(--font-display), var(--font-body), Arial, Helvetica, sans-serif;
   font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .report-section summary strong {
@@ -488,7 +542,8 @@
 
 .positive-grid h4 {
   font-size: 1.25rem;
-  line-height: 1.1;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .positive-grid strong {
@@ -553,6 +608,11 @@
   margin: 0;
 }
 
+.readiness-card__body h3 {
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .readiness-card__body p {
   color: var(--muted);
   line-height: 1.45;
@@ -615,6 +675,8 @@
 .leak-card h4 {
   margin: 4px 0 6px;
   font-size: 1rem;
+  line-height: 1;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
@@ -646,6 +708,8 @@
 
 .paywall h3 {
   margin: 0 0 8px;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .paywall p {
@@ -991,8 +1055,28 @@
 
 .training-week h4 {
   margin: 0;
+  font-family: var(--font-display), var(--font-body), Arial, Helvetica, sans-serif;
   font-size: 1rem;
+  line-height: 1;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
+}
+
+.training-priority {
+  display: grid;
+  gap: 3px;
+}
+
+.training-priority__focus {
+  color: var(--ink);
+  font-family: var(--font-display), var(--font-body), Arial, Helvetica, sans-serif;
+  font-size: 1.08rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.training-priority span {
+  color: var(--muted);
 }
 
 .training-week ul {
@@ -1063,8 +1147,9 @@
   min-height: 580px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px;
-  background: var(--surface);
+  padding: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 96%, var(--surface)), var(--panel));
 }
 
 .race-flow__header {
@@ -1092,17 +1177,17 @@
 
 .race-flow-svg__bar:hover rect,
 .race-flow-svg__bar:focus rect {
-  filter: drop-shadow(0 8px 14px rgba(11, 18, 15, 0.28));
+  filter: drop-shadow(0 4px 8px rgba(11, 18, 15, 0.18));
 }
 
 .race-flow-svg__lost {
   fill: url("#race-flow-lost-zone");
-  stroke: rgba(11, 18, 15, 0.42);
+  stroke: color-mix(in srgb, var(--ink) 22%, transparent);
   stroke-width: 1;
 }
 
 .race-flow-svg__leak {
-  fill: var(--badge-ink);
+  fill: var(--ink);
   stroke: var(--panel);
   stroke-width: 1.5;
 }
@@ -1260,15 +1345,15 @@
 }
 
 .race-flow__segment--strong {
-  background: var(--lime);
+  background: var(--flow-strong);
 }
 
 .race-flow__segment--steady {
-  background: var(--mid-green);
+  background: var(--flow-steady);
 }
 
 .race-flow__segment--leak {
-  background: var(--red);
+  background: var(--flow-leak);
 }
 
 .race-flow-modal {
@@ -1293,7 +1378,7 @@
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   border: 1px solid var(--line);
-  border-top: 6px solid var(--lime);
+  border-top: 6px solid var(--flow-strong);
   border-radius: 8px;
   padding: 18px;
   background: var(--panel);
@@ -1301,11 +1386,11 @@
 }
 
 .segment-insight--steady {
-  border-top-color: var(--mid-green);
+  border-top-color: var(--flow-steady);
 }
 
 .segment-insight--leak {
-  border-top-color: var(--red);
+  border-top-color: var(--flow-leak);
 }
 
 .segment-insight__close {
@@ -1411,33 +1496,41 @@
   display: inline-flex;
   min-height: 28px;
   align-items: center;
-  border: 1px solid transparent;
-  border-radius: 999px;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
   padding: 0 10px;
-  color: var(--badge-ink);
+  background: var(--panel);
+  color: var(--ink);
   font-size: 0.78rem;
   font-weight: 800;
 }
 
-.race-visual__legend-item--strong {
-  background: var(--lime);
+.race-visual__legend-item--strong::before,
+.race-visual__legend-item--steady::before,
+.race-visual__legend-item--leak::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
 }
 
-.race-visual__legend-item--steady {
-  background: var(--mid-green);
+.race-visual__legend-item--strong::before {
+  background: var(--flow-strong);
 }
 
-.race-visual__legend-item--leak {
-  background: var(--red);
+.race-visual__legend-item--steady::before {
+  background: var(--flow-steady);
+}
+
+.race-visual__legend-item--leak::before {
+  background: var(--flow-leak);
 }
 
 .race-visual__legend-item--target,
 .race-visual__legend-item--pin {
   position: relative;
   gap: 8px;
-  border-color: var(--line) !important;
-  background: var(--field);
-  color: var(--ink) !important;
 }
 
 .race-visual__legend-item--target::before {

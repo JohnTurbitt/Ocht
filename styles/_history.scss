@@ -69,6 +69,11 @@
   margin: 0;
 }
 
+.history-progression h3 {
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .history-progression p {
   color: var(--muted);
   line-height: 1.45;
@@ -146,6 +151,7 @@
 
 .history-compare h3 {
   line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .history-compare p,
@@ -226,6 +232,8 @@
 
 .history-card h3 {
   margin: 5px 0 6px;
+  line-height: 1;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 

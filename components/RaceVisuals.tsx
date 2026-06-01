@@ -28,6 +28,11 @@ type RaceVisualProps = {
   distanceUnit?: DistanceUnit;
 };
 
+type RaceFlowMapProps = RaceVisualProps & {
+  openSegmentId?: string;
+  openSignal?: number;
+};
+
 type PremiumReportPosterProps = RaceVisualProps & {
   captureRef?: RefObject<HTMLDivElement | null>;
 };
@@ -83,14 +88,14 @@ function statusLabel(status: RaceSegment["status"]) {
 
 function statusColor(status: RaceSegment["status"]) {
   if (status === "leak") {
-    return "var(--red)";
+    return "var(--flow-leak)";
   }
 
   if (status === "steady") {
-    return "var(--mid-green)";
+    return "var(--flow-steady)";
   }
 
-  return "var(--lime)";
+  return "var(--flow-strong)";
 }
 
 function shortenLabel(label: string) {
@@ -304,7 +309,9 @@ function FlowBarShape({
 export function RaceFlowMap({
   analysis,
   distanceUnit = "km",
-}: RaceVisualProps) {
+  openSegmentId = "",
+  openSignal = 0,
+}: RaceFlowMapProps) {
   const [compactChart, setCompactChart] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSegmentId, setModalSegmentId] = useState("");
@@ -400,6 +407,24 @@ export function RaceFlowMap({
     };
   }, [modalOpen]);
 
+  useEffect(() => {
+    if (!openSegmentId) {
+      return;
+    }
+
+    const segment = cumulativeSegments.find(
+      (currentSegment) => currentSegment.id === openSegmentId,
+    );
+
+    if (!segment) {
+      return;
+    }
+
+    setSelectedSegmentId(segment.id);
+    setModalSegmentId(segment.id);
+    setModalOpen(true);
+  }, [cumulativeSegments, openSegmentId, openSignal]);
+
   function selectSegment(segmentId: string) {
     setSelectedSegmentId(segmentId);
     setModalSegmentId(segmentId);
@@ -431,8 +456,8 @@ export function RaceFlowMap({
                 patternUnits="userSpaceOnUse"
                 patternTransform="rotate(45)"
               >
-                <rect width="8" height="8" fill="rgba(11, 18, 15, 0.12)" />
-                <rect width="3" height="8" fill="rgba(255, 255, 255, 0.36)" />
+                <rect width="8" height="8" fill="transparent" />
+                <rect width="2" height="8" fill="var(--flow-lost)" />
               </pattern>
             </defs>
             <CartesianGrid stroke="var(--line)" horizontal={false} />
