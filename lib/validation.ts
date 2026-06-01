@@ -16,6 +16,31 @@ export type ValidationResult = {
 
 const timePattern = /^\d+(?::\d{1,2}){0,2}$/;
 
+export function normalizeTimeInput(value: string, format: "split" | "race" = "split") {
+  const trimmed = value.trim();
+
+  if (!trimmed || trimmed.includes(":") || !/^\d+$/.test(trimmed)) {
+    return value;
+  }
+
+  if (format === "race" && trimmed.length > 4) {
+    const hours = trimmed.slice(0, -4);
+    const minutes = trimmed.slice(-4, -2);
+    const seconds = trimmed.slice(-2);
+
+    return `${Number(hours)}:${minutes}:${seconds}`;
+  }
+
+  if (trimmed.length > 2) {
+    const minutes = trimmed.slice(0, -2);
+    const seconds = trimmed.slice(-2);
+
+    return `${Number(minutes)}:${seconds}`;
+  }
+
+  return `0:${trimmed.padStart(2, "0")}`;
+}
+
 export function isValidTime(value: string) {
   const trimmed = value.trim();
 

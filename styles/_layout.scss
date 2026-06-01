@@ -1,8 +1,8 @@
 .intro {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px 32px;
-  align-items: end;
+  align-items: start;
   padding: 42px clamp(18px, 5vw, 72px) 28px;
   border-bottom: 1px solid var(--line);
   background:
@@ -14,22 +14,29 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 100;
   display: flex;
   gap: 18px;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  padding: 14px clamp(18px, 5vw, 72px);
-  background: var(--glass);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 10px 28px rgba(22, 28, 18, 0.08);
+  min-height: 64px;
+  padding: 8px clamp(18px, 5vw, 72px);
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 22px rgba(22, 28, 18, 0.06);
 }
 
 .site-header__logo {
-  width: min(220px, 42vw);
+  width: min(154px, 36vw);
   height: auto;
   flex: 0 0 auto;
+}
+
+.site-header__nav {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
 }
 
 .site-header__actions {
@@ -37,6 +44,118 @@
   gap: 12px;
   align-items: center;
   justify-content: flex-end;
+}
+
+.events-menu {
+  position: relative;
+}
+
+.events-menu__trigger {
+  display: inline-flex;
+  width: auto;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  border-color: transparent;
+  border-radius: 0;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--ink);
+}
+
+.events-menu__trigger:hover,
+.events-menu__trigger[aria-expanded="true"] {
+  border-color: var(--line);
+  background: var(--field);
+}
+
+.events-menu__trigger span {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.events-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 110;
+  display: grid;
+  width: min(430px, calc(100vw - 32px));
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 14px;
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(22, 28, 18, 0.16);
+}
+
+.events-menu__header strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.2rem;
+}
+
+.events-menu__list {
+  display: grid;
+  gap: 8px;
+}
+
+.events-menu__list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--field);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.events-menu__list a:hover {
+  border-color: var(--action-bg);
+}
+
+.events-menu__badge {
+  display: inline-grid;
+  min-width: 58px;
+  min-height: 28px;
+  place-items: center;
+  border-radius: 4px;
+  padding: 0 8px;
+  background: var(--action-bg);
+  color: var(--action-text);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.events-menu__badge--tryka {
+  background: var(--lime);
+  color: #0a1711;
+}
+
+.events-menu__list strong,
+.events-menu__list p,
+.events-menu__list small,
+.events-menu__source {
+  margin: 0;
+}
+
+.events-menu__list p,
+.events-menu__list small,
+.events-menu__source {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.events-menu__list small,
+.events-menu__source {
+  font-size: 0.78rem;
 }
 
 .settings-menu {
@@ -134,6 +253,167 @@
   color: var(--muted);
   font-size: 1.06rem;
   line-height: 1.6;
+}
+
+.intro-guide {
+  display: grid;
+  max-width: 620px;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: var(--field);
+}
+
+.intro-guide strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.intro-guide span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.intro-guide__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.intro-guide__actions button {
+  justify-self: start;
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  border-color: var(--line);
+  padding: 0 12px;
+  background: var(--field);
+  color: var(--ink);
+}
+
+.intro-guide__actions button:hover {
+  border-color: var(--action-bg);
+  background: var(--action-bg);
+  color: var(--action-text);
+}
+
+.demo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(8, 16, 13, 0.58);
+}
+
+.demo-modal__panel {
+  display: grid;
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 36px);
+  gap: 16px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.demo-modal__header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.demo-modal__header h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.4rem);
+  line-height: 1.05;
+}
+
+.demo-modal__header button {
+  display: inline-grid;
+  width: 40px;
+  min-height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin: 0;
+  border-color: var(--line);
+  padding: 0;
+  background: var(--field);
+  color: var(--ink);
+}
+
+.demo-modal__steps,
+.demo-modal__example {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.demo-modal__steps article,
+.demo-modal__example div {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--field);
+}
+
+.demo-modal__steps article {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-column: span 1;
+}
+
+.demo-modal__steps span {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.demo-modal__steps p,
+.demo-modal__example span {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.demo-modal__example strong {
+  font-size: 1.1rem;
+}
+
+.demo-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.demo-modal__actions button {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+}
+
+.demo-modal__actions .button-secondary {
+  border-color: var(--line);
+  background: var(--field);
+  color: var(--ink);
 }
 
 .intro-trust {
@@ -376,7 +656,7 @@
   place-items: center;
   border-radius: 999px;
   background: var(--lime);
-  color: var(--ink);
+  color: #0a1711;
   font-size: 0.8rem;
 }
 
