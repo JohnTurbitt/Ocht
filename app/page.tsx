@@ -62,7 +62,7 @@ import { trackEvent } from "@/lib/analytics";
 import { validateReportInput } from "@/lib/validation";
 import type { DistanceUnit } from "@/lib/units";
 
-type ActiveTab = "new" | "history";
+type ActiveTab = "new" | "history" | "compare";
 
 const billingRefreshAttempts = 6;
 const billingRefreshDelayMs = 1600;
@@ -700,7 +700,7 @@ export default function Home() {
           stationSplits,
         });
 
-        nextReports = [remoteReport, ...savedReports].slice(0, 50);
+        nextReports = [remoteReport, ...savedReports];
         toastMessage = "Your report has been saved to your Ocht account.";
       } catch (error) {
         setAnalysis(generatedAnalysis);
@@ -1098,6 +1098,21 @@ export default function Home() {
             Previous reports
             {savedReports.length > 0 ? <span>{savedReports.length}</span> : null}
           </button>
+          <button
+            className={
+              activeTab === "compare" ? "tab-bar__tab is-active" : "tab-bar__tab"
+            }
+            type="button"
+            onClick={() => {
+              setActiveTab("compare");
+              trackEvent("compare_reports_opened", {
+                signed_in: Boolean(user),
+                report_count: savedReports.length,
+              });
+            }}
+          >
+            Compare
+          </button>
         </nav>
 
         {activeTab === "new" ? (
@@ -1190,11 +1205,20 @@ export default function Home() {
               )}
             </div>
           </>
+        ) : activeTab === "history" ? (
+          <ReportHistory
+            reports={savedReports}
+            storageLabel={user ? "Saved to your account" : "Saved in this browser"}
+            loading={reportsLoading}
+            onLoadReport={loadReport}
+            onDeleteReport={deleteReport}
+          />
         ) : (
           <ReportHistory
             reports={savedReports}
             storageLabel={user ? "Saved to your account" : "Saved in this browser"}
             loading={reportsLoading}
+            showComparison
             onLoadReport={loadReport}
             onDeleteReport={deleteReport}
           />

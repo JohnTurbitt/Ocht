@@ -176,6 +176,7 @@
 
   .benchmark-context,
   .history-compare,
+  .history-progression__metrics,
   .readiness-card,
   .readiness-card__grid,
   .positive-grid {
@@ -362,6 +363,10 @@
   }
 
   .history-compare__panel {
+    grid-template-columns: 1fr;
+  }
+
+  .history-progression__metrics {
     grid-template-columns: 1fr;
   }
 

@@ -155,8 +155,6 @@ export async function GET(request: NextRequest) {
     const reports = await prisma.raceReport.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      // This endpoint powers history lists, not full archival exports.
-      take: 50,
     });
 
     return NextResponse.json({
