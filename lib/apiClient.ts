@@ -1,6 +1,7 @@
 import { Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 import { SavedReport } from "./reportStorage";
+import { TrainingContext } from "./trainingContext";
 
 export type AuthUser = {
   id: string;
@@ -34,6 +35,7 @@ export type ReportRequestInput = {
   runs: string[];
   stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
 };
 
 async function readApiResponse<T>(response: Response): Promise<T> {

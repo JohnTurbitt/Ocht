@@ -84,6 +84,7 @@ model RaceReport {
   athleteLevel           AthleteLevel
   runSplits              String[]
   stationSplits          Json
+  trainingContext        Json?
   finishSeconds          Int
   predictedTargetSeconds Int
   topLeakLabel           String

@@ -174,6 +174,16 @@
     grid-template-columns: 1fr;
   }
 
+  .training-context-input__header {
+    display: grid;
+  }
+
+  .training-context-grid,
+  .running-diagnosis__metrics,
+  .running-diagnosis__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .benchmark-context,
   .history-compare,
   .history-progression__metrics,
@@ -554,6 +564,12 @@
   }
 
   .training-plan {
+    grid-template-columns: 1fr;
+  }
+
+  .training-context-grid,
+  .running-diagnosis__metrics,
+  .running-diagnosis__grid {
     grid-template-columns: 1fr;
   }
 

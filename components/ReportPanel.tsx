@@ -5,6 +5,10 @@ import { trackEvent } from "@/lib/analytics";
 import { calculateRaceReadiness, readinessLabel } from "@/lib/readiness";
 import { buildReportExportText } from "@/lib/reportExport";
 import {
+  TrainingContext,
+  buildRunningDiagnosis,
+} from "@/lib/trainingContext";
+import {
   DistanceUnit,
   distanceUnitLabels,
   formatPaceForUnit,
@@ -37,6 +41,7 @@ type ReportPanelProps = {
   onRunGainPerKmChange: (value: string) => void;
   onStationGainChange: (value: string) => void;
   onTransitionGainChange: (value: string) => void;
+  trainingContext: TrainingContext;
 };
 
 type ReportSectionProps = {
@@ -129,6 +134,7 @@ export function ReportPanel({
   onRunGainPerKmChange,
   onStationGainChange,
   onTransitionGainChange,
+  trainingContext,
 }: ReportPanelProps) {
   const reportCaptureRef = useRef<HTMLElement>(null);
   const jumpNavShellRef = useRef<HTMLDivElement>(null);
@@ -154,6 +160,7 @@ export function ReportPanel({
     (segment) => segment.status === "strong",
   );
   const readiness = calculateRaceReadiness(analysis);
+  const runningDiagnosis = buildRunningDiagnosis(analysis, trainingContext);
 
   const exportText = buildReportExportText(analysis, generatedDate, distanceUnit);
   const averageRunPace = formatPaceForUnit(
@@ -776,6 +783,67 @@ export function ReportPanel({
       </div>
 
       <div id="report-training" className="report-scroll-anchor">
+        <ReportSection title="Training diagnosis" defaultOpen>
+          {runningDiagnosis ? (
+            <div className="running-diagnosis">
+              <div className="running-diagnosis__summary">
+                <span>Likely limiter / {runningDiagnosis.confidence} confidence</span>
+                <h3>{runningDiagnosis.title}</h3>
+                <p>{runningDiagnosis.summary}</p>
+              </div>
+              <div className="running-diagnosis__metrics">
+                {runningDiagnosis.metrics.map((metric) => (
+                  <article
+                    className={`running-diagnosis__metric running-diagnosis__metric--${metric.status}`}
+                    key={metric.label}
+                  >
+                    <span>{metric.label}</span>
+                    <strong>{metric.value}</strong>
+                    <p>{metric.detail}</p>
+                  </article>
+                ))}
+              </div>
+              <div className="running-diagnosis__grid">
+                <div>
+                  <span>Evidence</span>
+                  <ul>
+                    {runningDiagnosis.evidence.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <span>This week</span>
+                  <ul>
+                    {runningDiagnosis.weeklyFocus.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="running-diagnosis running-diagnosis--empty">
+              <div className="running-diagnosis__summary">
+                <span>Manual context</span>
+                <h3>Add recent training to sharpen this</h3>
+                <p>
+                  The race math still works without it. Add recent running volume,
+                  hard sessions, compromised runs, and rest days to get a more
+                  useful running recommendation.
+                </p>
+              </div>
+              <div className="strava-upsell">
+                <strong>Premium automation</strong>
+                <p>
+                  Strava import will auto-fill these fields and track trends over
+                  time.
+                </p>
+              </div>
+            </div>
+          )}
+        </ReportSection>
+
       {!fullReportUnlocked ? (
         <div className="paywall">
           <div>

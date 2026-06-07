@@ -168,6 +168,50 @@
   color: var(--action-text);
 }
 
+.training-context-input {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--surface);
+}
+
+.training-context-input__header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.training-context-input__header h3,
+.training-context-input__header p {
+  margin: 0;
+}
+
+.training-context-input__header p {
+  max-width: 620px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.training-context-input__header button {
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  border-color: var(--line);
+  padding: 0 12px;
+  background: var(--field);
+  color: var(--muted);
+}
+
+.training-context-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .form-errors {
   display: grid;
   gap: 10px;

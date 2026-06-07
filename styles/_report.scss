@@ -654,6 +654,118 @@
   text-transform: none;
 }
 
+.running-diagnosis {
+  display: grid;
+  gap: 14px;
+}
+
+.running-diagnosis__summary {
+  display: grid;
+  gap: 8px;
+  border-left: 5px solid var(--flow-strong);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.running-diagnosis__summary span,
+.running-diagnosis__grid span {
+  color: var(--teal);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.running-diagnosis__summary h3,
+.running-diagnosis__summary p {
+  margin: 0;
+}
+
+.running-diagnosis__summary h3 {
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.running-diagnosis__summary p,
+.strava-upsell p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.running-diagnosis__metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.running-diagnosis__metric {
+  display: grid;
+  gap: 7px;
+  min-height: 124px;
+  align-content: start;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--flow-strong);
+  border-radius: 8px;
+  padding: 11px;
+  background: var(--field);
+}
+
+.running-diagnosis__metric--watch {
+  border-top-color: var(--flow-steady);
+}
+
+.running-diagnosis__metric--risk {
+  border-top-color: var(--flow-leak);
+}
+
+.running-diagnosis__metric span {
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.running-diagnosis__metric strong {
+  color: var(--ink);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.running-diagnosis__metric p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.running-diagnosis__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.running-diagnosis__grid div,
+.strava-upsell {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--field);
+}
+
+.running-diagnosis__grid ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.strava-upsell strong {
+  text-transform: uppercase;
+}
+
 .leak-card {
   display: flex;
   align-items: flex-start;

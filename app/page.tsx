@@ -59,6 +59,11 @@ import {
   updateProfile,
 } from "@/lib/apiClient";
 import { trackEvent } from "@/lib/analytics";
+import {
+  TrainingContext,
+  emptyTrainingContext,
+  hasTrainingContext,
+} from "@/lib/trainingContext";
 import { validateReportInput } from "@/lib/validation";
 import type { DistanceUnit } from "@/lib/units";
 
@@ -131,6 +136,8 @@ export default function Home() {
   const [stationSplits, setStationSplits] = useState(
     initialEmptyReportPreset.stationSplits,
   );
+  const [trainingContext, setTrainingContext] =
+    useState<TrainingContext>(emptyTrainingContext);
   const [runGainPerKm, setRunGainPerKm] = useState("8");
   const [stationGain, setStationGain] = useState("2:30");
   const [transitionGain, setTransitionGain] = useState("0:45");
@@ -241,6 +248,13 @@ export default function Home() {
   function updateTargetTime(value: string) {
     setTargetTime(value);
     clearFieldError("targetTime");
+  }
+
+  function updateTrainingContext(field: keyof TrainingContext, value: string) {
+    setTrainingContext((current) => ({
+      ...current,
+      [field]: value,
+    }));
   }
 
   function clearFieldError(fieldKey: string) {
@@ -680,6 +694,9 @@ export default function Home() {
       stationDefinitions:
         raceFormat === "custom" ? activeStationDefinitions : undefined,
       stationSplits,
+      trainingContext: hasTrainingContext(trainingContext)
+        ? trainingContext
+        : undefined,
       finishSeconds: generatedAnalysis.finishSeconds,
       predictedTargetSeconds: generatedAnalysis.predictedTargetSeconds,
       topLeakLabel: generatedAnalysis.topLeaks[0]?.label ?? "",
@@ -698,6 +715,9 @@ export default function Home() {
           stationDefinitions:
             raceFormat === "custom" ? activeStationDefinitions : undefined,
           stationSplits,
+          trainingContext: hasTrainingContext(trainingContext)
+            ? trainingContext
+            : undefined,
         });
 
         nextReports = [remoteReport, ...savedReports];
@@ -778,6 +798,7 @@ export default function Home() {
     setLevel(report.level);
     setRuns(report.runs);
     setStationSplits(report.stationSplits);
+    setTrainingContext(report.trainingContext ?? emptyTrainingContext);
     setAnalysis(loadedAnalysis);
     setActiveTab("new");
     trackEvent("saved_report_loaded", {
@@ -1126,6 +1147,7 @@ export default function Home() {
               runs={runs}
               stationDefinitions={activeStationDefinitions}
               stationSplits={stationSplits}
+              trainingContext={trainingContext}
               errors={validationErrors}
               fieldErrors={fieldErrors}
               customTemplates={customTemplates}
@@ -1146,13 +1168,15 @@ export default function Home() {
               onLevelChange={setLevel}
               onRunChange={updateRun}
               onStationChange={updateStation}
+              onTrainingContextChange={updateTrainingContext}
               onLoadSample={() =>
                 applyReportPreset(sampleReportPreset, "Sample race loaded")
               }
               onResetDefaults={() =>
                 applyReportPreset(buildUserDefaultPreset(user), "Defaults restored")
               }
-              onClearForm={() =>
+              onClearForm={() => {
+                setTrainingContext(emptyTrainingContext);
                 applyReportPreset(
                   buildEmptyPresetForCurrentFormat({
                     raceFormat,
@@ -1161,8 +1185,8 @@ export default function Home() {
                     stationDefinitions: activeStationDefinitions,
                   }),
                   "Form cleared",
-                )
-              }
+                );
+              }}
               onSubmit={handleSubmit}
             />
 
@@ -1183,6 +1207,7 @@ export default function Home() {
                   onRunGainPerKmChange={setRunGainPerKm}
                   onStationGainChange={setStationGain}
                   onTransitionGainChange={setTransitionGain}
+                  trainingContext={trainingContext}
                 />
               ) : (
                 <div className="empty-state empty-state--report">

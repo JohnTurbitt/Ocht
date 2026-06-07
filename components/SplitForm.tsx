@@ -1,4 +1,5 @@
 import { FormEvent } from "react";
+import { Hint } from "@/components/Hint";
 import { PremiumBadge } from "@/components/PremiumBadge";
 import {
   Level,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/analysis";
 import { CustomTemplate } from "@/lib/customTemplates";
 import { RaceFormat, raceFormatOptions } from "@/lib/raceFormats";
+import { TrainingContext, TrainingTrend } from "@/lib/trainingContext";
 import { normalizeTimeInput } from "@/lib/validation";
 
 type SplitFormProps = {
@@ -19,6 +21,7 @@ type SplitFormProps = {
   runs: string[];
   stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext: TrainingContext;
   errors: string[];
   fieldErrors: Record<string, string>;
   customTemplates: CustomTemplate[];
@@ -37,6 +40,7 @@ type SplitFormProps = {
   onLevelChange: (value: Level) => void;
   onRunChange: (index: number, value: string) => void;
   onStationChange: (key: StationKey, value: string) => void;
+  onTrainingContextChange: (field: keyof TrainingContext, value: string) => void;
   onLoadSample: () => void;
   onResetDefaults: () => void;
   onClearForm: () => void;
@@ -52,6 +56,7 @@ export function SplitForm({
   runs,
   stationDefinitions,
   stationSplits,
+  trainingContext,
   errors,
   fieldErrors,
   customTemplates,
@@ -70,6 +75,7 @@ export function SplitForm({
   onLevelChange,
   onRunChange,
   onStationChange,
+  onTrainingContextChange,
   onLoadSample,
   onResetDefaults,
   onClearForm,
@@ -237,6 +243,128 @@ export function SplitForm({
           ))}
         </select>
       </label>
+
+      <div className="training-context-input">
+        <div className="training-context-input__header">
+          <div>
+            <h3>Training context</h3>
+            <p>
+              Optional, but it lets Ocht explain the running limiter instead of
+              only ranking race splits.
+            </p>
+          </div>
+          <button type="button" disabled>
+            Connect Strava <PremiumBadge />
+          </button>
+        </div>
+        <div className="training-context-grid">
+          <label className="field">
+            <span>Runs / week</span>
+            <input
+              value={trainingContext.runsPerWeek}
+              onChange={(event) =>
+                onTrainingContextChange("runsPerWeek", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="4"
+            />
+          </label>
+          <label className="field">
+            <span>Weekly km</span>
+            <input
+              value={trainingContext.weeklyDistanceKm}
+              onChange={(event) =>
+                onTrainingContextChange("weeklyDistanceKm", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="32"
+            />
+          </label>
+          <label className="field">
+            <span>Longest run km</span>
+            <input
+              value={trainingContext.longestRunKm}
+              onChange={(event) =>
+                onTrainingContextChange("longestRunKm", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="12"
+            />
+          </label>
+          <label className="field">
+            <span>Hard runs / week</span>
+            <input
+              value={trainingContext.hardRunsPerWeek}
+              onChange={(event) =>
+                onTrainingContextChange("hardRunsPerWeek", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="1"
+            />
+          </label>
+          <label className="field">
+            <span>
+              <Hint
+                enabled
+                hint="compromisedRun"
+                term="Compromised runs"
+              />
+            </span>
+            <input
+              value={trainingContext.compromisedRunsPerWeek}
+              onChange={(event) =>
+                onTrainingContextChange(
+                  "compromisedRunsPerWeek",
+                  event.target.value,
+                )
+              }
+              inputMode="decimal"
+              placeholder="0"
+            />
+          </label>
+          <label className="field">
+            <span>Strength sessions</span>
+            <input
+              value={trainingContext.strengthSessionsPerWeek}
+              onChange={(event) =>
+                onTrainingContextChange(
+                  "strengthSessionsPerWeek",
+                  event.target.value,
+                )
+              }
+              inputMode="decimal"
+              placeholder="2"
+            />
+          </label>
+          <label className="field">
+            <span>Rest days / week</span>
+            <input
+              value={trainingContext.restDaysPerWeek}
+              onChange={(event) =>
+                onTrainingContextChange("restDaysPerWeek", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="2"
+            />
+          </label>
+          <label className="field">
+            <span>Recent trend</span>
+            <select
+              value={trainingContext.recentTrend}
+              onChange={(event) =>
+                onTrainingContextChange(
+                  "recentTrend",
+                  event.target.value as TrainingTrend,
+                )
+              }
+            >
+              <option value="building">Building</option>
+              <option value="stable">Stable</option>
+              <option value="dropping">Dropping</option>
+            </select>
+          </label>
+        </div>
+      </div>
 
       <div className="split-group">
         <h3>Run splits</h3>
