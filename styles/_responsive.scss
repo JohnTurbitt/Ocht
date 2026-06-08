@@ -43,23 +43,6 @@
     left: 0;
     width: min(520px, calc(100vw - 28px));
   }
-
-  .site-header__logo {
-    width: min(190px, 58vw);
-  }
-
-  .settings-menu {
-    width: auto;
-  }
-
-  .settings-menu__trigger {
-    width: 44px;
-  }
-
-  .settings-menu__panel {
-    position: absolute;
-    margin-top: 8px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -67,10 +50,6 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 12px;
-  }
-
-  .site-header__logo {
-    width: min(178px, 62vw);
   }
 
   .site-header__actions {
@@ -86,33 +65,13 @@
     justify-self: end;
   }
 
+  /* Events moves to the bottom nav on mobile */
   .site-header__nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    width: 100%;
+    display: none;
   }
 
   .auth-panel {
     min-width: 0;
-  }
-
-  .settings-menu {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    width: auto;
-  }
-
-  .settings-menu__trigger {
-    width: 44px;
-  }
-
-  .settings-menu__panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(280px, calc(100vw - 28px));
-    margin-top: 0;
   }
 
   .intro,
@@ -152,14 +111,7 @@
   }
 
   .report-jump-nav {
-    margin-right: -4px;
-    margin-left: -4px;
-    border-radius: 12px;
-    box-shadow: 0 -10px 28px rgba(22, 28, 18, 0.14);
-  }
-
-  .report-jump-nav--floating {
-    width: calc(100vw - 20px);
+    top: 64px;
   }
 
   .target-plan__header {

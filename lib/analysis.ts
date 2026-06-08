@@ -52,12 +52,34 @@ export type RaceSegment = {
   status: "strong" | "steady" | "leak";
 };
 
+export type ArchetypeScores = {
+  engine: number;
+  strength: number;
+  durability: number;
+  consistency: number;
+};
+
+export type AthleteArchetype = {
+  id: string;
+  label: string;
+  tagline: string;
+  description: string;
+  scores: ArchetypeScores;
+  traits: string[];
+};
+
 export type Analysis = {
   raceFormat: RaceFormat;
   stationDefinitions: Station[];
   level: Level;
   levelLabel: string;
   finishSeconds: number;
+  officialFinishSeconds: number;
+  roxzoneSeconds: number;
+  roxzonePercent: number;
+  roxzonePerTransitionSeconds: number;
+  hasRoxzone: boolean;
+  archetype: AthleteArchetype;
   targetSeconds: number;
   targetGapSeconds: number;
   totalRunSeconds: number;
@@ -376,6 +398,117 @@ function getSegmentStatus(intensity: number): RaceSegment["status"] {
   return "strong";
 }
 
+function clampScore(value: number) {
+  return Math.round(clamp(value, 0, 100));
+}
+
+type ArchetypeInputs = {
+  runFadeSeconds: number;
+  runVolatilitySeconds: number;
+  averageStationGap: number;
+  stationLeakTotal: number;
+  runLeakTotal: number;
+  hasRoxzone: boolean;
+  roxzonePercent: number;
+  hasData: boolean;
+};
+
+function buildArchetype({
+  runFadeSeconds,
+  runVolatilitySeconds,
+  averageStationGap,
+  stationLeakTotal,
+  runLeakTotal,
+  hasRoxzone,
+  roxzonePercent,
+  hasData,
+}: ArchetypeInputs): AthleteArchetype {
+  const scores: ArchetypeScores = {
+    engine: clampScore(100 - runVolatilitySeconds * 2.4 - runFadeSeconds * 2),
+    strength: clampScore(100 - averageStationGap * 1.15),
+    durability: clampScore(100 - runFadeSeconds * 3.6),
+    consistency: clampScore(100 - runVolatilitySeconds * 3),
+  };
+
+  if (!hasData) {
+    return {
+      id: "unscored",
+      label: "Profile pending",
+      tagline: "Add your splits",
+      description:
+        "Enter your run and station splits and Ocht will profile the kind of hybrid athlete your race data describes.",
+      scores,
+      traits: [],
+    };
+  }
+
+  const pick = (
+    id: string,
+    label: string,
+    tagline: string,
+    description: string,
+    traits: string[],
+  ): AthleteArchetype => ({ id, label, tagline, description, scores, traits });
+
+  if (hasRoxzone && roxzonePercent >= 0.08) {
+    return pick(
+      "roxzone-bleeder",
+      "The Roxzone Bleeder",
+      "Races are lost in the transitions",
+      "Your moving splits are competitive, but dead time around the stations is your single biggest tax. Rehearsing fast, decisive transitions is the cheapest time you can find.",
+      ["Strong moving splits", "Slow transitions", "High-value quick wins"],
+    );
+  }
+
+  if (scores.durability < 55) {
+    return pick(
+      "fader",
+      "The Fader",
+      "Strong start, expensive finish",
+      "You hold a good early pace but give significant time back in the second half. Compromised running and late-race durability are your highest-leverage focus.",
+      ["Quick early pace", "Second-half fade", "Durability limited"],
+    );
+  }
+
+  if (stationLeakTotal > runLeakTotal * 1.4) {
+    return pick(
+      "runner",
+      "The Runner",
+      "Engine ahead of the stations",
+      "Your running carries the race while the functional stations cost you the most time. Strength-endurance and station technique under fatigue are where your next gains live.",
+      ["Strong run engine", "Station-limited", "Targets the workout stations"],
+    );
+  }
+
+  if (runLeakTotal > stationLeakTotal * 1.4) {
+    return pick(
+      "powerhouse",
+      "The Powerhouse",
+      "Strong stations, running costs you",
+      "You move well through the strength stations, but the runs are where time slips away. Aerobic running volume and pacing discipline are your biggest opportunity.",
+      ["Strong stations", "Run-limited", "Needs aerobic running"],
+    );
+  }
+
+  if (scores.consistency >= 78 && scores.durability >= 72) {
+    return pick(
+      "metronome",
+      "The Metronome",
+      "Even, repeatable, well-rounded",
+      "No single phase dominates your losses — your splits are even and durable. Marginal, broad gains plus a sharper target are how you move up.",
+      ["Even pacing", "Durable", "Well-rounded profile"],
+    );
+  }
+
+  return pick(
+    "all-rounder",
+    "The All-Rounder",
+    "Balanced with room across the board",
+    "Your time loss is spread fairly evenly between runs and stations. A balanced block that trims the top leaks while protecting strengths fits you best.",
+    ["Balanced losses", "No single limiter", "Broad upside"],
+  );
+}
+
 export function buildAnalysis(
   goal: string,
   targetTime: string,
@@ -384,6 +517,7 @@ export function buildAnalysis(
   stationSplits: Record<StationKey, string>,
   stationDefinitions: Station[] = stations,
   raceFormat: RaceFormat = "hyrox",
+  officialFinishTime: string = "",
 ): Analysis {
   const runSeconds = runs.map(parseTime);
   const totalRunSeconds = runSeconds.reduce((total, split) => total + split, 0);
@@ -556,12 +690,43 @@ export function buildAnalysis(
     return [runSegment, stationSegment];
   });
 
+  const officialFinishSeconds = parseTime(officialFinishTime);
+  const hasRoxzone = officialFinishSeconds > finishSeconds && finishSeconds > 0;
+  const roxzoneSeconds = hasRoxzone ? officialFinishSeconds - finishSeconds : 0;
+  const roxzoneDenominator =
+    officialFinishSeconds > 0 ? officialFinishSeconds : finishSeconds;
+  const roxzonePercent =
+    roxzoneDenominator > 0 ? roxzoneSeconds / roxzoneDenominator : 0;
+  const roxzonePerTransitionSeconds = roxzoneSeconds / stationCount;
+
+  const stationLeakTotal = orderedStationResults.reduce(
+    (total, station) => total + station.gap,
+    0,
+  );
+  const runLeakTotal = runFadeSeconds * 4 + runVolatilitySeconds * 3.2;
+  const archetype = buildArchetype({
+    runFadeSeconds,
+    runVolatilitySeconds,
+    averageStationGap: stationLeakTotal / stationCount,
+    stationLeakTotal,
+    runLeakTotal,
+    hasRoxzone,
+    roxzonePercent,
+    hasData: finishSeconds > 0,
+  });
+
   return {
     raceFormat,
     stationDefinitions,
     level,
     levelLabel: levelLabels[level],
     finishSeconds,
+    officialFinishSeconds,
+    roxzoneSeconds,
+    roxzonePercent,
+    roxzonePerTransitionSeconds,
+    hasRoxzone,
+    archetype,
     targetSeconds,
     targetGapSeconds,
     totalRunSeconds,

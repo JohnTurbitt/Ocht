@@ -12,9 +12,10 @@
 
 .form-heading {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  gap: 16px 20px;
+  align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .preset-actions {
@@ -274,6 +275,7 @@
   grid-template-columns: minmax(0, 1.4fr) minmax(140px, 0.6fr);
   gap: 12px;
   margin-top: 24px;
+  align-items: start;
 }
 
 .field input,
@@ -315,4 +317,193 @@
   color: var(--red);
   font-size: 0.78rem;
   line-height: 1.35;
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.preset-actions__help {
+  color: var(--teal);
+}
+
+/* ══════════════════════════════════════
+   8 ROUNDS — paired run + station accordion
+══════════════════════════════════════ */
+.split-form > .btn {
+  margin-top: 24px;
+}
+
+.rounds__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 14px;
+}
+
+.rounds__head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.rounds__progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rounds__dots {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  width: 132px;
+}
+
+.rounds__dot {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--disabled);
+  transition: background 0.25s ease;
+}
+
+.rounds__dot.is-partial {
+  background: var(--flow-steady);
+}
+
+.rounds__dot.is-done {
+  background: var(--lime);
+}
+
+.rounds__count {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rounds__list {
+  display: grid;
+  gap: 6px;
+}
+
+.round {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  overflow: hidden;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.round--filled {
+  border-color: color-mix(in srgb, var(--lime) 38%, var(--line));
+}
+
+.round[open] {
+  background: var(--surface);
+}
+
+.round__summary {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.round__summary::-webkit-details-marker {
+  display: none;
+}
+
+.round__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  min-height: 48px;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--lime) 10%, transparent);
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.round--filled .round__num {
+  background: var(--accent-soft);
+}
+
+.round__meta {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.round__name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.round__times {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.round__times em {
+  font-style: normal;
+  color: var(--muted);
+}
+
+.round__times em.is-set {
+  color: var(--ink);
+}
+
+.round__state {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-right: 14px;
+}
+
+.round--filled .round__state {
+  color: var(--teal);
+}
+
+.round__body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 14px 16px;
+}
+
+.round__body .field input {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 540px) {
+  .round__body {
+    grid-template-columns: 1fr;
+  }
+
+  .rounds__head {
+    justify-content: flex-start;
+  }
 }

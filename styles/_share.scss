@@ -1,0 +1,375 @@
+
+// ── Off-screen capture host ──────────────────────────────────────────
+.share-capture {
+  position: absolute;
+  top: 0;
+  left: -100000px;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// ── Share card canvas ────────────────────────────────────────────────
+.share-card {
+  box-sizing: border-box;
+  width: 1080px;
+  height: 1350px;
+  display: flex;
+  flex-direction: column;
+  padding: 84px 80px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(191, 255, 0, 0.16), transparent 42%),
+    linear-gradient(160deg, #0c160e 0%, #08100d 60%);
+  color: #e8f5ea;
+  font-family: var(--font-body), Arial, sans-serif;
+}
+
+.share-card::after {
+  content: "8";
+  position: absolute;
+  right: -60px;
+  bottom: -160px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 720px;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(191, 255, 0, 0.05);
+  pointer-events: none;
+}
+
+.share-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.share-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.share-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.share-card__wordmark {
+  font-family: var(--font-display), sans-serif;
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #e8f5ea;
+}
+
+.share-card__wordmark em {
+  color: #bfff00;
+  font-style: normal;
+}
+
+.share-card__date {
+  font-family: var(--font-mono), monospace;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a6150;
+}
+
+.share-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.share-card__eyebrow {
+  margin: 0 0 18px;
+  font-family: var(--font-mono), monospace;
+  font-size: 28px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #bfff00;
+}
+
+.share-card__finish {
+  font-family: var(--font-display), sans-serif;
+  font-size: 200px;
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.share-card__delta {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 28px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  font-family: var(--font-mono), monospace;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.share-card__delta--over {
+  border: 1px solid rgba(255, 90, 90, 0.5);
+  background: rgba(255, 90, 90, 0.12);
+  color: #ff7a7a;
+}
+
+.share-card__delta--under {
+  border: 1px solid rgba(191, 255, 0, 0.5);
+  background: rgba(191, 255, 0, 0.12);
+  color: #bfff00;
+}
+
+.share-card__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.share-card__kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 26px;
+  border: 1px solid #1d2e1f;
+  border-radius: 18px;
+  background: #111c13;
+}
+
+.share-card__kpi span {
+  font-family: var(--font-mono), monospace;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a6150;
+}
+
+.share-card__kpi strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1.04;
+}
+
+.share-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+  font-family: var(--font-mono), monospace;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a6150;
+}
+
+.share-card__handle {
+  color: #bfff00;
+}
+
+// Archetype card variants
+.share-card__archetype {
+  font-family: var(--font-display), sans-serif;
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.share-card__tagline {
+  margin: 22px 0 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 30px;
+  letter-spacing: 0.04em;
+  color: #a8bfaa;
+}
+
+.share-card__bars {
+  display: grid;
+  gap: 22px;
+  margin-top: 8px;
+}
+
+.share-card__bar-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.share-card__bar-head span {
+  font-family: var(--font-mono), monospace;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8bfaa;
+}
+
+.share-card__bar-head strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.share-card__bar-track {
+  height: 14px;
+  border-radius: 7px;
+  background: #1a2a1c;
+  overflow: hidden;
+}
+
+.share-card__bar-fill {
+  height: 100%;
+  border-radius: 7px;
+}
+
+.share-card__bar-fill--high {
+  background: #bfff00;
+}
+
+.share-card__bar-fill--mid {
+  background: #ffb840;
+}
+
+.share-card__bar-fill--low {
+  background: #ff5a5a;
+}
+
+.share-card__finish-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid #1d2e1f;
+  font-family: var(--font-mono), monospace;
+  font-size: 26px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a6150;
+}
+
+.share-card__finish-line strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #e8f5ea;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Share studio UI ──────────────────────────────────────────────────
+.share-studio {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 520px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.share-studio__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.share-studio__header span {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.share-studio__header h3 {
+  margin: 2px 0 0;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+}
+
+.share-studio__tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.share-studio__tabs button {
+  flex: 1;
+  min-height: 42px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.share-studio__tabs button.is-active {
+  border-color: var(--action-bg);
+  background: var(--action-bg);
+  color: var(--action-text);
+}
+
+.share-studio__stage {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.share-studio__frame {
+  width: 300px;
+  height: 375px;
+  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.share-studio__scale {
+  width: 1080px;
+  height: 1350px;
+  transform: scale(0.2778);
+  transform-origin: top left;
+}
+
+.share-studio__actions {
+  display: grid;
+  gap: 8px;
+}
+
+.share-studio__actions .btn--primary {
+  min-height: 52px;
+}
+
+.share-studio__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.share-studio__secondary {
+  display: flex;
+  justify-content: center;
+}
+
+.share-studio__status {
+  margin: 0;
+  min-height: 1.2em;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.86rem;
+}

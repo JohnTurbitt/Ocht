@@ -26,6 +26,13 @@
   --alert-glow: rgba(216, 75, 58, 0.16);
   --glass: rgba(255, 255, 255, 0.82);
   --shadow: 0 24px 70px rgba(22, 28, 18, 0.12);
+  --shadow-sm: 0 4px 12px rgba(22, 28, 18, 0.1);
+  --shadow-md: 0 14px 34px rgba(22, 28, 18, 0.16);
+  --overlay: rgba(16, 19, 15, 0.42);
+  --stroke-muted: rgba(16, 19, 15, 0.22);
+  --hatch: rgba(16, 19, 15, 0.16);
+  --cell-ink: rgba(16, 19, 15, 0.55);
+  --accent-soft: color-mix(in srgb, var(--lime) 14%, transparent);
   --flow-strong: #1f6f5b;
   --flow-steady: #f0a23a;
   --flow-leak: #d84b3a;
@@ -60,27 +67,18 @@
   --alert-glow: rgba(96, 200, 120, 0.08);
   --glass: rgba(17, 27, 22, 0.86);
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.34);
+  --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.44);
+  --overlay: rgba(3, 8, 5, 0.66);
+  --stroke-muted: rgba(244, 247, 239, 0.2);
+  --hatch: rgba(244, 247, 239, 0.18);
+  --cell-ink: rgba(8, 16, 13, 0.62);
+  --accent-soft: color-mix(in srgb, var(--lime) 16%, transparent);
   --flow-strong: #60c878;
   --flow-steady: #e0a84a;
   --flow-leak: #f06b5d;
   --flow-lost: rgba(244, 247, 239, 0.14);
   color-scheme: dark;
-}
-
-[data-theme="dark"] .tab-bar__tab,
-[data-theme="dark"] .preset-actions button,
-[data-theme="dark"] .format-picker button,
-[data-theme="dark"] .custom-builder__actions button,
-[data-theme="dark"] .custom-template-list button,
-[data-theme="dark"] .field-action,
-[data-theme="dark"] .settings-menu__switch button,
-[data-theme="dark"] .auth-panel--signed-in .button-secondary,
-[data-theme="dark"] .intro-guide__actions button,
-[data-theme="dark"] .demo-modal__actions .button-secondary,
-[data-theme="dark"] .empty-state--report button {
-  border-color: #8ea999;
-  background: #f4f7ef;
-  color: #0a1711;
 }
 
 * {
@@ -165,29 +163,19 @@ li {
 
 .premium-badge {
   display: inline-flex;
-  width: 18px;
-  height: 18px;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--action-bg);
-  border-radius: 4px;
   padding: 0;
-  background: var(--lime);
-  color: #0a1711;
+  border: 0;
+  background: none;
   flex: 0 0 auto;
   line-height: 1;
-  vertical-align: -0.18em;
+  vertical-align: -0.24em;
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--lime) 30%, transparent));
 }
 
 .premium-badge svg {
   display: block;
-  width: 12px;
-  height: 12px;
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.4;
 }
 
 .not-found {

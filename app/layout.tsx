@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { Inter, Saira_Condensed } from "next/font/google";
+import { DM_Mono, Inter, Saira_Condensed } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.scss";
 
@@ -18,6 +18,12 @@ const displayFont = Saira_Condensed({
   display: "swap",
   variable: "--font-display",
   weight: ["600", "700", "800", "900"],
+});
+const monoFont = DM_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+  weight: ["400", "500"],
 });
 const themeScript = `
 (function () {
@@ -93,7 +99,9 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${bodyFont.variable} ${displayFont.variable}`}>
+      <body
+        className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}
+      >
         {children}
         <SiteFooter />
         <Analytics />

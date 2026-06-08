@@ -1,0 +1,438 @@
+// Loading animations — app launch splash, report generation overlay,
+// and the inline octagon spinner. Adapted from the Ocht loader prototype
+// to use the shared design tokens so they respond to light and dark themes.
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── App launch splash ──────────────────────────────────────────────
+.app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--paper);
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.app-splash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  animation: loader-grid-fade 1.8s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes loader-grid-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.app-splash--exiting {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.app-splash__logo {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.app-splash__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid color-mix(in srgb, var(--lime) 45%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: loader-ring-expand 2.4s ease-out infinite;
+}
+
+.app-splash__ring:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  animation-delay: 0s;
+}
+
+.app-splash__ring:nth-child(2) {
+  width: 120px;
+  height: 120px;
+  animation-delay: 0.6s;
+}
+
+.app-splash__ring:nth-child(3) {
+  width: 160px;
+  height: 160px;
+  animation-delay: 1.2s;
+}
+
+@keyframes loader-ring-expand {
+  0% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
+.app-splash__shield {
+  position: relative;
+  z-index: 2;
+  display: block;
+  animation: loader-shield-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.loader-shield-body {
+  fill: var(--lime);
+}
+
+.loader-shield-glyph {
+  fill: var(--badge-ink);
+}
+
+@keyframes loader-shield-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.app-splash__wordmark {
+  margin-bottom: 8px;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: loader-fade-up 0.5s 0.5s ease both;
+}
+
+.app-splash__wordmark em {
+  color: var(--teal);
+  font-style: normal;
+}
+
+.app-splash__tagline {
+  margin-bottom: 48px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: loader-fade-up 0.5s 0.7s ease both;
+}
+
+.app-splash__dots {
+  display: flex;
+  gap: 6px;
+  animation: loader-fade-up 0.4s 0.9s ease both;
+}
+
+.app-splash__dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  animation: loader-dot-bounce 1.2s ease-in-out infinite;
+}
+
+@for $i from 1 through 8 {
+  .app-splash__dots span:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 0.1}s;
+  }
+}
+
+@keyframes loader-dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scaleY(2.2);
+    opacity: 1;
+  }
+}
+
+.app-splash__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  background: var(--surface-strong);
+}
+
+.app-splash__progress span {
+  display: block;
+  height: 100%;
+  background: var(--lime);
+  animation: loader-progress 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes loader-progress {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  70% {
+    width: 85%;
+    opacity: 1;
+  }
+  90% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+// ── Report generation overlay ──────────────────────────────────────
+.report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(8px);
+  animation: loader-overlay-in 0.25s ease both;
+}
+
+@keyframes loader-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.report-overlay__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(360px, 100%);
+  padding: 32px 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--lime) 14%, transparent), transparent 52%),
+    var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.report-overlay__ring {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.report-overlay__ring svg {
+  display: block;
+}
+
+.report-overlay__track {
+  stroke: var(--line);
+}
+
+.report-overlay__seg {
+  stroke: var(--line);
+  transition: stroke 0.35s ease;
+}
+
+.report-overlay__seg--lit {
+  stroke: var(--lime);
+}
+
+.report-overlay__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.report-overlay__pct {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.report-overlay__status {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.report-overlay__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: 22px;
+}
+
+.report-overlay__step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.report-overlay__step--done {
+  border-color: color-mix(in srgb, var(--lime) 45%, var(--line));
+}
+
+.report-overlay__step--doing {
+  border-color: var(--teal);
+}
+
+.report-overlay__step--wait {
+  opacity: 0.45;
+}
+
+.report-overlay__step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--teal);
+}
+
+.report-overlay__step-text {
+  flex: 1;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.report-overlay__step--done .report-overlay__step-text {
+  color: var(--ink);
+}
+
+.report-overlay__step--doing .report-overlay__step-text {
+  color: var(--teal);
+}
+
+.report-overlay__check {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.report-overlay__caption {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: loader-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes loader-blink {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+// ── Octagon spinner (inline / button loading) ──────────────────────
+.octagon-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: -0.18em;
+  color: currentColor;
+  animation: loader-spin 1.4s linear infinite;
+}
+
+.octagon-spinner__track {
+  stroke: currentColor;
+  opacity: 0.3;
+}
+
+.octagon-spinner__head {
+  stroke: currentColor;
+}
+
+.button-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+// ── Reduced motion ─────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .app-splash *,
+  .report-overlay *,
+  .octagon-spinner {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .octagon-spinner {
+    animation: none !important;
+  }
+}

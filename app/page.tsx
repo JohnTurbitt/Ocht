@@ -1,11 +1,15 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { AppLaunchSplash } from "@/components/AppLaunchSplash";
 import { AuthPanel } from "@/components/AuthPanel";
+import { EventsList } from "@/components/EventsList";
+import { OchtShield } from "@/components/OchtShield";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
+import { ReportGenerationOverlay } from "@/components/ReportGenerationOverlay";
 import { ReportHistory } from "@/components/ReportHistory";
 import { ReportPanel } from "@/components/ReportPanel";
-import { SettingsMenu } from "@/components/SettingsMenu";
 import { SplitForm } from "@/components/SplitForm";
 import { Toast, ToastMessage } from "@/components/Toast";
 import { UpcomingEventsMenu } from "@/components/UpcomingEventsMenu";
@@ -73,6 +77,7 @@ const billingRefreshAttempts = 6;
 const billingRefreshDelayMs = 1600;
 const onboardingDismissedKey = "ocht.onboardingDismissed";
 const beginnerGuideDismissedKey = "ocht.beginnerGuideDismissed";
+const hasGeneratedReportKey = "ocht.hasGeneratedReport";
 
 function buildUserDefaultPreset(user: AuthUser | null): ReportPreset {
   return {
@@ -131,6 +136,7 @@ export default function Home() {
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [goal, setGoal] = useState(initialEmptyReportPreset.goal);
   const [targetTime, setTargetTime] = useState(initialEmptyReportPreset.targetTime);
+  const [officialFinishTime, setOfficialFinishTime] = useState("");
   const [level, setLevel] = useState<Level>(initialEmptyReportPreset.level);
   const [runs, setRuns] = useState(initialEmptyReportPreset.runs);
   const [stationSplits, setStationSplits] = useState(
@@ -143,6 +149,7 @@ export default function Home() {
   const [transitionGain, setTransitionGain] = useState("0:45");
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>("km");
   const [showHints, setShowHints] = useState(true);
+  const [hasGeneratedReportEver, setHasGeneratedReportEver] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollTopBottom, setScrollTopBottom] = useState(22);
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
@@ -157,6 +164,9 @@ export default function Home() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [showSplash, setShowSplash] = useState(true);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const activeStationDefinitions =
     raceFormat === "custom"
@@ -173,8 +183,18 @@ export default function Home() {
         stationSplits,
         activeStationDefinitions,
         raceFormat,
+        officialFinishTime,
       ),
-    [activeStationDefinitions, goal, targetTime, level, raceFormat, runs, stationSplits],
+    [
+      activeStationDefinitions,
+      goal,
+      targetTime,
+      officialFinishTime,
+      level,
+      raceFormat,
+      runs,
+      stationSplits,
+    ],
   );
 
   function updateRun(index: number, value: string) {
@@ -281,6 +301,7 @@ export default function Home() {
     );
     setGoal(nextPreset.goal);
     setTargetTime(nextPreset.targetTime);
+    setOfficialFinishTime("");
     setLevel(nextPreset.level);
     setRuns(nextPreset.runs);
     setStationSplits(nextPreset.stationSplits);
@@ -591,6 +612,16 @@ export default function Home() {
     }
   }
 
+  function selectTab(tab: ActiveTab) {
+    setActiveTab(tab);
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>(".workspace")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
   function handleCreateOnboardingReport() {
     setActiveTab("new");
     trackEvent("onboarding_create_report_clicked", {
@@ -674,6 +705,13 @@ export default function Home() {
       return;
     }
 
+    setGeneratingReport(true);
+    // Hold the generation overlay long enough to read as intentional, even
+    // though the math is synchronous and any remote save is usually fast.
+    const minimumHold = new Promise<void>((resolve) =>
+      window.setTimeout(resolve, 1700),
+    );
+
     const generatedAnalysis = buildAnalysis(
       goal,
       targetTime,
@@ -682,6 +720,7 @@ export default function Home() {
       stationSplits,
       activeStationDefinitions,
       raceFormat,
+      officialFinishTime,
     );
     const savedReport: SavedReport = {
       id: crypto.randomUUID(),
@@ -689,6 +728,7 @@ export default function Home() {
       raceFormat,
       goal,
       targetTime,
+      officialFinishTime: officialFinishTime || undefined,
       level,
       runs,
       stationDefinitions:
@@ -723,6 +763,8 @@ export default function Home() {
         nextReports = [remoteReport, ...savedReports];
         toastMessage = "Your report has been saved to your Ocht account.";
       } catch (error) {
+        await minimumHold;
+        setGeneratingReport(false);
         setAnalysis(generatedAnalysis);
         setValidationErrors([]);
         setFieldErrors({});
@@ -747,6 +789,8 @@ export default function Home() {
       saveReports(nextReports);
     }
 
+    await minimumHold;
+    setGeneratingReport(false);
     setAnalysis(generatedAnalysis);
     if (!beginnerGuideDismissed) {
       dismissBeginnerGuide("beginner_guide_completed_by_report");
@@ -761,6 +805,10 @@ export default function Home() {
     });
     setSavedReports(nextReports);
     setActiveTab("new");
+    if (!hasGeneratedReportEver) {
+      window.localStorage.setItem(hasGeneratedReportKey, "true");
+      setHasGeneratedReportEver(true);
+    }
     trackEvent("report_generated", {
       race_format: raceFormat,
       signed_in: Boolean(user),
@@ -787,6 +835,7 @@ export default function Home() {
       report.stationDefinitions ??
         getRaceFormatStations(report.raceFormat ?? "hyrox"),
       report.raceFormat ?? "hyrox",
+      report.officialFinishTime ?? "",
     );
 
     setRaceFormat(report.raceFormat ?? "hyrox");
@@ -795,6 +844,7 @@ export default function Home() {
     }
     setGoal(report.goal);
     setTargetTime(report.targetTime);
+    setOfficialFinishTime(report.officialFinishTime ?? "");
     setLevel(report.level);
     setRuns(report.runs);
     setStationSplits(report.stationSplits);
@@ -845,6 +895,7 @@ export default function Home() {
 
   const activeAnalysis = analysis ?? preview;
   const fullReportUnlocked = user?.subscription === "ACTIVE";
+  const isExperiencedUser = hasGeneratedReportEver || savedReports.length > 0;
   const hasReportInput =
     Boolean(analysis) ||
     Boolean(targetTime.trim()) ||
@@ -859,6 +910,15 @@ export default function Home() {
     setBeginnerGuideDismissed(
       window.localStorage.getItem(beginnerGuideDismissedKey) === "true",
     );
+
+    const experienced =
+      window.localStorage.getItem(hasGeneratedReportKey) === "true";
+
+    if (experienced) {
+      setHasGeneratedReportEver(true);
+      // Returning users start with the beginner hints collapsed.
+      setShowHints(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -996,14 +1056,31 @@ export default function Home() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [demoOpen]);
 
+  useEffect(() => {
+    if (!eventsSheetOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setEventsSheetOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [eventsSheetOpen]);
+
   return (
     <main>
       <header className="site-header">
-        <img
-          className="site-header__logo"
-          src="/brand/ocht-logo-wordmark.svg"
-          alt="Ocht"
-        />
+        <Link className="site-header__brand" href="/" aria-label="Ocht home">
+          <OchtShield className="site-header__shield" size={26} />
+          <span className="site-header__wordmark">
+            ocht<em>.</em>
+          </span>
+        </Link>
         <nav className="site-header__nav" aria-label="Race calendar">
           <UpcomingEventsMenu />
         </nav>
@@ -1012,6 +1089,8 @@ export default function Home() {
             user={user}
             loading={authLoading || reportsLoading}
             billingLoading={billingLoading}
+            distanceUnit={distanceUnit}
+            onDistanceUnitChange={setDistanceUnit}
             onLogin={handleLogin}
             onSignup={handleSignup}
             onLogout={handleLogout}
@@ -1020,21 +1099,41 @@ export default function Home() {
             onResendVerification={handleResendVerification}
             onSaveProfile={handleSaveProfile}
           />
-          <SettingsMenu
-            distanceUnit={distanceUnit}
-            onDistanceUnitChange={setDistanceUnit}
-          />
         </div>
       </header>
 
-      <section className="intro">
-        <div className="intro__copy">
+      <section className="intro hero">
+        <div className="hero__copy">
+          <p className="hero__eyebrow">Hybrid race intelligence</p>
           <h1>Find the time leaks between your reps and runs.</h1>
-          <p>
+          <p className="hero__lead">
             Add the times from your race or training simulation and Ocht shows
             where you lost time, what is already strong, and what target looks
             realistic next.
           </p>
+          <div className="hero__actions">
+            <button
+              className="btn btn--primary btn--cut btn--lg"
+              type="button"
+              onClick={handleCreateOnboardingReport}
+            >
+              Analyse a race
+            </button>
+            <button
+              className="btn btn--secondary btn--lg"
+              type="button"
+              onClick={() =>
+                applyReportPreset(sampleReportPreset, "Sample race loaded")
+              }
+            >
+              Load sample race
+            </button>
+          </div>
+          <ul className="hero__trust" aria-label="What you get">
+            <li>Deterministic formulas</li>
+            <li>Coach-friendly exports</li>
+            <li>Free core report</li>
+          </ul>
           {!beginnerGuideDismissed ? (
             <div className="intro-guide" aria-label="How Ocht helps">
               <div>
@@ -1046,6 +1145,7 @@ export default function Home() {
               </div>
               <div className="intro-guide__actions">
                 <button
+                  className="btn btn--secondary btn--sm"
                   type="button"
                   onClick={() => {
                     setDemoOpen(true);
@@ -1055,6 +1155,7 @@ export default function Home() {
                   Show quick demo
                 </button>
                 <button
+                  className="btn btn--ghost btn--sm"
                   type="button"
                   onClick={() => dismissBeginnerGuide()}
                   aria-label="Hide beginner guide"
@@ -1064,13 +1165,6 @@ export default function Home() {
               </div>
             </div>
           ) : null}
-          <div className="intro-trust" aria-label="Launch trust signals">
-            <span>Deterministic formulas</span>
-            <span>Coach-friendly exports</span>
-            <a href="mailto:support@ocht.app?subject=Ocht%20beta%20feedback">
-              Send beta feedback
-            </a>
-          </div>
           <label className="hint-toggle">
             <input
               checked={showHints}
@@ -1080,6 +1174,28 @@ export default function Home() {
             <span>Show beginner hints</span>
           </label>
         </div>
+        <aside className="hero__motif" aria-hidden="true">
+          <div className="hero__ring">
+            <svg className="hero__octo" viewBox="0 0 110 110" fill="none">
+              <polygon
+                className="hero__octo-line"
+                points="55,5 90,18 105,55 90,92 55,105 20,92 5,55 20,18"
+              />
+              <g className="hero__octo-dots">
+                <circle cx="55" cy="5" r="3" />
+                <circle cx="90" cy="18" r="3" />
+                <circle cx="105" cy="55" r="3" />
+                <circle cx="90" cy="92" r="3" />
+                <circle cx="55" cy="105" r="3" />
+                <circle cx="20" cy="92" r="3" />
+                <circle cx="5" cy="55" r="3" />
+                <circle cx="20" cy="18" r="3" />
+              </g>
+            </svg>
+            <OchtShield className="hero__shield" size={68} />
+          </div>
+          <p className="hero__identity">8 stations · 8 runs · 1 race</p>
+        </aside>
       </section>
 
       {user && !onboardingDismissed ? (
@@ -1099,9 +1215,21 @@ export default function Home() {
           <button
             className={activeTab === "new" ? "tab-bar__tab is-active" : "tab-bar__tab"}
             type="button"
-            onClick={() => setActiveTab("new")}
+            onClick={() => selectTab("new")}
           >
-            New report
+            <svg
+              className="tab-bar__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <span className="tab-bar__label">New report</span>
           </button>
           <button
             className={
@@ -1109,14 +1237,27 @@ export default function Home() {
             }
             type="button"
             onClick={() => {
-              setActiveTab("history");
+              selectTab("history");
               trackEvent("history_opened", {
                 signed_in: Boolean(user),
                 report_count: savedReports.length,
               });
             }}
           >
-            Previous reports
+            <svg
+              className="tab-bar__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 3h18v18H3z" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+            <span className="tab-bar__label">Previous reports</span>
             {savedReports.length > 0 ? <span>{savedReports.length}</span> : null}
           </button>
           <button
@@ -1125,14 +1266,46 @@ export default function Home() {
             }
             type="button"
             onClick={() => {
-              setActiveTab("compare");
+              selectTab("compare");
               trackEvent("compare_reports_opened", {
                 signed_in: Boolean(user),
                 report_count: savedReports.length,
               });
             }}
           >
-            Compare
+            <svg
+              className="tab-bar__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 20V10M10 20V4M16 20v-7M20 20H2" />
+            </svg>
+            <span className="tab-bar__label">Compare</span>
+          </button>
+          <button
+            className="tab-bar__tab tab-bar__tab--events"
+            type="button"
+            onClick={() => setEventsSheetOpen(true)}
+          >
+            <svg
+              className="tab-bar__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="17" rx="2" />
+              <path d="M3 9h18M8 2v4M16 2v4" />
+            </svg>
+            <span className="tab-bar__label">Events</span>
           </button>
         </nav>
 
@@ -1141,8 +1314,14 @@ export default function Home() {
             <SplitForm
               raceFormat={raceFormat}
               fullReportUnlocked={fullReportUnlocked}
+              showStartGuide={!isExperiencedUser}
+              onShowGuide={() => {
+                setDemoOpen(true);
+                trackEvent("beginner_demo_opened");
+              }}
               goal={goal}
               targetTime={targetTime}
+              officialFinishTime={officialFinishTime}
               level={level}
               runs={runs}
               stationDefinitions={activeStationDefinitions}
@@ -1165,6 +1344,7 @@ export default function Home() {
               onDeleteCustomTemplate={deleteCustomTemplate}
               onGoalChange={setGoal}
               onTargetTimeChange={updateTargetTime}
+              onOfficialFinishChange={setOfficialFinishTime}
               onLevelChange={setLevel}
               onRunChange={updateRun}
               onStationChange={updateStation}
@@ -1261,6 +1441,42 @@ export default function Home() {
         Back to top
       </button>
 
+      {showSplash ? (
+        <AppLaunchSplash
+          ready={!authLoading}
+          onDone={() => setShowSplash(false)}
+        />
+      ) : null}
+      {generatingReport ? <ReportGenerationOverlay /> : null}
+      {eventsSheetOpen ? (
+        <div
+          className="events-sheet"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setEventsSheetOpen(false);
+            }
+          }}
+        >
+          <section
+            className="events-sheet__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Upcoming races"
+          >
+            <button
+              className="events-sheet__close"
+              type="button"
+              onClick={() => setEventsSheetOpen(false)}
+              aria-label="Close events"
+            >
+              ×
+            </button>
+            <EventsList />
+          </section>
+        </div>
+      ) : null}
+
       <Toast toast={toast} onDismiss={() => setToast(null)} />
       {demoOpen ? (
         <div
@@ -1284,11 +1500,12 @@ export default function Home() {
                 <h2>How to use Ocht</h2>
               </div>
               <button
+                className="modal-close"
                 type="button"
                 onClick={() => setDemoOpen(false)}
                 aria-label="Close demo"
               >
-                x
+                ×
               </button>
             </header>
             <div className="demo-modal__steps">

@@ -1,4 +1,5 @@
 @use "../styles/base";
+@use "../styles/buttons";
 @use "../styles/layout";
 @use "../styles/auth";
 @use "../styles/hints";
@@ -7,6 +8,8 @@
 @use "../styles/simulator";
 @use "../styles/calculations";
 @use "../styles/history";
+@use "../styles/loader";
+@use "../styles/share";
 @use "../styles/toast";
 @use "../styles/responsive";
 @use "../styles/print";

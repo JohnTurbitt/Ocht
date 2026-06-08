@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { Hint } from "@/components/Hint";
 import { PremiumBadge } from "@/components/PremiumBadge";
 import {
@@ -15,8 +15,11 @@ import { normalizeTimeInput } from "@/lib/validation";
 type SplitFormProps = {
   raceFormat: RaceFormat;
   fullReportUnlocked: boolean;
+  showStartGuide: boolean;
+  onShowGuide: () => void;
   goal: string;
   targetTime: string;
+  officialFinishTime: string;
   level: Level;
   runs: string[];
   stationDefinitions: Station[];
@@ -37,6 +40,7 @@ type SplitFormProps = {
   onDeleteCustomTemplate: (templateId: string) => void;
   onGoalChange: (value: string) => void;
   onTargetTimeChange: (value: string) => void;
+  onOfficialFinishChange: (value: string) => void;
   onLevelChange: (value: Level) => void;
   onRunChange: (index: number, value: string) => void;
   onStationChange: (key: StationKey, value: string) => void;
@@ -50,8 +54,11 @@ type SplitFormProps = {
 export function SplitForm({
   raceFormat,
   fullReportUnlocked,
+  showStartGuide,
+  onShowGuide,
   goal,
   targetTime,
+  officialFinishTime,
   level,
   runs,
   stationDefinitions,
@@ -72,6 +79,7 @@ export function SplitForm({
   onDeleteCustomTemplate,
   onGoalChange,
   onTargetTimeChange,
+  onOfficialFinishChange,
   onLevelChange,
   onRunChange,
   onStationChange,
@@ -82,6 +90,16 @@ export function SplitForm({
   onSubmit,
 }: SplitFormProps) {
   const isCustom = raceFormat === "custom";
+  const [openRounds, setOpenRounds] = useState<Record<number, boolean>>({});
+  const isRoundOpen = (index: number) => openRounds[index] ?? true;
+  const setRoundOpen = (index: number, open: boolean) =>
+    setOpenRounds((current) => ({ ...current, [index]: open }));
+
+  const roundFilledCount = stationDefinitions.filter((station, index) => {
+    const runValue = (runs[index] ?? "").trim();
+    const stationValue = (stationSplits[station.key] ?? "").trim();
+    return Boolean(runValue) && Boolean(stationValue);
+  }).length;
 
   return (
     <form className="split-form" onSubmit={onSubmit}>
@@ -100,26 +118,35 @@ export function SplitForm({
           <button type="button" onClick={onClearForm}>
             Clear form
           </button>
+          <button
+            className="preset-actions__help"
+            type="button"
+            onClick={onShowGuide}
+          >
+            How it works
+          </button>
         </div>
       </div>
 
-      <div className="start-guide" aria-label="How to start">
-        <article>
-          <span>1</span>
-          <strong>Start simple</strong>
-          <p>Load the sample race if you are not sure what to enter yet.</p>
-        </article>
-        <article>
-          <span>2</span>
-          <strong>Add splits</strong>
-          <p>Use times from runs and workout stations, like 530 for 5:30.</p>
-        </article>
-        <article>
-          <span>3</span>
-          <strong>Read cockpit</strong>
-          <p>Start with finish, time to find, biggest leak, and next action.</p>
-        </article>
-      </div>
+      {showStartGuide ? (
+        <div className="start-guide" aria-label="How to start">
+          <article>
+            <span>1</span>
+            <strong>Start simple</strong>
+            <p>Load the sample race if you are not sure what to enter yet.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <strong>Add splits</strong>
+            <p>Use times from runs and workout stations, like 530 for 5:30.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <strong>Read cockpit</strong>
+            <p>Start with finish, time to find, biggest leak, and next action.</p>
+          </article>
+        </div>
+      ) : null}
 
       <div className="format-picker" aria-label="Race format">
         {raceFormatOptions.map((option) => (
@@ -230,19 +257,39 @@ export function SplitForm({
         </label>
       </div>
 
-      <label className="field field--wide">
-        <span>Athlete level</span>
-        <select
-          value={level}
-          onChange={(event) => onLevelChange(event.target.value as Level)}
-        >
-          {Object.entries(levelLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="input-row">
+        <label className="field">
+          <span>Athlete level</span>
+          <select
+            value={level}
+            onChange={(event) => onLevelChange(event.target.value as Level)}
+          >
+            {Object.entries(levelLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="field">
+          <span>Official finish (optional)</span>
+          <input
+            value={officialFinishTime}
+            onChange={(event) => onOfficialFinishChange(event.target.value)}
+            onBlur={(event) =>
+              onOfficialFinishChange(
+                normalizeTimeInput(event.target.value, "race"),
+              )
+            }
+            inputMode="numeric"
+            placeholder="1:28:30"
+          />
+          <small className="field-hint">
+            Add your chip time to reveal roxzone (transition) time.
+          </small>
+        </label>
+      </div>
 
       <div className="training-context-input">
         <div className="training-context-input__header">
@@ -366,109 +413,226 @@ export function SplitForm({
         </div>
       </div>
 
-      <div className="split-group">
-        <h3>Run splits</h3>
-        <div className="split-grid">
-          {runs.map((split, index) => (
-            <label className="field" key={`run-${index + 1}`}>
-              <span>Run {index + 1}</span>
-              <input
-                className={fieldErrors[`run-${index}`] ? "is-invalid" : undefined}
-                value={split}
-                onChange={(event) => onRunChange(index, event.target.value)}
-                onBlur={(event) =>
-                  onRunChange(index, normalizeTimeInput(event.target.value))
-                }
-                inputMode="numeric"
-                placeholder="5:30"
-                aria-invalid={Boolean(fieldErrors[`run-${index}`])}
-              />
-              {fieldErrors[`run-${index}`] ? (
-                <small className="field-error">
-                  {fieldErrors[`run-${index}`]}
-                </small>
-              ) : null}
-              {isCustom && runs.length > 1 ? (
-                <button
-                  className="field-action"
-                  type="button"
-                  onClick={() => onRemoveRun(index)}
-                >
-                  Remove
-                </button>
-              ) : null}
-            </label>
-          ))}
-        </div>
-      </div>
+      {isCustom ? (
+        <>
+          <div className="split-group">
+            <h3>Run splits</h3>
+            <div className="split-grid">
+              {runs.map((split, index) => (
+                <label className="field" key={`run-${index + 1}`}>
+                  <span>Run {index + 1}</span>
+                  <input
+                    className={
+                      fieldErrors[`run-${index}`] ? "is-invalid" : undefined
+                    }
+                    value={split}
+                    onChange={(event) => onRunChange(index, event.target.value)}
+                    onBlur={(event) =>
+                      onRunChange(index, normalizeTimeInput(event.target.value))
+                    }
+                    inputMode="numeric"
+                    placeholder="5:30"
+                    aria-invalid={Boolean(fieldErrors[`run-${index}`])}
+                  />
+                  {fieldErrors[`run-${index}`] ? (
+                    <small className="field-error">
+                      {fieldErrors[`run-${index}`]}
+                    </small>
+                  ) : null}
+                  {runs.length > 1 ? (
+                    <button
+                      className="field-action"
+                      type="button"
+                      onClick={() => onRemoveRun(index)}
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </label>
+              ))}
+            </div>
+          </div>
 
-      <div className="split-group">
-        <h3>Stations</h3>
-        <div className="split-grid">
-          {stationDefinitions.map((station) => (
-            <label className="field" key={station.key}>
-              {isCustom ? (
-                <input
-                  className={
-                    fieldErrors[`station-${station.key}-label`]
-                      ? "station-name-input is-invalid"
-                      : "station-name-input"
-                  }
-                  value={station.label}
-                  onChange={(event) =>
-                    onCustomStationLabelChange(station.key, event.target.value)
-                  }
-                  aria-label="Station name"
-                  aria-invalid={Boolean(
-                    fieldErrors[`station-${station.key}-label`],
-                  )}
-                />
-              ) : (
-                <span>{station.label}</span>
-              )}
-              {fieldErrors[`station-${station.key}-label`] ? (
-                <small className="field-error">
-                  {fieldErrors[`station-${station.key}-label`]}
-                </small>
-              ) : null}
-              <input
-                className={
-                  fieldErrors[`station-${station.key}`] ? "is-invalid" : undefined
-                }
-                value={stationSplits[station.key]}
-                onChange={(event) =>
-                  onStationChange(station.key, event.target.value)
-                }
-                onBlur={(event) =>
-                  onStationChange(
-                    station.key,
-                    normalizeTimeInput(event.target.value),
-                  )
-                }
-                inputMode="numeric"
-                placeholder="5:00"
-                aria-invalid={Boolean(fieldErrors[`station-${station.key}`])}
-              />
-              {fieldErrors[`station-${station.key}`] ? (
-                <small className="field-error">
-                  {fieldErrors[`station-${station.key}`]}
-                </small>
-              ) : null}
-              {isCustom && stationDefinitions.length > 1 ? (
-                <button
-                  className="field-action"
-                  type="button"
-                  onClick={() => onRemoveCustomStation(station.key)}
-                >
-                  Remove
-                </button>
-              ) : null}
-            </label>
-          ))}
-        </div>
-      </div>
+          <div className="split-group">
+            <h3>Stations</h3>
+            <div className="split-grid">
+              {stationDefinitions.map((station) => (
+                <label className="field" key={station.key}>
+                  <input
+                    className={
+                      fieldErrors[`station-${station.key}-label`]
+                        ? "station-name-input is-invalid"
+                        : "station-name-input"
+                    }
+                    value={station.label}
+                    onChange={(event) =>
+                      onCustomStationLabelChange(station.key, event.target.value)
+                    }
+                    aria-label="Station name"
+                    aria-invalid={Boolean(
+                      fieldErrors[`station-${station.key}-label`],
+                    )}
+                  />
+                  {fieldErrors[`station-${station.key}-label`] ? (
+                    <small className="field-error">
+                      {fieldErrors[`station-${station.key}-label`]}
+                    </small>
+                  ) : null}
+                  <input
+                    className={
+                      fieldErrors[`station-${station.key}`]
+                        ? "is-invalid"
+                        : undefined
+                    }
+                    value={stationSplits[station.key]}
+                    onChange={(event) =>
+                      onStationChange(station.key, event.target.value)
+                    }
+                    onBlur={(event) =>
+                      onStationChange(
+                        station.key,
+                        normalizeTimeInput(event.target.value),
+                      )
+                    }
+                    inputMode="numeric"
+                    placeholder="5:00"
+                    aria-invalid={Boolean(fieldErrors[`station-${station.key}`])}
+                  />
+                  {fieldErrors[`station-${station.key}`] ? (
+                    <small className="field-error">
+                      {fieldErrors[`station-${station.key}`]}
+                    </small>
+                  ) : null}
+                  {stationDefinitions.length > 1 ? (
+                    <button
+                      className="field-action"
+                      type="button"
+                      onClick={() => onRemoveCustomStation(station.key)}
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </label>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="split-group rounds">
+          <div className="rounds__head">
+            <h3>{stationDefinitions.length} rounds — run + station</h3>
+            <div className="rounds__progress">
+              <div className="rounds__dots" aria-hidden="true">
+                {stationDefinitions.map((station, index) => {
+                  const runValue = (runs[index] ?? "").trim();
+                  const stationValue = (stationSplits[station.key] ?? "").trim();
+                  const state =
+                    runValue && stationValue
+                      ? "is-done"
+                      : runValue || stationValue
+                        ? "is-partial"
+                        : "";
+                  return (
+                    <span
+                      className={`rounds__dot ${state}`}
+                      key={`dot-${station.key}`}
+                    />
+                  );
+                })}
+              </div>
+              <span className="rounds__count">
+                {roundFilledCount} of {stationDefinitions.length} entered
+              </span>
+            </div>
+          </div>
 
-      <button type="submit">Generate race report</button>
+          <div className="rounds__list">
+            {stationDefinitions.map((station, index) => {
+              const runValue = runs[index] ?? "";
+              const stationValue = stationSplits[station.key] ?? "";
+              const filled = Boolean(runValue.trim()) && Boolean(stationValue.trim());
+              const runError = fieldErrors[`run-${index}`];
+              const stationError = fieldErrors[`station-${station.key}`];
+
+              return (
+                <details
+                  className={filled ? "round round--filled" : "round"}
+                  key={station.key}
+                  open={isRoundOpen(index)}
+                  onToggle={(event) =>
+                    setRoundOpen(index, event.currentTarget.open)
+                  }
+                >
+                  <summary className="round__summary">
+                    <span className="round__num">{index + 1}</span>
+                    <span className="round__meta">
+                      <span className="round__name">{station.label}</span>
+                      <span className="round__times">
+                        Run{" "}
+                        <em className={runValue.trim() ? "is-set" : undefined}>
+                          {runValue.trim() || "—"}
+                        </em>{" "}
+                        · Station{" "}
+                        <em className={stationValue.trim() ? "is-set" : undefined}>
+                          {stationValue.trim() || "—"}
+                        </em>
+                      </span>
+                    </span>
+                    <span className="round__state">{filled ? "Set" : "Enter"}</span>
+                  </summary>
+                  <div className="round__body">
+                    <label className="field">
+                      <span>Run {index + 1} (mm:ss)</span>
+                      <input
+                        className={runError ? "is-invalid" : undefined}
+                        value={runValue}
+                        onChange={(event) =>
+                          onRunChange(index, event.target.value)
+                        }
+                        onBlur={(event) =>
+                          onRunChange(index, normalizeTimeInput(event.target.value))
+                        }
+                        inputMode="numeric"
+                        placeholder="5:30"
+                        aria-invalid={Boolean(runError)}
+                      />
+                      {runError ? (
+                        <small className="field-error">{runError}</small>
+                      ) : null}
+                    </label>
+                    <label className="field">
+                      <span>{station.label}</span>
+                      <input
+                        className={stationError ? "is-invalid" : undefined}
+                        value={stationValue}
+                        onChange={(event) =>
+                          onStationChange(station.key, event.target.value)
+                        }
+                        onBlur={(event) =>
+                          onStationChange(
+                            station.key,
+                            normalizeTimeInput(event.target.value),
+                          )
+                        }
+                        inputMode="numeric"
+                        placeholder="5:00"
+                        aria-invalid={Boolean(stationError)}
+                      />
+                      {stationError ? (
+                        <small className="field-error">{stationError}</small>
+                      ) : null}
+                    </label>
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <button className="btn btn--primary btn--cut btn--block btn--lg" type="submit">
+        Generate race report
+      </button>
     </form>
   );
 }

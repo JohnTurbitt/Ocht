@@ -3,6 +3,7 @@
 import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { requestPasswordReset, resetPassword, verifyEmail } from "@/lib/apiClient";
+import { OctagonSpinner } from "./OctagonSpinner";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -44,7 +45,14 @@ export function ForgotPasswordForm() {
         />
       </label>
       <button type="submit" disabled={submitting}>
-        {submitting ? "Sending..." : "Send reset link"}
+        {submitting ? (
+          <span className="button-loading">
+            <OctagonSpinner size={18} />
+            Sending...
+          </span>
+        ) : (
+          "Send reset link"
+        )}
       </button>
       {message ? <p className="legal-form__message">{message}</p> : null}
       {error ? <p className="legal-form__error">{error}</p> : null}
@@ -93,7 +101,14 @@ function ResetPasswordInner() {
         />
       </label>
       <button type="submit" disabled={submitting || !token}>
-        {submitting ? "Resetting..." : "Reset password"}
+        {submitting ? (
+          <span className="button-loading">
+            <OctagonSpinner size={18} />
+            Resetting...
+          </span>
+        ) : (
+          "Reset password"
+        )}
       </button>
       {!token ? (
         <p className="legal-form__error">Password reset link is missing.</p>
@@ -141,7 +156,14 @@ function VerifyEmailInner() {
   return (
     <div className="legal-form">
       <button type="button" onClick={handleVerify} disabled={submitting || !token}>
-        {submitting ? "Verifying..." : "Verify email"}
+        {submitting ? (
+          <span className="button-loading">
+            <OctagonSpinner size={18} />
+            Verifying...
+          </span>
+        ) : (
+          "Verify email"
+        )}
       </button>
       {!token ? (
         <p className="legal-form__error">Email verification link is missing.</p>

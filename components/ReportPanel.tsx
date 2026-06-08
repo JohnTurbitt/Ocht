@@ -15,16 +15,26 @@ import {
   formatSpeedForUnit,
   secondsPerDistanceUnit,
 } from "@/lib/units";
+import { AthleteArchetypeCard } from "./AthleteArchetypeCard";
 import { CalculationExplainer } from "./CalculationExplainer";
 import { Hint } from "./Hint";
+import { OctagonSpinner } from "./OctagonSpinner";
 import { PremiumBadge } from "./PremiumBadge";
-import {
-  PremiumReportPoster,
-  RaceFlowMap,
-  RaceStory,
-  TimeLeakHeatmap,
-} from "./RaceVisuals";
+import { RaceFlowMap, RaceStory } from "./RaceVisuals";
+import { RoxzoneCard } from "./RoxzoneCard";
+import { ShareArchetypeCard, ShareFinishCard } from "./ShareCards";
 import { TargetSimulator } from "./TargetSimulator";
+
+const JUMP_SECTIONS = [
+  { id: "report-overview", label: "Overview" },
+  { id: "report-profile", label: "Profile" },
+  { id: "race-flow-map", label: "Flow" },
+  { id: "report-target-path", label: "Target" },
+  { id: "report-readiness", label: "Readiness" },
+  { id: "report-strengths", label: "Strengths" },
+  { id: "report-leaks", label: "Leaks" },
+  { id: "report-training", label: "Training" },
+];
 
 type ReportPanelProps = {
   analysis: Analysis;
@@ -137,17 +147,20 @@ export function ReportPanel({
   trainingContext,
 }: ReportPanelProps) {
   const reportCaptureRef = useRef<HTMLElement>(null);
-  const jumpNavShellRef = useRef<HTMLDivElement>(null);
-  const sharePosterCaptureRef = useRef<HTMLDivElement>(null);
+  const jumpNavRef = useRef<HTMLElement>(null);
+  const shareFinishRef = useRef<HTMLDivElement>(null);
+  const shareArchetypeRef = useRef<HTMLDivElement>(null);
   const [generatedDate, setGeneratedDate] = useState("");
   const [exportMessage, setExportMessage] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareTemplate, setShareTemplate] = useState<"finish" | "archetype">(
+    "finish",
+  );
   const [flowModalRequest, setFlowModalRequest] = useState({
     segmentId: "",
     signal: 0,
   });
-  const [jumpNavFloating, setJumpNavFloating] = useState(false);
-  const [jumpNavTop, setJumpNavTop] = useState(92);
+  const [activeSection, setActiveSection] = useState("report-overview");
   const visibleLeaks = fullReportUnlocked
     ? analysis.topLeaks
     : analysis.topLeaks.slice(0, 2);
@@ -252,36 +265,44 @@ export function ReportPanel({
   }, [shareModalOpen]);
 
   useEffect(() => {
-    function updateJumpNavPosition() {
-      const report = reportCaptureRef.current;
-      const shell = jumpNavShellRef.current;
+    const sections = JUMP_SECTIONS.map((section) =>
+      document.getElementById(section.id),
+    ).filter((element): element is HTMLElement => Boolean(element));
 
-      if (!report || !shell) {
-        setJumpNavFloating(false);
-        return;
-      }
-
-      const header = document.querySelector<HTMLElement>(".site-header");
-      const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
-      const topOffset = Math.max(12, Math.round(headerBottom + 10));
-      const shellBounds = shell.getBoundingClientRect();
-      const reportBounds = report.getBoundingClientRect();
-
-      setJumpNavTop(topOffset);
-      setJumpNavFloating(
-        shellBounds.top <= topOffset && reportBounds.bottom >= topOffset + 80,
-      );
+    if (!sections.length) {
+      return;
     }
 
-    updateJumpNavPosition();
-    window.addEventListener("scroll", updateJumpNavPosition, { passive: true });
-    window.addEventListener("resize", updateJumpNavPosition);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
+          );
 
-    return () => {
-      window.removeEventListener("scroll", updateJumpNavPosition);
-      window.removeEventListener("resize", updateJumpNavPosition);
-    };
+        if (visible[0]) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const activeButton =
+      jumpNavRef.current?.querySelector<HTMLElement>("button.is-active");
+
+    activeButton?.scrollIntoView({
+      block: "nearest",
+      inline: "center",
+      behavior: "smooth",
+    });
+  }, [activeSection]);
 
   async function copyReport() {
     try {
@@ -296,164 +317,98 @@ export function ReportPanel({
     }
   }
 
-  async function shareReport() {
-    try {
-      const captureBackground =
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--panel")
-          .trim() || "#ffffff";
-      const reportBlob = reportCaptureRef.current
-        ? await toBlob(reportCaptureRef.current, {
-            backgroundColor: captureBackground,
-            cacheBust: true,
-            filter: (node) => {
-              if (!(node instanceof HTMLElement)) {
-                return true;
-              }
+  const activeShareRef =
+    shareTemplate === "finish" ? shareFinishRef : shareArchetypeRef;
 
-              return !(
-                node.classList.contains("report-actions") ||
-                node.classList.contains("report__print") ||
-                node.classList.contains("share-preview-modal")
-              );
-            },
-            pixelRatio: 2,
-          })
-        : null;
-
-      if (reportBlob && navigator.share) {
-        const reportFile = new File([reportBlob], "ocht-race-report.png", {
-          type: "image/png",
-        });
-        const shareData = {
-          files: [reportFile],
-          text: "Ocht race report",
-          title: "Ocht Race Report",
-        };
-
-        if (!navigator.canShare || navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-          setExportMessage("Report image shared.");
-          setShareModalOpen(false);
-          trackEvent("report_exported", {
-            format: "full_image_share",
-          });
-          return;
-        }
-      }
-
-      if (navigator.share) {
-        await navigator.share({
-          title: "Ocht Race Report",
-          text: exportText,
-        });
-        setExportMessage("Share sheet opened.");
-        setShareModalOpen(false);
-        trackEvent("report_exported", {
-          format: "text_share",
-        });
-        return;
-      }
-
-      await copyReport();
-    } catch {
-      setExportMessage("Share was cancelled or blocked.");
-    }
-  }
-
-  async function createPosterBlob(
-    targetRef: RefObject<HTMLDivElement | null> = sharePosterCaptureRef,
-  ) {
+  async function createCardBlob(targetRef: RefObject<HTMLDivElement | null>) {
     if (!targetRef.current) {
       return null;
     }
 
     return toBlob(targetRef.current, {
-      backgroundColor: "transparent",
       cacheBust: true,
-      pixelRatio: 3,
+      pixelRatio: 2,
     });
   }
 
-  async function copyPosterImage(
-    targetRef: RefObject<HTMLDivElement | null> = sharePosterCaptureRef,
-  ) {
+  async function copyCardImage(targetRef: RefObject<HTMLDivElement | null>) {
     try {
-      const posterBlob = await createPosterBlob(targetRef);
+      const cardBlob = await createCardBlob(targetRef);
 
-      if (!posterBlob) {
-        setExportMessage("Poster was not ready to copy.");
+      if (!cardBlob) {
+        setExportMessage("Card was not ready to copy.");
         return;
       }
 
       if ("ClipboardItem" in window && navigator.clipboard?.write) {
         await navigator.clipboard.write([
-          new ClipboardItem({ [posterBlob.type]: posterBlob }),
+          new ClipboardItem({ [cardBlob.type]: cardBlob }),
         ]);
-        setExportMessage("Poster image copied.");
-        setShareModalOpen(false);
+        setExportMessage("Card image copied.");
         trackEvent("report_exported", {
-          format: "poster_clipboard",
+          format: `card_clipboard_${shareTemplate}`,
         });
         return;
       }
 
       setExportMessage("Image clipboard is not supported in this browser.");
     } catch {
-      setExportMessage("Poster copy was blocked by the browser.");
+      setExportMessage("Card copy was blocked by the browser.");
     }
   }
 
-  async function sharePosterImage(
-    targetRef: RefObject<HTMLDivElement | null> = sharePosterCaptureRef,
-  ) {
+  async function shareCardImage(targetRef: RefObject<HTMLDivElement | null>) {
     try {
-      const posterBlob = await createPosterBlob(targetRef);
+      const cardBlob = await createCardBlob(targetRef);
 
-      if (!posterBlob) {
-        setExportMessage("Poster was not ready to share.");
+      if (!cardBlob) {
+        setExportMessage("Card was not ready to share.");
         return;
       }
 
-      const posterFile = new File([posterBlob], "ocht-story-poster.png", {
+      const cardFile = new File([cardBlob], `ocht-${shareTemplate}-card.png`, {
         type: "image/png",
       });
       const shareData = {
-        files: [posterFile],
-        text: "Ocht race poster",
-        title: "Ocht Race Poster",
+        files: [cardFile],
+        text: "My Ocht race card",
+        title: "Ocht",
       };
 
       if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
         await navigator.share(shareData);
-        setExportMessage("Poster shared.");
-        setShareModalOpen(false);
+        setExportMessage("Card shared.");
         trackEvent("report_exported", {
-          format: "poster_share",
+          format: `card_share_${shareTemplate}`,
         });
         return;
       }
 
-      await copyPosterImage(targetRef);
+      await copyCardImage(targetRef);
     } catch {
-      setExportMessage("Poster share was cancelled or blocked.");
+      setExportMessage("Card share was cancelled or blocked.");
     }
   }
 
-  function downloadReport() {
+  async function downloadCardImage(targetRef: RefObject<HTMLDivElement | null>) {
     try {
-      const reportBlob = new Blob([exportText], { type: "text/plain" });
-      const reportUrl = URL.createObjectURL(reportBlob);
-      const reportLink = document.createElement("a");
+      const cardBlob = await createCardBlob(targetRef);
 
-      reportLink.href = reportUrl;
-      reportLink.download = "ocht-race-report.txt";
-      reportLink.click();
-      URL.revokeObjectURL(reportUrl);
-      setExportMessage("Report downloaded.");
-      setShareModalOpen(false);
+      if (!cardBlob) {
+        setExportMessage("Card was not ready to download.");
+        return;
+      }
+
+      const cardUrl = URL.createObjectURL(cardBlob);
+      const cardLink = document.createElement("a");
+
+      cardLink.href = cardUrl;
+      cardLink.download = `ocht-${shareTemplate}-card.png`;
+      cardLink.click();
+      URL.revokeObjectURL(cardUrl);
+      setExportMessage("Card downloaded.");
       trackEvent("report_exported", {
-        format: "text_download",
+        format: `card_download_${shareTemplate}`,
       });
     } catch {
       setExportMessage("Download was blocked by the browser.");
@@ -554,48 +509,35 @@ export function ReportPanel({
         </div>
       </section>
 
-      <div className="report-jump-nav-shell" ref={jumpNavShellRef}>
-        <nav
-          className={
-            jumpNavFloating
-              ? "report-jump-nav report-jump-nav--floating"
-              : "report-jump-nav"
-          }
-          style={jumpNavFloating ? { top: `${jumpNavTop}px` } : undefined}
-          aria-label="Report sections"
-        >
-          <button type="button" onClick={() => scrollToReportSection("report-overview")}>
-            Overview
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("race-flow-map")}>
-            Flow
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("report-target-path")}>
-            Target
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("report-readiness")}>
-            Readiness
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("report-strengths")}>
-            Strengths
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("report-leaks")}>
-            Leaks
-          </button>
-          <button type="button" onClick={() => scrollToReportSection("report-training")}>
-            Training
-          </button>
+      <nav className="report-jump-nav" aria-label="Report sections" ref={jumpNavRef}>
+        {JUMP_SECTIONS.map((section) => (
           <button
+            key={section.id}
             type="button"
-            onClick={() =>
-              fullReportUnlocked
-                ? (setShareModalOpen(true), trackEvent("share_options_opened"))
-                : scrollToReportSection("report-training")
-            }
+            className={activeSection === section.id ? "is-active" : undefined}
+            onClick={() => scrollToReportSection(section.id)}
           >
-            {fullReportUnlocked ? "Share" : "Upgrade"}
+            {section.label}
           </button>
-        </nav>
+        ))}
+        <button
+          type="button"
+          className="report-jump-nav__cta"
+          onClick={() =>
+            fullReportUnlocked
+              ? (setShareModalOpen(true), trackEvent("share_options_opened"))
+              : scrollToReportSection("report-training")
+          }
+        >
+          {fullReportUnlocked ? "Share" : "Upgrade"}
+        </button>
+      </nav>
+
+      <div id="report-profile" className="report-scroll-anchor">
+        <div className="premium-highlights">
+          <AthleteArchetypeCard analysis={analysis} />
+          <RoxzoneCard analysis={analysis} />
+        </div>
       </div>
 
       <div id="race-flow-map" className="report-scroll-anchor">
@@ -857,22 +799,28 @@ export function ReportPanel({
               and calculation breakdown.
             </p>
             <ul className="paywall__features">
-              <li>Custom formats and saved templates</li>
+              <li>Target simulator, four-week plan, and full leak list</li>
+              <li>Detailed race flow map and calculation breakdown</li>
               <li>Share images, print view, and coach summary</li>
-              <li>Training priorities, simulator, and calculation detail</li>
             </ul>
           </div>
           <button
+            className="btn btn--primary btn--cut"
             type="button"
             onClick={onStartCheckout}
             disabled={!canStartCheckout || billingLoading}
             data-analytics-source="paywall"
           >
-            {billingLoading
-              ? "Opening checkout..."
-              : canStartCheckout
-                ? "Unlock full report"
-                : "Sign in to unlock"}
+            {billingLoading ? (
+              <span className="button-loading">
+                <OctagonSpinner size={18} />
+                Opening checkout...
+              </span>
+            ) : canStartCheckout ? (
+              "Unlock full report"
+            ) : (
+              "Sign in to unlock"
+            )}
           </button>
         </div>
       ) : (
@@ -923,27 +871,8 @@ export function ReportPanel({
             </div>
           </ReportSection>
 
-          <ReportSection title="Station ranking" premium>
-            <p className="helper-text">
-              Each station is compared with the {analysis.levelLabel}{" "}
-              <Hint enabled={showHints} hint="benchmark" term="benchmark" />.
-            </p>
-            <div className="station-table">
-              {analysis.stationResults.map((station) => (
-                <div key={station.key}>
-                  <span>{station.label}</span>
-                  <strong>{formatTime(station.gap)} leak</strong>
-                </div>
-              ))}
-            </div>
-          </ReportSection>
-
           <ReportSection title="Race story" premium>
             <RaceStory analysis={analysis} />
-          </ReportSection>
-
-          <ReportSection title="Time leak heatmap" premium>
-            <TimeLeakHeatmap analysis={analysis} />
           </ReportSection>
 
           <ReportSection title="Calculation breakdown" premium>
@@ -963,122 +892,158 @@ export function ReportPanel({
           }}
         >
           <section
-            className="share-carousel"
+            className="share-studio"
             aria-modal="true"
             role="dialog"
-            aria-label="Share options preview"
+            aria-label="Share your race"
           >
-            <header className="share-carousel__header">
+            <header className="share-studio__header">
               <div>
-                <span>Share preview</span>
-                <h3>Choose what to share</h3>
+                <span>Share studio</span>
+                <h3>Share your race</h3>
               </div>
-              <button type="button" onClick={() => setShareModalOpen(false)}>
-                Close
+              <button
+                className="modal-close"
+                type="button"
+                onClick={() => setShareModalOpen(false)}
+                aria-label="Close"
+              >
+                ×
               </button>
             </header>
 
-            <div className="share-carousel__track" aria-label="Swipe share options">
-              <article className="share-carousel__slide">
-                <div className="share-carousel__copy-preview">
-                  <img src="/brand/ocht-logo-wordmark.svg" alt="Ocht" />
-                  <p>{analysis.report}</p>
-                </div>
-                <div className="share-carousel__content">
-                  <span>Text summary</span>
-                  <h4>Copy a clean report summary</h4>
-                  <p>Best for notes, messages, or sending to a coach.</p>
-                  <button type="button" onClick={() => void copyReport()}>
-                    Copy summary
-                  </button>
-                </div>
-              </article>
-
-              <article className="share-carousel__slide">
-                <div className="share-preview__report">
-                  <img src="/brand/ocht-logo-wordmark.svg" alt="Ocht" />
-                  <div>
-                    <span>Projected finish</span>
-                    <strong>{formatTime(analysis.finishSeconds)}</strong>
-                  </div>
-                  <div>
-                    <span>Target path</span>
-                    <strong>{formatTime(analysis.predictedTargetSeconds)}</strong>
-                  </div>
-                <div>
-                  <span>Avg run</span>
-                  <strong>{averageRunPace}</strong>
-                </div>
-                  <p>
-                    The full report image includes the current report panel,
-                    charts, premium sections, and calculation detail.
-                  </p>
-                </div>
-                <div className="share-carousel__content">
-                  <span>Full report image</span>
-                  <h4>Share the complete report view</h4>
-                  <p>Best for saving the whole analysis as one image.</p>
-                  <button type="button" onClick={() => void shareReport()}>
-                    Share full report image
-                  </button>
-                </div>
-              </article>
-
-              <article className="share-carousel__slide share-carousel__slide--poster">
-                <div className="share-preview__poster">
-                  <div className="share-preview__poster-mini">
-                    <PremiumReportPoster
-                      analysis={analysis}
-                      distanceUnit={distanceUnit}
-                    />
-                  </div>
-                </div>
-                <div className="share-carousel__content">
-                  <span>Story poster</span>
-                  <h4>Share the social poster</h4>
-                  <p>Best for Instagram stories, WhatsApp, or quick updates.</p>
-                  <div className="share-carousel__buttons">
-                    <button
-                      type="button"
-                      onClick={() => void copyPosterImage()}
-                    >
-                      Copy poster
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void sharePosterImage()}
-                    >
-                      Share poster
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <article className="share-carousel__slide">
-                <div className="share-carousel__file-preview">
-                  <span>TXT</span>
-                  <strong>ocht-race-report.txt</strong>
-                  <p>Plain text export with targets, leaks, and rankings.</p>
-                </div>
-                <div className="share-carousel__content">
-                  <span>Text file</span>
-                  <h4>Download the report data</h4>
-                  <p>Best for keeping a local copy or pasting into training logs.</p>
-                  <button type="button" onClick={downloadReport}>
-                    Download .txt
-                  </button>
-                </div>
-              </article>
+            <div className="share-studio__tabs" role="tablist">
+              <button
+                type="button"
+                className={shareTemplate === "finish" ? "is-active" : undefined}
+                onClick={() => setShareTemplate("finish")}
+              >
+                Finish card
+              </button>
+              <button
+                type="button"
+                className={
+                  shareTemplate === "archetype" ? "is-active" : undefined
+                }
+                onClick={() => setShareTemplate("archetype")}
+              >
+                Archetype
+              </button>
             </div>
+
+            <div className="share-studio__stage">
+              <div className="share-studio__frame">
+                <div className="share-studio__scale">
+                  {shareTemplate === "finish" ? (
+                    <ShareFinishCard
+                      analysis={analysis}
+                      generatedDate={generatedDate}
+                    />
+                  ) : (
+                    <ShareArchetypeCard
+                      analysis={analysis}
+                      generatedDate={generatedDate}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="share-studio__actions">
+              <button
+                className="btn btn--primary btn--block"
+                type="button"
+                onClick={() => void shareCardImage(activeShareRef)}
+              >
+                <svg
+                  className="btn__icon"
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                  <path d="M12 16V4" />
+                  <path d="M7 9l5-5 5 5" />
+                </svg>
+                Share&hellip;
+              </button>
+              <div className="share-studio__row">
+                <button
+                  className="btn btn--secondary"
+                  type="button"
+                  onClick={() => void copyCardImage(activeShareRef)}
+                >
+                  <svg
+                    className="btn__icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="11" height="11" rx="2" />
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                  </svg>
+                  Copy
+                </button>
+                <button
+                  className="btn btn--secondary"
+                  type="button"
+                  onClick={() => void downloadCardImage(activeShareRef)}
+                >
+                  <svg
+                    className="btn__icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Save PNG
+                </button>
+              </div>
+            </div>
+
+            <div className="share-studio__secondary">
+              <button
+                className="btn btn--ghost btn--sm"
+                type="button"
+                onClick={() => void copyReport()}
+              >
+                <svg
+                  className="btn__icon"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <rect x="6" y="3" width="12" height="18" rx="2" />
+                  <path d="M9 8h6M9 12h6M9 16h4" />
+                </svg>
+                Copy summary for a coach
+              </button>
+            </div>
+
+            <p className="share-studio__status" aria-live="polite">
+              {exportMessage}
+            </p>
           </section>
         </div>
       ) : null}
       {fullReportUnlocked ? (
-        <div className="share-poster-capture" aria-hidden="true">
-          <PremiumReportPoster
+        <div className="share-capture" aria-hidden="true">
+          <ShareFinishCard
             analysis={analysis}
-            distanceUnit={distanceUnit}
-            captureRef={sharePosterCaptureRef}
+            generatedDate={generatedDate}
+            captureRef={shareFinishRef}
+          />
+          <ShareArchetypeCard
+            analysis={analysis}
+            generatedDate={generatedDate}
+            captureRef={shareArchetypeRef}
           />
         </div>
       ) : null}

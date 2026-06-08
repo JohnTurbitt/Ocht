@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { upcomingEvents } from "@/lib/upcomingEvents";
+import { EventsList } from "./EventsList";
 
 export function UpcomingEventsMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const featuredEvents = upcomingEvents.slice(0, 5);
 
   useEffect(() => {
     if (!open) {
@@ -50,33 +49,7 @@ export function UpcomingEventsMenu() {
       </button>
       {open ? (
         <div className="events-menu__panel">
-          <div className="events-menu__header">
-            <p className="eyebrow">Upcoming races</p>
-            <strong>HYROX + TRYKA</strong>
-          </div>
-          <div className="events-menu__list">
-            {featuredEvents.map((event) => (
-              <a href={event.url} key={event.id} target="_blank" rel="noreferrer">
-                <span
-                  className={`events-menu__badge events-menu__badge--${event.series.toLowerCase()}`}
-                >
-                  {event.series}
-                </span>
-                <div>
-                  <strong>{event.name}</strong>
-                  <p>
-                    {event.location}, {event.country}
-                  </p>
-                  <small>
-                    {event.dateLabel} - {event.status}
-                  </small>
-                </div>
-              </a>
-            ))}
-          </div>
-          <p className="events-menu__source">
-            Dates are manually curated from public event pages.
-          </p>
+          <EventsList />
         </div>
       ) : null}
     </div>

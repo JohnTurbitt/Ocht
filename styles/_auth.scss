@@ -247,6 +247,78 @@
   transform: rotate(45deg) translateY(-2px);
 }
 
+.auth-panel__avatar--premium {
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--lime);
+}
+
+.auth-panel__avatar--guest {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.auth-panel__avatar--guest svg {
+  width: 18px;
+  height: 18px;
+}
+
+.auth-panel__account-summary--guest {
+  grid-template-columns: 1fr;
+}
+
+/* Theme + units inside the account menu */
+.account-settings {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.account-settings__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-settings__label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.account-settings__switch {
+  display: inline-flex;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 3px;
+  background: var(--field);
+}
+
+.account-settings__switch button {
+  width: auto;
+  min-height: 30px;
+  margin: 0;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.account-settings__switch button.is-active {
+  background: var(--action-bg);
+  color: var(--action-text);
+}
+
 .auth-panel__account-summary {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

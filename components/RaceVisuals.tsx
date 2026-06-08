@@ -158,12 +158,12 @@ function SegmentInsightPanel({ segment, onClose }: SegmentInsightPanelProps) {
       aria-labelledby="race-flow-dialog-title"
     >
       <button
-        className="segment-insight__close"
+        className="segment-insight__close modal-close"
         type="button"
         onClick={onClose}
         aria-label="Close segment details"
       >
-        Close
+        ×
       </button>
 
       <header className="segment-insight__header">
@@ -268,8 +268,16 @@ function FlowBarShape({
         height={barHeight}
         rx={8}
         fill={statusColor(segment.status)}
-        stroke={isSelected ? "var(--ink)" : "rgba(11, 18, 15, 0.22)"}
+        stroke={isSelected ? "var(--ink)" : "var(--stroke-muted)"}
         strokeWidth={isSelected ? 3 : 1}
+      />
+      <rect
+        className={`race-flow-svg__cap race-flow-svg__cap--${segment.type}`}
+        x={barX}
+        y={barY}
+        width={4}
+        height={barHeight}
+        rx={2}
       />
       {lostWidth > 2 ? (
         <rect
@@ -279,6 +287,15 @@ function FlowBarShape({
           width={lostWidth}
           height={barHeight}
           rx={8}
+        />
+      ) : null}
+      {segment.leakSeconds > 0 && lostWidth > 2 ? (
+        <line
+          className="race-flow-svg__target"
+          x1={barX + barWidth - lostWidth}
+          y1={barY - 3}
+          x2={barX + barWidth - lostWidth}
+          y2={barY + barHeight + 3}
         />
       ) : null}
       {segment.topLeakRank ? (
@@ -302,6 +319,16 @@ function FlowBarShape({
       >
         {segment.displayTime}
       </text>
+      {segment.leakSeconds >= 1 ? (
+        <text
+          className="race-flow-svg__delta"
+          x={labelX}
+          y={labelY + 13}
+          textAnchor="start"
+        >
+          +{formatTime(segment.leakSeconds)}
+        </text>
+      ) : null}
     </g>
   );
 }
@@ -525,6 +552,15 @@ export function RaceFlowMap({
         </span>
         <span className="race-visual__legend-item race-visual__legend-item--pin">
           Leak marker
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--targetline">
+          Target
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--run">
+          Run
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--station">
+          Station
         </span>
       </div>
     </div>

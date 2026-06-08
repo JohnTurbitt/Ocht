@@ -2,12 +2,24 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Level, levelLabels } from "@/lib/analysis";
 import { AuthFormInput, AuthUser, ProfileFormInput } from "@/lib/apiClient";
+import {
+  Theme,
+  applyTheme,
+  persistDistanceUnit,
+  persistTheme,
+  readPreferredDistanceUnit,
+  readPreferredTheme,
+} from "@/lib/preferences";
+import type { DistanceUnit } from "@/lib/units";
+import { OctagonSpinner } from "./OctagonSpinner";
 import { PremiumBadge } from "./PremiumBadge";
 
 type AuthPanelProps = {
   user: AuthUser | null;
   loading: boolean;
   billingLoading: boolean;
+  distanceUnit: DistanceUnit;
+  onDistanceUnitChange: (unit: DistanceUnit) => void;
   onLogin: (input: AuthFormInput) => Promise<void>;
   onSignup: (input: AuthFormInput) => Promise<void>;
   onLogout: () => Promise<void>;
@@ -30,6 +42,8 @@ export function AuthPanel({
   user,
   loading,
   billingLoading,
+  distanceUnit,
+  onDistanceUnitChange,
   onLogin,
   onSignup,
   onLogout,
@@ -39,6 +53,7 @@ export function AuthPanel({
   onSaveProfile,
 }: AuthPanelProps) {
   const [mode, setMode] = useState<AuthMode | null>(null);
+  const [theme, setTheme] = useState<Theme>("light");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -52,6 +67,15 @@ export function AuthPanel({
   const accountRef = useRef<HTMLElement>(null);
   const displayName = user?.name || user?.email || "";
   const userInitial = displayName.trim().charAt(0).toUpperCase() || "O";
+  const isPremium = user?.subscription === "ACTIVE";
+
+  useEffect(() => {
+    const preferredTheme = readPreferredTheme();
+
+    setTheme(preferredTheme);
+    applyTheme(preferredTheme);
+    onDistanceUnitChange(readPreferredDistanceUnit());
+  }, [onDistanceUnitChange]);
 
   useEffect(() => {
     if (!accountOpen) {
@@ -105,6 +129,60 @@ export function AuthPanel({
     }
   }
 
+  function updateTheme(nextTheme: Theme) {
+    setTheme(nextTheme);
+    persistTheme(nextTheme);
+    applyTheme(nextTheme);
+  }
+
+  function updateUnit(nextUnit: DistanceUnit) {
+    persistDistanceUnit(nextUnit);
+    onDistanceUnitChange(nextUnit);
+  }
+
+  const settingsControls = (
+    <div className="account-settings">
+      <div className="account-settings__group">
+        <span className="account-settings__label">Theme</span>
+        <div className="account-settings__switch">
+          <button
+            type="button"
+            className={theme === "light" ? "is-active" : undefined}
+            onClick={() => updateTheme("light")}
+          >
+            Light
+          </button>
+          <button
+            type="button"
+            className={theme === "dark" ? "is-active" : undefined}
+            onClick={() => updateTheme("dark")}
+          >
+            Dark
+          </button>
+        </div>
+      </div>
+      <div className="account-settings__group">
+        <span className="account-settings__label">Distance</span>
+        <div className="account-settings__switch">
+          <button
+            type="button"
+            className={distanceUnit === "km" ? "is-active" : undefined}
+            onClick={() => updateUnit("km")}
+          >
+            KM
+          </button>
+          <button
+            type="button"
+            className={distanceUnit === "mi" ? "is-active" : undefined}
+            onClick={() => updateUnit("mi")}
+          >
+            Miles
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (!user && loading) {
     return (
       <aside
@@ -140,7 +218,14 @@ export function AuthPanel({
         {accountOpen ? (
           <div className="auth-panel__account-menu">
             <div className="auth-panel__account-summary">
-              <span className="auth-panel__avatar" aria-hidden="true">
+              <span
+              className={
+                isPremium
+                  ? "auth-panel__avatar auth-panel__avatar--premium"
+                  : "auth-panel__avatar"
+              }
+              aria-hidden="true"
+            >
                 {userInitial}
               </span>
               <div>
@@ -236,7 +321,14 @@ export function AuthPanel({
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting || loading}>
-                    {submitting ? "Saving..." : "Save profile"}
+                    {submitting ? (
+                      <span className="button-loading">
+                        <OctagonSpinner size={16} />
+                        Saving...
+                      </span>
+                    ) : (
+                      "Save profile"
+                    )}
                   </button>
                 </div>
               </form>
@@ -262,7 +354,14 @@ export function AuthPanel({
                 onClick={onStartCheckout}
                 disabled={loading || billingLoading}
               >
-                {billingLoading ? "Opening..." : "Upgrade to premium"}
+                {billingLoading ? (
+                  <span className="button-loading">
+                    <OctagonSpinner size={16} />
+                    Opening...
+                  </span>
+                ) : (
+                  "Upgrade to premium"
+                )}
               </button>
             ) : null}
             {canManageBilling ? (
@@ -272,9 +371,17 @@ export function AuthPanel({
                 onClick={onManageBilling}
                 disabled={loading || billingLoading}
               >
-                {billingLoading ? "Opening..." : "Manage billing"}
+                {billingLoading ? (
+                  <span className="button-loading">
+                    <OctagonSpinner size={16} />
+                    Opening...
+                  </span>
+                ) : (
+                  "Manage billing"
+                )}
               </button>
             ) : null}
+            {settingsControls}
             <button
               className="button-secondary auth-panel__menu-item"
               type="button"
@@ -291,29 +398,66 @@ export function AuthPanel({
   }
 
   return (
-    <aside className={mode ? "auth-panel auth-panel--open" : "auth-panel"}>
-      <div className="auth-panel__signed-out">
-        <div>
-          <span className="auth-panel__meta">Account</span>
-          <p>Save reports and unlock premium analytics.</p>
+    <aside
+      className={
+        mode
+          ? "auth-panel auth-panel--compact auth-panel--open"
+          : "auth-panel auth-panel--compact"
+      }
+      ref={accountRef}
+    >
+      <button
+        className="auth-panel__account-trigger"
+        type="button"
+        onClick={() => setAccountOpen((isOpen) => !isOpen)}
+        aria-expanded={accountOpen}
+        aria-label="Account and settings"
+      >
+        <span className="auth-panel__avatar auth-panel__avatar--guest" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" />
+          </svg>
+        </span>
+        <span className="auth-panel__chevron" aria-hidden="true" />
+      </button>
+
+      {accountOpen ? (
+        <div className="auth-panel__account-menu">
+          <div className="auth-panel__account-summary auth-panel__account-summary--guest">
+            <div>
+              <span className="auth-panel__meta">Account</span>
+              <strong>Not signed in</strong>
+              <span className="auth-panel__email">
+                Save reports and unlock premium
+              </span>
+            </div>
+          </div>
+          {settingsControls}
+          <div className="auth-panel__actions">
+            <button
+              className="button-secondary auth-panel__menu-item"
+              type="button"
+              onClick={() => {
+                setMode("login");
+                setAccountOpen(false);
+              }}
+            >
+              Log in
+            </button>
+            <button
+              className="button-secondary auth-panel__menu-item"
+              type="button"
+              onClick={() => {
+                setMode("signup");
+                setAccountOpen(false);
+              }}
+            >
+              Join Ocht
+            </button>
+          </div>
         </div>
-        <div className="auth-panel__switch" aria-label="Auth mode">
-          <button
-            className={mode === "login" ? "is-active auth-panel__login" : "auth-panel__login"}
-            type="button"
-            onClick={() => setMode("login")}
-          >
-            Login
-          </button>
-          <button
-            className={mode === "signup" ? "is-active auth-panel__join" : "auth-panel__join"}
-            type="button"
-            onClick={() => setMode("signup")}
-          >
-            Join Ocht
-          </button>
-        </div>
-      </div>
+      ) : null}
 
       {mode ? (
         <div className="auth-panel__popover">
@@ -330,7 +474,7 @@ export function AuthPanel({
               onClick={() => setMode(null)}
               aria-label="Close account form"
             >
-              x
+              ×
             </button>
           </div>
           <p className="auth-panel__lead">
@@ -386,11 +530,16 @@ export function AuthPanel({
               </Link>
             ) : null}
             <button type="submit" disabled={submitting || loading}>
-              {submitting
-                ? "Working..."
-                : mode === "signup"
-                  ? "Create account"
-                  : "Sign in"}
+              {submitting ? (
+                <span className="button-loading">
+                  <OctagonSpinner size={18} />
+                  Working...
+                </span>
+              ) : mode === "signup" ? (
+                "Create account"
+              ) : (
+                "Sign in"
+              )}
             </button>
           </form>
         </div>

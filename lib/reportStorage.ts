@@ -8,6 +8,7 @@ export type SavedReport = {
   raceFormat?: RaceFormat;
   goal: string;
   targetTime: string;
+  officialFinishTime?: string;
   level: Level;
   runs: string[];
   stationDefinitions?: Station[];
