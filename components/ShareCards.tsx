@@ -1,14 +1,30 @@
 import { RefObject } from "react";
 import { Analysis, formatTime } from "@/lib/analysis";
+import { AvatarMark } from "./AvatarMark";
 import { OchtShield } from "./OchtShield";
 
 type ShareCardProps = {
   analysis: Analysis;
   generatedDate: string;
+  athleteName?: string;
+  avatarColor?: string;
+  avatarIcon?: string;
   captureRef?: RefObject<HTMLDivElement | null>;
 };
 
-function CardHeader({ generatedDate }: { generatedDate: string }) {
+function CardHeader({
+  generatedDate,
+  athleteName,
+  avatarColor,
+  avatarIcon,
+}: {
+  generatedDate: string;
+  athleteName?: string;
+  avatarColor?: string;
+  avatarIcon?: string;
+}) {
+  const initial = athleteName?.trim().charAt(0).toUpperCase() || "";
+
   return (
     <div className="share-card__top">
       <div className="share-card__brand">
@@ -17,7 +33,22 @@ function CardHeader({ generatedDate }: { generatedDate: string }) {
           ocht<em>.</em>
         </span>
       </div>
-      <span className="share-card__date">{generatedDate || "Ocht"}</span>
+      {athleteName ? (
+        <div className="share-card__athlete">
+          <span
+            className="share-card__avatar"
+            style={{ background: avatarColor }}
+          >
+            <AvatarMark icon={avatarIcon ?? "initial"} initial={initial} />
+          </span>
+          <span className="share-card__athlete-meta">
+            <strong>{athleteName}</strong>
+            <span>{generatedDate || "Ocht"}</span>
+          </span>
+        </div>
+      ) : (
+        <span className="share-card__date">{generatedDate || "Ocht"}</span>
+      )}
     </div>
   );
 }
@@ -36,6 +67,9 @@ function CardFooter({ analysis }: { analysis: Analysis }) {
 export function ShareFinishCard({
   analysis,
   generatedDate,
+  athleteName,
+  avatarColor,
+  avatarIcon,
   captureRef,
 }: ShareCardProps) {
   const hasTarget = analysis.targetSeconds > 0;
@@ -63,7 +97,12 @@ export function ShareFinishCard({
 
   return (
     <div className="share-card share-card--finish" ref={captureRef}>
-      <CardHeader generatedDate={generatedDate} />
+      <CardHeader
+        generatedDate={generatedDate}
+        athleteName={athleteName}
+        avatarColor={avatarColor}
+        avatarIcon={avatarIcon}
+      />
       <div className="share-card__body">
         <p className="share-card__eyebrow">Projected finish</p>
         <div className="share-card__finish">{formatTime(analysis.finishSeconds)}</div>
@@ -97,13 +136,21 @@ const SCORE_ROWS: {
 export function ShareArchetypeCard({
   analysis,
   generatedDate,
+  athleteName,
+  avatarColor,
+  avatarIcon,
   captureRef,
 }: ShareCardProps) {
   const { archetype } = analysis;
 
   return (
     <div className="share-card share-card--archetype" ref={captureRef}>
-      <CardHeader generatedDate={generatedDate} />
+      <CardHeader
+        generatedDate={generatedDate}
+        athleteName={athleteName}
+        avatarColor={avatarColor}
+        avatarIcon={avatarIcon}
+      />
       <div className="share-card__body">
         <p className="share-card__eyebrow">Athlete archetype</p>
         <div className="share-card__archetype">{archetype.label}</div>

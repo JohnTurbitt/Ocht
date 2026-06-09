@@ -2,9 +2,11 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Level, levelLabels } from "@/lib/analysis";
 import { AuthFormInput, AuthUser, ProfileFormInput } from "@/lib/apiClient";
+import { AVATAR_ICONS, AvatarMark } from "./AvatarMark";
 import {
   Theme,
   applyTheme,
+  avatarColors,
   persistDistanceUnit,
   persistTheme,
   readPreferredDistanceUnit,
@@ -20,6 +22,10 @@ type AuthPanelProps = {
   billingLoading: boolean;
   distanceUnit: DistanceUnit;
   onDistanceUnitChange: (unit: DistanceUnit) => void;
+  avatarColor: string;
+  onAvatarColorChange: (color: string) => void;
+  avatarIcon: string;
+  onAvatarIconChange: (icon: string) => void;
   onLogin: (input: AuthFormInput) => Promise<void>;
   onSignup: (input: AuthFormInput) => Promise<void>;
   onLogout: () => Promise<void>;
@@ -44,6 +50,10 @@ export function AuthPanel({
   billingLoading,
   distanceUnit,
   onDistanceUnitChange,
+  avatarColor,
+  onAvatarColorChange,
+  avatarIcon,
+  onAvatarIconChange,
   onLogin,
   onSignup,
   onLogout,
@@ -209,8 +219,16 @@ export function AuthPanel({
           onClick={() => setAccountOpen((isOpen) => !isOpen)}
           aria-expanded={accountOpen}
         >
-          <span className="auth-panel__avatar" aria-hidden="true">
-            {userInitial}
+          <span
+            className={
+              isPremium
+                ? "auth-panel__avatar auth-panel__avatar--premium"
+                : "auth-panel__avatar"
+            }
+            style={{ background: avatarColor }}
+            aria-hidden="true"
+          >
+            <AvatarMark icon={avatarIcon} initial={userInitial} />
           </span>
           <span className="auth-panel__chevron" aria-hidden="true" />
         </button>
@@ -224,9 +242,10 @@ export function AuthPanel({
                   ? "auth-panel__avatar auth-panel__avatar--premium"
                   : "auth-panel__avatar"
               }
+              style={{ background: avatarColor }}
               aria-hidden="true"
             >
-                {userInitial}
+                <AvatarMark icon={avatarIcon} initial={userInitial} />
               </span>
               <div>
                 <span className="auth-panel__meta">Signed in</span>
@@ -381,6 +400,44 @@ export function AuthPanel({
                 )}
               </button>
             ) : null}
+            <div className="account-settings avatar-picker">
+              <span className="account-settings__label">Avatar</span>
+              <div className="avatar-icons">
+                {AVATAR_ICONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={
+                      option.id === avatarIcon
+                        ? "avatar-icon is-active"
+                        : "avatar-icon"
+                    }
+                    onClick={() => onAvatarIconChange(option.id)}
+                    aria-label={`${option.label} avatar`}
+                    aria-pressed={option.id === avatarIcon}
+                  >
+                    <AvatarMark icon={option.id} initial={userInitial} />
+                  </button>
+                ))}
+              </div>
+              <div className="avatar-swatches">
+                {avatarColors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={
+                      color === avatarColor
+                        ? "avatar-swatch is-active"
+                        : "avatar-swatch"
+                    }
+                    style={{ background: color }}
+                    onClick={() => onAvatarColorChange(color)}
+                    aria-label={`Use ${color} avatar colour`}
+                    aria-pressed={color === avatarColor}
+                  />
+                ))}
+              </div>
+            </div>
             {settingsControls}
             <button
               className="button-secondary auth-panel__menu-item"

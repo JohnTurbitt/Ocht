@@ -60,3 +60,43 @@ export function readPreferredDistanceUnit(): DistanceUnit {
 export function persistDistanceUnit(unit: DistanceUnit) {
   window.localStorage.setItem(unitStorageKey, unit);
 }
+
+const avatarColorKey = "ocht.avatarColor";
+
+// Brand-aligned accent palette for the user's avatar.
+export const avatarColors = [
+  "#c8ff2e",
+  "#60c878",
+  "#5ac8ff",
+  "#ffb840",
+  "#ff7a7a",
+  "#b08cff",
+];
+
+export function readAvatarColor(): string {
+  if (typeof window === "undefined") {
+    return avatarColors[0];
+  }
+
+  const saved = window.localStorage.getItem(avatarColorKey);
+
+  return saved && avatarColors.includes(saved) ? saved : avatarColors[0];
+}
+
+export function persistAvatarColor(color: string) {
+  window.localStorage.setItem(avatarColorKey, color);
+}
+
+const avatarIconKey = "ocht.avatarIcon";
+
+export function readAvatarIcon(): string {
+  if (typeof window === "undefined") {
+    return "initial";
+  }
+
+  return window.localStorage.getItem(avatarIconKey) ?? "initial";
+}
+
+export function persistAvatarIcon(icon: string) {
+  window.localStorage.setItem(avatarIconKey, icon);
+}

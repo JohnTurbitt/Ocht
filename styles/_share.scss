@@ -78,6 +78,49 @@
   color: #4a6150;
 }
 
+.share-card__athlete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.share-card__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: #08100d;
+}
+
+.share-card__athlete-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.share-card__athlete-meta strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: #e8f5ea;
+}
+
+.share-card__athlete-meta span {
+  font-family: var(--font-mono), monospace;
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a6150;
+}
+
 .share-card__body {
   flex: 1;
   display: flex;

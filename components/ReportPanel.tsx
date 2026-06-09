@@ -17,11 +17,13 @@ import {
 } from "@/lib/units";
 import { AthleteArchetypeCard } from "./AthleteArchetypeCard";
 import { CalculationExplainer } from "./CalculationExplainer";
+import { CountUp } from "./CountUp";
 import { Hint } from "./Hint";
 import { OctagonSpinner } from "./OctagonSpinner";
 import { PremiumBadge } from "./PremiumBadge";
 import { RaceFlowMap, RaceStory } from "./RaceVisuals";
 import { RoxzoneCard } from "./RoxzoneCard";
+import { ScoreGauge } from "./ScoreGauge";
 import { ShareArchetypeCard, ShareFinishCard } from "./ShareCards";
 import { TargetSimulator } from "./TargetSimulator";
 
@@ -39,6 +41,9 @@ const JUMP_SECTIONS = [
 type ReportPanelProps = {
   analysis: Analysis;
   distanceUnit: DistanceUnit;
+  athleteName: string;
+  avatarColor: string;
+  avatarIcon: string;
   hasGeneratedReport: boolean;
   fullReportUnlocked: boolean;
   canStartCheckout: boolean;
@@ -121,7 +126,7 @@ function ReadinessMetric({
     <span>
       {label}
       <strong>
-        {score}
+        <CountUp value={score} />
         <small>/100</small>
       </strong>
       <em>{detail}</em>
@@ -132,6 +137,9 @@ function ReadinessMetric({
 export function ReportPanel({
   analysis,
   distanceUnit,
+  athleteName,
+  avatarColor,
+  avatarIcon,
   hasGeneratedReport,
   fullReportUnlocked,
   canStartCheckout,
@@ -294,14 +302,23 @@ export function ReportPanel({
   }, []);
 
   useEffect(() => {
-    const activeButton =
-      jumpNavRef.current?.querySelector<HTMLElement>("button.is-active");
+    const nav = jumpNavRef.current;
+    const activeButton = nav?.querySelector<HTMLElement>("button.is-active");
 
-    activeButton?.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
-    });
+    if (!nav || !activeButton) {
+      return;
+    }
+
+    // Centre the active chip within the nav's own horizontal scroll only —
+    // never call scrollIntoView, which would also scroll the page vertically.
+    const navRect = nav.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    const delta =
+      buttonRect.left +
+      buttonRect.width / 2 -
+      (navRect.left + navRect.width / 2);
+
+    nav.scrollBy({ left: delta, behavior: "smooth" });
   }, [activeSection]);
 
   async function copyReport() {
@@ -618,9 +635,10 @@ export function ReportPanel({
         <ReportSection title="Readiness" defaultOpen>
           <div className="readiness-card">
             <div className="readiness-card__score">
-              <span>{readinessLabel(readiness.overall)}</span>
-              <strong>{readiness.overall}</strong>
-              <small>/100</small>
+              <ScoreGauge
+                score={readiness.overall}
+                label={readinessLabel(readiness.overall)}
+              />
             </div>
             <div className="readiness-card__body">
               <h3>How prepared this race profile looks</h3>
@@ -938,11 +956,17 @@ export function ReportPanel({
                     <ShareFinishCard
                       analysis={analysis}
                       generatedDate={generatedDate}
+                      athleteName={athleteName}
+                      avatarColor={avatarColor}
+                      avatarIcon={avatarIcon}
                     />
                   ) : (
                     <ShareArchetypeCard
                       analysis={analysis}
                       generatedDate={generatedDate}
+                      athleteName={athleteName}
+                      avatarColor={avatarColor}
+                      avatarIcon={avatarIcon}
                     />
                   )}
                 </div>
@@ -1038,11 +1062,17 @@ export function ReportPanel({
           <ShareFinishCard
             analysis={analysis}
             generatedDate={generatedDate}
+            athleteName={athleteName}
+            avatarColor={avatarColor}
+            avatarIcon={avatarIcon}
             captureRef={shareFinishRef}
           />
           <ShareArchetypeCard
             analysis={analysis}
             generatedDate={generatedDate}
+            athleteName={athleteName}
+            avatarColor={avatarColor}
+            avatarIcon={avatarIcon}
             captureRef={shareArchetypeRef}
           />
         </div>

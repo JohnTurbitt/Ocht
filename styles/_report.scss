@@ -2,8 +2,185 @@
   scroll-margin-top: 24px;
 }
 
+.saved-report-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--lime);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+}
+
+.saved-report-bar .eyebrow {
+  margin: 0 0 2px;
+}
+
+.saved-report-bar strong {
+  color: var(--ink);
+}
+
+.saved-report-bar .btn {
+  flex-shrink: 0;
+}
+
+/* ── Results reveal (post-generate payoff) ── */
+.results-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--overlay);
+  backdrop-filter: blur(8px);
+  animation: loader-overlay-in 0.25s ease both;
+}
+
+.results-reveal__card {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 24px;
+  background:
+    linear-gradient(135deg, var(--accent-soft), transparent 52%),
+    var(--panel);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  animation: report-reveal 0.4s ease both;
+}
+
+.results-reveal__card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--lime);
+}
+
+.results-reveal__eyebrow {
+  margin: 0;
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.results-reveal__finish {
+  display: grid;
+  gap: 4px;
+}
+
+.results-reveal__finish span {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.results-reveal__finish strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.8rem, 12vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.results-reveal__grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  text-align: left;
+}
+
+.results-reveal__panels {
+  display: grid;
+  gap: 8px;
+}
+
+.results-reveal__panel {
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--lime);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.results-reveal__panel--leak {
+  border-left-color: var(--red);
+}
+
+.results-reveal__panel span {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.results-reveal__panel strong {
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.results-reveal__panel em {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+@media (max-width: 460px) {
+  .results-reveal__grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+}
+
 .report-scroll-anchor {
   scroll-margin-top: 104px;
+}
+
+@keyframes report-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    /* `none` (not translateY(0)) so the finished panel is NOT a containing
+       block for the fixed share / race-flow modals it renders. */
+    transform: none;
+  }
+}
+
+.report {
+  animation: report-reveal 0.45s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report {
+    animation: none;
+  }
 }
 
 .report__header {
@@ -576,17 +753,13 @@
 
 .readiness-card__score {
   display: grid;
-  align-content: center;
-  justify-items: center;
+  place-items: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 18px;
-  background:
-    radial-gradient(circle at 50% 24%, color-mix(in srgb, var(--lime) 35%, transparent), transparent 48%),
-    var(--field);
+  background: var(--field);
 }
 
-.readiness-card__score span,
 .readiness-card__grid span {
   color: var(--teal);
   font-size: 0.76rem;
@@ -594,15 +767,74 @@
   text-transform: uppercase;
 }
 
-.readiness-card__score strong {
-  color: var(--lime);
-  font-size: clamp(3rem, 8vw, 5rem);
-  line-height: 0.9;
+/* Radial score gauge */
+.score-gauge {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
 }
 
-.readiness-card__score small {
-  color: var(--muted);
+.score-gauge svg {
+  display: block;
+}
+
+.score-gauge__track {
+  stroke: var(--surface-strong);
+}
+
+.score-gauge__arc {
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score-gauge__arc--high {
+  stroke: var(--lime);
+}
+
+.score-gauge__arc--mid {
+  stroke: var(--flow-steady);
+}
+
+.score-gauge__arc--low {
+  stroke: var(--red);
+}
+
+.score-gauge__center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* match the svg square so the number sits dead-centre */
+  height: var(--gauge-size, 132px);
+}
+
+.score-gauge__num {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.6rem;
   font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-gauge__denom {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.score-gauge__label {
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-align: center;
 }
 
 .readiness-card__body {

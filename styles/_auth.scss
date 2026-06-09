@@ -233,8 +233,7 @@
   border-radius: 6px;
   background: var(--action-bg);
   border: 1px solid var(--line);
-  color: #0a1711;
-  color: var(--action-text);
+  color: var(--badge-ink);
   font-weight: 900;
   line-height: 1;
 }
@@ -315,6 +314,71 @@
 }
 
 .account-settings__switch button.is-active {
+  background: var(--action-bg);
+  color: var(--action-text);
+}
+
+.avatar-swatches {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.avatar-swatch {
+  width: 22px;
+  min-height: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.avatar-swatch.is-active {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.avatar-mark {
+  width: 58%;
+  height: 58%;
+}
+
+.avatar-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.avatar-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.avatar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.avatar-icon .avatar-mark {
+  width: 18px;
+  height: 18px;
+}
+
+.avatar-icon.is-active {
+  border-color: var(--action-bg);
   background: var(--action-bg);
   color: var(--action-text);
 }

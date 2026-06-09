@@ -1,4 +1,5 @@
 import { Analysis } from "@/lib/analysis";
+import { CountUp } from "./CountUp";
 import { OchtShield } from "./OchtShield";
 
 type AthleteArchetypeCardProps = {
@@ -51,7 +52,9 @@ export function AthleteArchetypeCard({ analysis }: AthleteArchetypeCardProps) {
             <div className="archetype-score" key={key}>
               <div className="archetype-score__head">
                 <span>{label}</span>
-                <strong>{score}</strong>
+                <strong>
+                  <CountUp value={score} />
+                </strong>
               </div>
               <div className="archetype-score__track">
                 <div

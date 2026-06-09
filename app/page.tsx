@@ -4,10 +4,19 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AppLaunchSplash } from "@/components/AppLaunchSplash";
 import { AuthPanel } from "@/components/AuthPanel";
-import { EventsList } from "@/components/EventsList";
+import { DemoModal } from "@/components/DemoModal";
+import { EventsSheet } from "@/components/EventsSheet";
+import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
+import {
+  persistAvatarColor,
+  persistAvatarIcon,
+  readAvatarColor,
+  readAvatarIcon,
+} from "@/lib/preferences";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { ReportGenerationOverlay } from "@/components/ReportGenerationOverlay";
+import { ResultsReveal } from "@/components/ResultsReveal";
 import { ReportHistory } from "@/components/ReportHistory";
 import { ReportPanel } from "@/components/ReportPanel";
 import { SplitForm } from "@/components/SplitForm";
@@ -150,6 +159,8 @@ export default function Home() {
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>("km");
   const [showHints, setShowHints] = useState(true);
   const [hasGeneratedReportEver, setHasGeneratedReportEver] = useState(false);
+  const [avatarColor, setAvatarColor] = useState("#c8ff2e");
+  const [avatarIcon, setAvatarIcon] = useState("initial");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollTopBottom, setScrollTopBottom] = useState(22);
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
@@ -166,7 +177,9 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [showSplash, setShowSplash] = useState(true);
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [showResultsReveal, setShowResultsReveal] = useState(false);
   const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
+  const [viewingSavedReport, setViewingSavedReport] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const activeStationDefinitions =
     raceFormat === "custom"
@@ -306,6 +319,7 @@ export default function Home() {
     setRuns(nextPreset.runs);
     setStationSplits(nextPreset.stationSplits);
     setAnalysis(null);
+    setViewingSavedReport(false);
     setValidationErrors([]);
     setFieldErrors({});
     setActiveTab("new");
@@ -613,7 +627,16 @@ export default function Home() {
   }
 
   function selectTab(tab: ActiveTab) {
-    setActiveTab(tab);
+    const doc = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+
+    if (doc.startViewTransition) {
+      doc.startViewTransition(() => setActiveTab(tab));
+    } else {
+      setActiveTab(tab);
+    }
+
     window.requestAnimationFrame(() => {
       document.querySelector<HTMLElement>(".workspace")?.scrollIntoView({
         behavior: "smooth",
@@ -792,6 +815,8 @@ export default function Home() {
     await minimumHold;
     setGeneratingReport(false);
     setAnalysis(generatedAnalysis);
+    setViewingSavedReport(false);
+    setShowResultsReveal(true);
     if (!beginnerGuideDismissed) {
       dismissBeginnerGuide("beginner_guide_completed_by_report");
     }
@@ -850,6 +875,7 @@ export default function Home() {
     setStationSplits(report.stationSplits);
     setTrainingContext(report.trainingContext ?? emptyTrainingContext);
     setAnalysis(loadedAnalysis);
+    setViewingSavedReport(true);
     setActiveTab("new");
     trackEvent("saved_report_loaded", {
       race_format: report.raceFormat ?? "hyrox",
@@ -919,7 +945,20 @@ export default function Home() {
       // Returning users start with the beginner hints collapsed.
       setShowHints(false);
     }
+
+    setAvatarColor(readAvatarColor());
+    setAvatarIcon(readAvatarIcon());
   }, []);
+
+  function updateAvatarColor(color: string) {
+    setAvatarColor(color);
+    persistAvatarColor(color);
+  }
+
+  function updateAvatarIcon(icon: string) {
+    setAvatarIcon(icon);
+    persistAvatarIcon(icon);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -1091,6 +1130,10 @@ export default function Home() {
             billingLoading={billingLoading}
             distanceUnit={distanceUnit}
             onDistanceUnitChange={setDistanceUnit}
+            avatarColor={avatarColor}
+            onAvatarColorChange={updateAvatarColor}
+            avatarIcon={avatarIcon}
+            onAvatarIconChange={updateAvatarIcon}
             onLogin={handleLogin}
             onSignup={handleSignup}
             onLogout={handleLogout}
@@ -1102,101 +1145,20 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="intro hero">
-        <div className="hero__copy">
-          <p className="hero__eyebrow">Hybrid race intelligence</p>
-          <h1>Find the time leaks between your reps and runs.</h1>
-          <p className="hero__lead">
-            Add the times from your race or training simulation and Ocht shows
-            where you lost time, what is already strong, and what target looks
-            realistic next.
-          </p>
-          <div className="hero__actions">
-            <button
-              className="btn btn--primary btn--cut btn--lg"
-              type="button"
-              onClick={handleCreateOnboardingReport}
-            >
-              Analyse a race
-            </button>
-            <button
-              className="btn btn--secondary btn--lg"
-              type="button"
-              onClick={() =>
-                applyReportPreset(sampleReportPreset, "Sample race loaded")
-              }
-            >
-              Load sample race
-            </button>
-          </div>
-          <ul className="hero__trust" aria-label="What you get">
-            <li>Deterministic formulas</li>
-            <li>Coach-friendly exports</li>
-            <li>Free core report</li>
-          </ul>
-          {!beginnerGuideDismissed ? (
-            <div className="intro-guide" aria-label="How Ocht helps">
-              <div>
-                <strong>New to hybrid racing?</strong>
-                <span>
-                  Use Load sample race first, then replace the example times with
-                  your own run and station splits.
-                </span>
-              </div>
-              <div className="intro-guide__actions">
-                <button
-                  className="btn btn--secondary btn--sm"
-                  type="button"
-                  onClick={() => {
-                    setDemoOpen(true);
-                    trackEvent("beginner_demo_opened");
-                  }}
-                >
-                  Show quick demo
-                </button>
-                <button
-                  className="btn btn--ghost btn--sm"
-                  type="button"
-                  onClick={() => dismissBeginnerGuide()}
-                  aria-label="Hide beginner guide"
-                >
-                  Do not show again
-                </button>
-              </div>
-            </div>
-          ) : null}
-          <label className="hint-toggle">
-            <input
-              checked={showHints}
-              onChange={(event) => setShowHints(event.target.checked)}
-              type="checkbox"
-            />
-            <span>Show beginner hints</span>
-          </label>
-        </div>
-        <aside className="hero__motif" aria-hidden="true">
-          <div className="hero__ring">
-            <svg className="hero__octo" viewBox="0 0 110 110" fill="none">
-              <polygon
-                className="hero__octo-line"
-                points="55,5 90,18 105,55 90,92 55,105 20,92 5,55 20,18"
-              />
-              <g className="hero__octo-dots">
-                <circle cx="55" cy="5" r="3" />
-                <circle cx="90" cy="18" r="3" />
-                <circle cx="105" cy="55" r="3" />
-                <circle cx="90" cy="92" r="3" />
-                <circle cx="55" cy="105" r="3" />
-                <circle cx="20" cy="92" r="3" />
-                <circle cx="5" cy="55" r="3" />
-                <circle cx="20" cy="18" r="3" />
-              </g>
-            </svg>
-            <OchtShield className="hero__shield" size={68} />
-          </div>
-          <p className="hero__identity">8 stations · 8 runs · 1 race</p>
-        </aside>
-      </section>
+      <Hero
+        showBeginnerGuide={!beginnerGuideDismissed}
+        showHints={showHints}
+        onAnalyse={handleCreateOnboardingReport}
+        onLoadSample={() =>
+          applyReportPreset(sampleReportPreset, "Sample race loaded")
+        }
+        onShowDemo={() => {
+          setDemoOpen(true);
+          trackEvent("beginner_demo_opened");
+        }}
+        onDismissGuide={() => dismissBeginnerGuide()}
+        onShowHintsChange={setShowHints}
+      />
 
       {user && !onboardingDismissed ? (
         <OnboardingChecklist
@@ -1311,6 +1273,7 @@ export default function Home() {
 
         {activeTab === "new" ? (
           <>
+            {viewingSavedReport ? null : (
             <SplitForm
               raceFormat={raceFormat}
               fullReportUnlocked={fullReportUnlocked}
@@ -1369,12 +1332,39 @@ export default function Home() {
               }}
               onSubmit={handleSubmit}
             />
+            )}
+
+            {viewingSavedReport ? (
+              <div className="saved-report-bar">
+                <div>
+                  <p className="eyebrow">Saved report</p>
+                  <strong>You are viewing a past report</strong>
+                </div>
+                <button
+                  className="btn btn--secondary"
+                  type="button"
+                  onClick={() => {
+                    setViewingSavedReport(false);
+                    window.requestAnimationFrame(() => {
+                      document
+                        .querySelector<HTMLElement>(".split-form")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                  }}
+                >
+                  Edit splits
+                </button>
+              </div>
+            ) : null}
 
             <div ref={reportRef} className="report-anchor">
               {hasReportInput ? (
                 <ReportPanel
                   analysis={activeAnalysis}
                   distanceUnit={distanceUnit}
+                  athleteName={user?.name ?? ""}
+                  avatarColor={avatarColor}
+                  avatarIcon={avatarIcon}
                   hasGeneratedReport={Boolean(analysis)}
                   fullReportUnlocked={fullReportUnlocked}
                   canStartCheckout={Boolean(user) && !fullReportUnlocked}
@@ -1391,14 +1381,16 @@ export default function Home() {
                 />
               ) : (
                 <div className="empty-state empty-state--report">
-                  <h3>No report data yet</h3>
+                  <span className="empty-state__mark" aria-hidden="true">
+                    <OchtShield size={40} />
+                  </span>
+                  <h3>Your race file is empty</h3>
                   <p>
-                    Add a target, run splits, and station times to load the math
-                    engine, race flow, target path, readiness, strengths, and
-                    leaks.
+                    Add a target, run splits, and station times to unlock the math
+                    engine, race flow, archetype, roxzone, readiness, and leaks.
                   </p>
                   <button
-                    className="button-secondary"
+                    className="btn btn--primary btn--cut"
                     type="button"
                     onClick={() =>
                       applyReportPreset(sampleReportPreset, "Sample race loaded")
@@ -1448,115 +1440,31 @@ export default function Home() {
         />
       ) : null}
       {generatingReport ? <ReportGenerationOverlay /> : null}
-      {eventsSheetOpen ? (
-        <div
-          className="events-sheet"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setEventsSheetOpen(false);
-            }
+      {showResultsReveal && analysis ? (
+        <ResultsReveal
+          analysis={analysis}
+          onClose={() => {
+            setShowResultsReveal(false);
+            window.requestAnimationFrame(() => {
+              reportRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            });
           }}
-        >
-          <section
-            className="events-sheet__panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Upcoming races"
-          >
-            <button
-              className="events-sheet__close"
-              type="button"
-              onClick={() => setEventsSheetOpen(false)}
-              aria-label="Close events"
-            >
-              ×
-            </button>
-            <EventsList />
-          </section>
-        </div>
+        />
+      ) : null}
+      {eventsSheetOpen ? (
+        <EventsSheet onClose={() => setEventsSheetOpen(false)} />
       ) : null}
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
       {demoOpen ? (
-        <div
-          className="demo-modal"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setDemoOpen(false);
-            }
-          }}
-        >
-          <section
-            className="demo-modal__panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Hybrid race demo"
-          >
-            <header className="demo-modal__header">
-              <div>
-                <p className="eyebrow">Quick demo</p>
-                <h2>How to use Ocht</h2>
-              </div>
-              <button
-                className="modal-close"
-                type="button"
-                onClick={() => setDemoOpen(false)}
-                aria-label="Close demo"
-              >
-                ×
-              </button>
-            </header>
-            <div className="demo-modal__steps">
-              <article>
-                <span>1</span>
-                <strong>Enter your goal</strong>
-                <p>Pick a target finish time and athlete level.</p>
-              </article>
-              <article>
-                <span>2</span>
-                <strong>Add race splits</strong>
-                <p>Use run times and station times from a race or simulation.</p>
-              </article>
-              <article>
-                <span>3</span>
-                <strong>Read the report</strong>
-                <p>Start with target path, strengths, leaks, and next action.</p>
-              </article>
-            </div>
-            <div className="demo-modal__example" aria-label="Example split input">
-              <div>
-                <span>Target</span>
-                <strong>1:20:00</strong>
-              </div>
-              <div>
-                <span>Run 1</span>
-                <strong>4:55</strong>
-              </div>
-              <div>
-                <span>Sled push</span>
-                <strong>5:45</strong>
-              </div>
-              <div>
-                <span>Output</span>
-                <strong>Find leaks</strong>
-              </div>
-            </div>
-            <div className="demo-modal__actions">
-              <button type="button" onClick={loadSampleFromDemo}>
-                Load sample race
-              </button>
-              <button
-                className="button-secondary"
-                type="button"
-                onClick={() => dismissBeginnerGuide("beginner_demo_enter_own")}
-              >
-                I will enter my own
-              </button>
-            </div>
-          </section>
-        </div>
+        <DemoModal
+          onClose={() => setDemoOpen(false)}
+          onLoadSample={loadSampleFromDemo}
+          onEnterOwn={() => dismissBeginnerGuide("beginner_demo_enter_own")}
+        />
       ) : null}
     </main>
   );

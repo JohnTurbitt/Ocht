@@ -266,9 +266,15 @@ export function ReportHistory({
       </div>
 
       {loading ? (
-        <div className="empty-state">
-          <h3>Loading reports</h3>
-          <p>Ocht is checking the saved history for this account.</p>
+        <div className="history-skeleton" role="status" aria-busy="true">
+          <span className="sr-only">Loading reports…</span>
+          {[0, 1, 2].map((row) => (
+            <div className="history-skeleton__card" key={row} aria-hidden="true">
+              <div className="skeleton skeleton--title" />
+              <div className="skeleton skeleton--line" />
+              <div className="skeleton skeleton--line skeleton--short" />
+            </div>
+          ))}
         </div>
       ) : reports.length === 0 ? (
         <div className="empty-state">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { DM_Mono, Inter, Saira_Condensed } from "next/font/google";
+import { CookieBanner } from "@/components/CookieBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.scss";
 
@@ -104,6 +105,7 @@ export default function RootLayout({
       >
         {children}
         <SiteFooter />
+        <CookieBanner />
         <Analytics />
       </body>
     </html>
