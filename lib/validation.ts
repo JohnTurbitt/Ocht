@@ -41,6 +41,29 @@ export function normalizeTimeInput(value: string, format: "split" | "race" = "sp
   return `0:${trimmed.padStart(2, "0")}`;
 }
 
+// Live input mask: formats raw keystrokes into mm:ss (or h:mm:ss for "race") as
+// you type, using the same right-aligned digits as normalizeTimeInput so the
+// last two digits are always the seconds. Empty stays empty; non-digits are
+// stripped, so it is safe to re-run on an already-formatted value.
+export function maskTimeInput(value: string, format: "split" | "race" = "split") {
+  const max = format === "race" ? 6 : 4;
+  const digits = value.replace(/\D/g, "").slice(-max);
+
+  if (!digits) {
+    return "";
+  }
+
+  if (format === "race" && digits.length > 4) {
+    return `${Number(digits.slice(0, -4))}:${digits.slice(-4, -2)}:${digits.slice(-2)}`;
+  }
+
+  if (digits.length > 2) {
+    return `${Number(digits.slice(0, -2))}:${digits.slice(-2)}`;
+  }
+
+  return `0:${digits.padStart(2, "0")}`;
+}
+
 export function isValidTime(value: string) {
   const trimmed = value.trim();
 

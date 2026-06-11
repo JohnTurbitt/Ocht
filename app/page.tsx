@@ -8,6 +8,7 @@ import { DemoModal } from "@/components/DemoModal";
 import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
+import { ProgressDashboard } from "@/components/ProgressDashboard";
 import {
   persistAvatarColor,
   persistAvatarIcon,
@@ -34,6 +35,7 @@ import {
   loadSavedReports,
   saveReports,
 } from "@/lib/reportStorage";
+import { groupKeyForReport, isNewPersonalBest } from "@/lib/progress";
 import {
   ReportPreset,
   cloneReportPreset,
@@ -178,6 +180,7 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [showResultsReveal, setShowResultsReveal] = useState(false);
+  const [revealIsPb, setRevealIsPb] = useState(false);
   const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
   const [viewingSavedReport, setViewingSavedReport] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -816,6 +819,13 @@ export default function Home() {
     setGeneratingReport(false);
     setAnalysis(generatedAnalysis);
     setViewingSavedReport(false);
+    setRevealIsPb(
+      isNewPersonalBest(
+        savedReports,
+        generatedAnalysis.finishSeconds,
+        groupKeyForReport(savedReport),
+      ),
+    );
     setShowResultsReveal(true);
     if (!beginnerGuideDismissed) {
       dismissBeginnerGuide("beginner_guide_completed_by_report");
@@ -1219,7 +1229,7 @@ export default function Home() {
               <path d="M3 3h18v18H3z" />
               <path d="M3 9h18M9 21V9" />
             </svg>
-            <span className="tab-bar__label">Previous reports</span>
+            <span className="tab-bar__label">Progress</span>
             {savedReports.length > 0 ? <span>{savedReports.length}</span> : null}
           </button>
           <button
@@ -1403,13 +1413,18 @@ export default function Home() {
             </div>
           </>
         ) : activeTab === "history" ? (
-          <ReportHistory
-            reports={savedReports}
-            storageLabel={user ? "Saved to your account" : "Saved in this browser"}
-            loading={reportsLoading}
-            onLoadReport={loadReport}
-            onDeleteReport={deleteReport}
-          />
+          <>
+            <ProgressDashboard reports={savedReports} />
+            <ReportHistory
+              reports={savedReports}
+              storageLabel={
+                user ? "Saved to your account" : "Saved in this browser"
+              }
+              loading={reportsLoading}
+              onLoadReport={loadReport}
+              onDeleteReport={deleteReport}
+            />
+          </>
         ) : (
           <ReportHistory
             reports={savedReports}
@@ -1443,6 +1458,7 @@ export default function Home() {
       {showResultsReveal && analysis ? (
         <ResultsReveal
           analysis={analysis}
+          isNewPB={revealIsPb}
           onClose={() => {
             setShowResultsReveal(false);
             window.requestAnimationFrame(() => {

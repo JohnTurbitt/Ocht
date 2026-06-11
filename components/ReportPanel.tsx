@@ -641,10 +641,16 @@ export function ReportPanel({
               />
             </div>
             <div className="readiness-card__body">
-              <h3>How prepared this race profile looks</h3>
+              <h3>
+                What your{" "}
+                <Hint enabled={showHints} hint="readiness" term="readiness score" />{" "}
+                means
+              </h3>
               <p>
-                All numbers are out of 100. Higher means that part of the race is
-                closer to target, more repeatable, or already well protected.
+                A single 0-100 read on how race-ready this profile looks — it blends
+                run pacing control, station times vs the benchmark, late-race
+                durability, and how realistic your target is. Each metric below is
+                also out of 100; higher is closer to race-ready.
               </p>
               <div className="readiness-card__grid">
                 <ReadinessMetric

@@ -2,6 +2,7 @@ export type HintKey =
   | "benchmark"
   | "compromisedRun"
   | "gain"
+  | "readiness"
   | "recoverable"
   | "runFade"
   | "targetGap"
@@ -11,6 +12,8 @@ export type HintKey =
 const hints: Record<HintKey, string> = {
   benchmark:
     "A comparison time for your selected athlete level. Faster than the benchmark means this area is already strong.",
+  readiness:
+    "A single 0-100 read on how race-ready this profile looks. It blends your run pacing control, station times vs the benchmark, late-race durability (fade), and how realistic your target is. Higher means closer to race-ready.",
   compromisedRun:
     "A run done straight after station or strength work, such as sled work, rowing, carries, lunges, wall balls, or a station circuit.",
   gain: "The amount of time you could save if this part of the race improves.",

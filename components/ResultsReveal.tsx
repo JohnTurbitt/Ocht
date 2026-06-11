@@ -8,10 +8,15 @@ import { ScoreGauge } from "./ScoreGauge";
 
 type ResultsRevealProps = {
   analysis: Analysis;
+  isNewPB?: boolean;
   onClose: () => void;
 };
 
-export function ResultsReveal({ analysis, onClose }: ResultsRevealProps) {
+export function ResultsReveal({
+  analysis,
+  isNewPB = false,
+  onClose,
+}: ResultsRevealProps) {
   const readiness = calculateRaceReadiness(analysis);
   const topLeak = analysis.topLeaks[0];
   const { archetype } = analysis;
@@ -47,6 +52,9 @@ export function ResultsReveal({ analysis, onClose }: ResultsRevealProps) {
     >
       <div className="results-reveal__card">
         <p className="results-reveal__eyebrow">Race report ready</p>
+        {isNewPB ? (
+          <p className="results-reveal__pb">New personal best 🔥</p>
+        ) : null}
 
         <div className="results-reveal__finish">
           <span>Projected finish</span>

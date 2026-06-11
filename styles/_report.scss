@@ -78,6 +78,21 @@
   color: var(--teal);
 }
 
+.results-reveal__pb {
+  justify-self: center;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--lime) 50%, transparent);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: var(--accent-soft);
+  color: var(--teal);
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .results-reveal__finish {
   display: grid;
   gap: 4px;

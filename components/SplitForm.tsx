@@ -10,7 +10,7 @@ import {
 import { CustomTemplate } from "@/lib/customTemplates";
 import { RaceFormat, raceFormatOptions } from "@/lib/raceFormats";
 import { TrainingContext, TrainingTrend } from "@/lib/trainingContext";
-import { normalizeTimeInput } from "@/lib/validation";
+import { maskTimeInput, normalizeTimeInput } from "@/lib/validation";
 
 type SplitFormProps = {
   raceFormat: RaceFormat;
@@ -91,15 +91,28 @@ export function SplitForm({
 }: SplitFormProps) {
   const isCustom = raceFormat === "custom";
   const [openRounds, setOpenRounds] = useState<Record<number, boolean>>({});
-  const isRoundOpen = (index: number) => openRounds[index] ?? true;
   const setRoundOpen = (index: number, open: boolean) =>
     setOpenRounds((current) => ({ ...current, [index]: open }));
 
-  const roundFilledCount = stationDefinitions.filter((station, index) => {
+  const roundComplete = stationDefinitions.map((station, index) => {
     const runValue = (runs[index] ?? "").trim();
     const stationValue = (stationSplits[station.key] ?? "").trim();
     return Boolean(runValue) && Boolean(stationValue);
-  }).length;
+  });
+  const roundFilledCount = roundComplete.filter(Boolean).length;
+
+  // Progressive reveal: round 1 starts open, and each later round opens once the
+  // round above it is complete. We never force a round closed, and a manual
+  // toggle (stored in openRounds) always wins.
+  const isRoundOpen = (index: number) =>
+    openRounds[index] ?? (index === 0 || roundComplete[index - 1] === true);
+
+  // Keep the primary CTA from inviting a press on a totally blank form (which
+  // would just produce a wall of validation errors).
+  const hasAnyInput =
+    Boolean(targetTime.trim()) ||
+    runs.some((value) => value.trim()) ||
+    Object.values(stationSplits).some((value) => value?.trim());
 
   return (
     <form className="split-form" onSubmit={onSubmit}>
@@ -243,7 +256,9 @@ export function SplitForm({
           <input
             className={fieldErrors.targetTime ? "is-invalid" : undefined}
             value={targetTime}
-            onChange={(event) => onTargetTimeChange(event.target.value)}
+            onChange={(event) =>
+              onTargetTimeChange(maskTimeInput(event.target.value, "race"))
+            }
             onBlur={(event) =>
               onTargetTimeChange(normalizeTimeInput(event.target.value, "race"))
             }
@@ -276,7 +291,9 @@ export function SplitForm({
           <span>Official finish (optional)</span>
           <input
             value={officialFinishTime}
-            onChange={(event) => onOfficialFinishChange(event.target.value)}
+            onChange={(event) =>
+              onOfficialFinishChange(maskTimeInput(event.target.value, "race"))
+            }
             onBlur={(event) =>
               onOfficialFinishChange(
                 normalizeTimeInput(event.target.value, "race"),
@@ -426,12 +443,12 @@ export function SplitForm({
                       fieldErrors[`run-${index}`] ? "is-invalid" : undefined
                     }
                     value={split}
-                    onChange={(event) => onRunChange(index, event.target.value)}
+                    onChange={(event) => onRunChange(index, maskTimeInput(event.target.value))}
                     onBlur={(event) =>
                       onRunChange(index, normalizeTimeInput(event.target.value))
                     }
                     inputMode="numeric"
-                    placeholder="5:30"
+                    placeholder="mm:ss"
                     aria-invalid={Boolean(fieldErrors[`run-${index}`])}
                   />
                   {fieldErrors[`run-${index}`] ? (
@@ -486,7 +503,7 @@ export function SplitForm({
                     }
                     value={stationSplits[station.key]}
                     onChange={(event) =>
-                      onStationChange(station.key, event.target.value)
+                      onStationChange(station.key, maskTimeInput(event.target.value))
                     }
                     onBlur={(event) =>
                       onStationChange(
@@ -495,7 +512,7 @@ export function SplitForm({
                       )
                     }
                     inputMode="numeric"
-                    placeholder="5:00"
+                    placeholder="mm:ss"
                     aria-invalid={Boolean(fieldErrors[`station-${station.key}`])}
                   />
                   {fieldErrors[`station-${station.key}`] ? (
@@ -587,13 +604,13 @@ export function SplitForm({
                         className={runError ? "is-invalid" : undefined}
                         value={runValue}
                         onChange={(event) =>
-                          onRunChange(index, event.target.value)
+                          onRunChange(index, maskTimeInput(event.target.value))
                         }
                         onBlur={(event) =>
                           onRunChange(index, normalizeTimeInput(event.target.value))
                         }
                         inputMode="numeric"
-                        placeholder="5:30"
+                        placeholder="mm:ss"
                         aria-invalid={Boolean(runError)}
                       />
                       {runError ? (
@@ -606,7 +623,7 @@ export function SplitForm({
                         className={stationError ? "is-invalid" : undefined}
                         value={stationValue}
                         onChange={(event) =>
-                          onStationChange(station.key, event.target.value)
+                          onStationChange(station.key, maskTimeInput(event.target.value))
                         }
                         onBlur={(event) =>
                           onStationChange(
@@ -615,7 +632,7 @@ export function SplitForm({
                           )
                         }
                         inputMode="numeric"
-                        placeholder="5:00"
+                        placeholder="mm:ss"
                         aria-invalid={Boolean(stationError)}
                       />
                       {stationError ? (
@@ -630,9 +647,19 @@ export function SplitForm({
         </div>
       )}
 
-      <button className="btn btn--primary btn--cut btn--block btn--lg" type="submit">
+      <button
+        className="btn btn--primary btn--cut btn--block btn--lg"
+        type="submit"
+        disabled={!hasAnyInput}
+      >
         Generate race report
       </button>
+      {!hasAnyInput ? (
+        <p className="split-form__cta-hint">
+          Add your target time and at least one split to generate a report — or use
+          Load sample race.
+        </p>
+      ) : null}
     </form>
   );
 }
