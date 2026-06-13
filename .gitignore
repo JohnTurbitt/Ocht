@@ -6,3 +6,5 @@ dist
 *.log
 dev-server*.log
 tsconfig.tsbuildinfo
+video/node_modules
+video/out
