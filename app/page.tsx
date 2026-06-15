@@ -59,6 +59,7 @@ import {
 import {
   AuthFormInput,
   AuthUser,
+  deleteAccount,
   deleteRemoteReport,
   getCurrentUser,
   loadRemoteReports,
@@ -546,6 +547,32 @@ export default function Home() {
           error instanceof Error ? error.message : "Ocht could not log out.",
         tone: "error",
       });
+    }
+  }
+
+  async function handleDeleteAccount() {
+    try {
+      await deleteAccount();
+      setUser(null);
+      setSavedReports(loadSavedReports());
+      setToast({
+        id: Date.now(),
+        title: "Account deleted",
+        message: "Your Ocht account and saved reports have been removed.",
+        tone: "success",
+      });
+      trackEvent("account_deleted");
+    } catch (error) {
+      setToast({
+        id: Date.now(),
+        title: "Account not deleted",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Ocht could not delete your account.",
+        tone: "error",
+      });
+      throw error;
     }
   }
 
@@ -1151,6 +1178,7 @@ export default function Home() {
             onManageBilling={handleManageBilling}
             onResendVerification={handleResendVerification}
             onSaveProfile={handleSaveProfile}
+            onDeleteAccount={handleDeleteAccount}
           />
         </div>
       </header>

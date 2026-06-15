@@ -33,6 +33,7 @@ type AuthPanelProps = {
   onManageBilling: () => void;
   onResendVerification: () => Promise<void>;
   onSaveProfile: (input: ProfileFormInput) => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 };
 
 type AuthMode = "login" | "signup";
@@ -61,6 +62,7 @@ export function AuthPanel({
   onManageBilling,
   onResendVerification,
   onSaveProfile,
+  onDeleteAccount,
 }: AuthPanelProps) {
   const [mode, setMode] = useState<AuthMode | null>(null);
   const [theme, setTheme] = useState<Theme>("light");
@@ -74,6 +76,8 @@ export function AuthPanel({
   const [profileLevel, setProfileLevel] = useState<Level>("competitive");
   const [profileTargetTime, setProfileTargetTime] = useState("1:25:00");
   const [submitting, setSubmitting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const accountRef = useRef<HTMLElement>(null);
   const displayName = user?.name || user?.email || "";
   const userInitial = displayName.trim().charAt(0).toUpperCase() || "O";
@@ -364,6 +368,62 @@ export function AuthPanel({
                 disabled={loading}
               >
                 Profile settings
+              </button>
+            )}
+            <a
+              className="button-secondary auth-panel__menu-item"
+              href="/api/auth/me/export"
+            >
+              Download my data
+            </a>
+            {deleteConfirmOpen ? (
+              <div className="auth-panel__delete-confirm">
+                <p>
+                  This permanently deletes your account, saved reports, and
+                  cancels any subscription. This can&apos;t be undone.
+                </p>
+                <div className="auth-panel__delete-confirm-actions">
+                  <button
+                    className="button-secondary"
+                    type="button"
+                    onClick={() => setDeleteConfirmOpen(false)}
+                    disabled={deleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="button-secondary auth-panel__menu-item--danger"
+                    type="button"
+                    onClick={async () => {
+                      setDeleting(true);
+
+                      try {
+                        await onDeleteAccount();
+                      } finally {
+                        setDeleting(false);
+                      }
+                    }}
+                    disabled={deleting}
+                  >
+                    {deleting ? (
+                      <span className="button-loading">
+                        <OctagonSpinner size={16} />
+                        Deleting...
+                      </span>
+                    ) : (
+                      "Yes, delete my account"
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="button-secondary auth-panel__menu-item auth-panel__menu-item--danger"
+                type="button"
+                onClick={() => setDeleteConfirmOpen(true)}
+                disabled={loading}
+              >
+                Delete account
               </button>
             )}
             {canUpgrade ? (

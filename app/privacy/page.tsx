@@ -42,12 +42,17 @@ export default function PrivacyPage() {
         product actions such as report generation, checkout starts, and export
         clicks; Ocht does not intentionally send passwords, payment details,
         full race split payloads, or account emails in analytics events.
+        Analytics only run after you accept the cookie banner, and you can
+        change that choice at any time from the "Cookie preferences" link in
+        the footer.
       </p>
 
       <h2>Retention And Deletion</h2>
       <p>
-        Account and report data is retained while your account exists. Contact
-        support to request account or report deletion.
+        Account and report data is retained while your account exists. You can
+        download a copy of your data or permanently delete your account at any
+        time from the account menu. Deleting your account also cancels any
+        active subscription.
       </p>
 
       <h2>Contact</h2>
