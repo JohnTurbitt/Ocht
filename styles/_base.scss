@@ -207,3 +207,10 @@ li {
   color: var(--muted);
   font-size: 1.05rem;
 }
+
+.error-page__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
