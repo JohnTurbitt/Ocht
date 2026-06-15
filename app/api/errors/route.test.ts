@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { logServerError } from "@/lib/logging";
 import { POST } from "./route";
@@ -6,8 +7,12 @@ vi.mock("@/lib/logging", () => ({
   logServerError: vi.fn(),
 }));
 
+vi.mock("@/lib/security", () => ({
+  guardBrowserMutation: vi.fn(() => null),
+}));
+
 function postRequest(body: unknown) {
-  return new Request("http://localhost/api/errors", {
+  return new NextRequest("http://localhost/api/errors", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: typeof body === "string" ? body : JSON.stringify(body),

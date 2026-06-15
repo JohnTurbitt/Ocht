@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { logServerError } from "@/lib/logging";
+import { guardBrowserMutation } from "@/lib/security";
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_STACK_LENGTH = 4000;
@@ -13,7 +14,17 @@ function truncate(value: unknown, max: number): string | undefined {
   return value.length > max ? value.slice(0, max) : value;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const guardResponse = guardBrowserMutation(request, {
+    key: "errors-report",
+    limit: 20,
+    windowMs: 5 * 60 * 1000,
+  });
+
+  if (guardResponse) {
+    return guardResponse;
+  }
+
   try {
     const body = await request.json();
 
