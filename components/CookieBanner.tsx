@@ -2,21 +2,28 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const consentKey = "ocht.cookieConsent";
+import {
+  COOKIE_CONSENT_CHANGE_EVENT,
+  getCookieConsent,
+  setCookieConsent,
+} from "@/lib/cookieConsent";
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem(consentKey) === null) {
-      setVisible(true);
+    function checkConsent() {
+      setVisible(getCookieConsent() === null);
     }
+
+    checkConsent();
+    window.addEventListener(COOKIE_CONSENT_CHANGE_EVENT, checkConsent);
+
+    return () => window.removeEventListener(COOKIE_CONSENT_CHANGE_EVENT, checkConsent);
   }, []);
 
   function resolve(choice: "accepted" | "declined") {
-    window.localStorage.setItem(consentKey, choice);
-    setVisible(false);
+    setCookieConsent(choice);
   }
 
   if (!visible) {
