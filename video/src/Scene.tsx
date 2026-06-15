@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, fonts } from "./theme";
 
 type SceneProps = {
@@ -50,17 +50,12 @@ export function Scene({ screenshot, caption }: SceneProps) {
           boxShadow: `0 0 120px ${colors.lime}33`,
           transform: `scale(${scale}) translateY(${translateY}px)`,
           background: colors.surface,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: fonts.mono,
-          color: colors.line,
-          fontSize: 18,
-          textAlign: "center",
-          padding: 24,
         }}
       >
-        {screenshot}
+        <Img
+          src={staticFile(screenshot)}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
       </div>
       {caption ? (
         <div
