@@ -25,7 +25,7 @@ function readStorageWithLegacy(key: string, legacyKey: string) {
 
 export function readPreferredTheme(): Theme {
   if (typeof window === "undefined") {
-    return "light";
+    return "dark";
   }
 
   const savedTheme = readStorageWithLegacy(themeStorageKey, legacyThemeStorageKey);
@@ -34,9 +34,9 @@ export function readPreferredTheme(): Theme {
     return savedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  // Dark is the default skin; users can still switch to light (and that choice
+  // is remembered). We intentionally do not follow the OS preference here.
+  return "dark";
 }
 
 export function applyTheme(theme: Theme) {

@@ -51,10 +51,14 @@ export function TargetSimulator({
 
   return (
     <div className="simulator">
+      <p className="simulator__intro">
+        A what-if calculator: enter how much time you think you could realistically
+        gain in each area and your projected finish updates instantly.
+      </p>
       <div className="simulator__inputs">
         <label className="field">
           <span>
-            Run <Hint enabled={showHints} hint="gain" term="gain" /> per{" "}
+            Run <Hint enabled={showHints} hint="gain" term="gain" /> — sec /{" "}
             {distanceUnitLabels[distanceUnit]}
           </span>
           <input
@@ -66,7 +70,7 @@ export function TargetSimulator({
         </label>
         <label className="field">
           <span>
-            Station <Hint enabled={showHints} hint="gain" term="gain" />
+            Station <Hint enabled={showHints} hint="gain" term="gain" /> — mm:ss
           </span>
           <input
             value={stationGain}
@@ -78,7 +82,7 @@ export function TargetSimulator({
         <label className="field">
           <span>
             <Hint enabled={showHints} hint="transition" term="Transition" />{" "}
-            <Hint enabled={showHints} hint="gain" term="gain" />
+            <Hint enabled={showHints} hint="gain" term="gain" /> — mm:ss
           </span>
           <input
             value={transitionGain}

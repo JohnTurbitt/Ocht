@@ -1,42 +1,51 @@
 :root {
-  --paper: #f7faf2;
-  --ink: #10130f;
-  --muted: #5a6458;
-  --line: #cdd8c7;
-  --panel: #ffffff;
-  --field: #fbfdf7;
-  --surface: #edf4e7;
-  --surface-strong: #e7f0df;
-  --disabled: #dfe4d7;
+  /* Light theme — sage neutrals that stay in the lime brand family (so the
+     surfaces harmonise with the green CTA instead of clashing like grey),
+     with more depth, defined borders, teal accents, and a punchy lime CTA. */
+  --paper: #e9eee1;
+  --ink: #11160f;
+  --muted: #5c6655;
+  --line: #c7d2bc;
+  --panel: #fafcf6;
+  --field: #f2f6ec;
+  --surface: #e3ebda;
+  --surface-strong: #dae4ce;
+  --disabled: #d7e0cb;
   --lime: #c8ff2e;
-  --mid-green: #60c878;
-  --teal: #073f35;
+  --mid-green: #2f9e63;
+  --teal: #0b5e4c;
   --red: #d84b3a;
-  --badge-ink: #10130f;
-  --action-bg: #10130f;
-  --action-text: #c8ff2e;
-  --button-hover: #2f5e45;
-  --action-muted: #dce4d5;
-  --action-line: rgba(255, 255, 255, 0.22);
-  --action-soft: rgba(255, 255, 255, 0.12);
-  --focus: rgba(7, 63, 53, 0.16);
+  --badge-ink: #11160f;
+  --action-bg: #c8ff2e;
+  --action-text: #11160f;
+  --button-hover: #60c878;
+  --action-muted: #dbe2d0;
+  --action-line: rgba(13, 20, 15, 0.22);
+  --action-soft: rgba(13, 20, 15, 0.1);
+  --focus: rgba(11, 94, 76, 0.18);
   --error-soft: rgba(216, 75, 58, 0.08);
   --error-focus: rgba(216, 75, 58, 0.14);
   --header-glow: rgba(200, 255, 46, 0.34);
   --alert-glow: rgba(216, 75, 58, 0.16);
-  --glass: rgba(255, 255, 255, 0.82);
-  --shadow: 0 24px 70px rgba(22, 28, 18, 0.12);
-  --shadow-sm: 0 4px 12px rgba(22, 28, 18, 0.1);
-  --shadow-md: 0 14px 34px rgba(22, 28, 18, 0.16);
-  --overlay: rgba(16, 19, 15, 0.42);
-  --stroke-muted: rgba(16, 19, 15, 0.22);
-  --hatch: rgba(16, 19, 15, 0.16);
-  --cell-ink: rgba(16, 19, 15, 0.55);
+  --glass: rgba(255, 255, 255, 0.85);
+  --shadow: 0 24px 70px rgba(20, 30, 16, 0.13);
+  --shadow-sm: 0 4px 12px rgba(20, 30, 16, 0.1);
+  --shadow-md: 0 14px 34px rgba(20, 30, 16, 0.15);
+  --overlay: rgba(13, 20, 15, 0.42);
+  --stroke-muted: rgba(13, 20, 15, 0.22);
+  --hatch: rgba(13, 20, 15, 0.16);
+  --cell-ink: rgba(13, 20, 15, 0.55);
   --accent-soft: color-mix(in srgb, var(--lime) 14%, transparent);
+  /* Theme-aware accent for thin marks/lines/dots: teal stays visible on light
+     surfaces where brand lime washes out. Lime is for fills (CTA), not accents. */
+  --accent: var(--teal);
+  --accent-line: color-mix(in srgb, var(--teal) 42%, transparent);
+  --motif-line: var(--accent-line);
+  --motif-dot: var(--accent);
   --flow-strong: #1f6f5b;
   --flow-steady: #f0a23a;
   --flow-leak: #d84b3a;
-  --flow-lost: rgba(16, 19, 15, 0.12);
+  --flow-lost: rgba(13, 20, 15, 0.12);
 }
 
 [data-theme="dark"] {
@@ -74,6 +83,11 @@
   --hatch: rgba(244, 247, 239, 0.18);
   --cell-ink: rgba(8, 16, 13, 0.62);
   --accent-soft: color-mix(in srgb, var(--lime) 16%, transparent);
+  /* On the dark canvas, brand lime IS the accent. */
+  --accent: var(--lime);
+  --accent-line: color-mix(in srgb, var(--lime) 40%, transparent);
+  --motif-line: var(--accent-line);
+  --motif-dot: var(--accent);
   --flow-strong: #60c878;
   --flow-steady: #e0a84a;
   --flow-leak: #f06b5d;

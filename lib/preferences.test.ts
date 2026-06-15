@@ -49,13 +49,12 @@ describe("distance unit preference", () => {
 });
 
 describe("theme preference", () => {
-  it("falls back to the system preference when nothing is saved", () => {
-    prefersDark = true;
+  it("defaults to dark when nothing is saved, ignoring the OS preference", () => {
+    prefersDark = false;
     expect(readPreferredTheme()).toBe("dark");
   });
 
-  it("prefers a saved theme over the system preference", () => {
-    prefersDark = true;
+  it("prefers a saved theme over the default", () => {
     persistTheme("light");
     expect(readPreferredTheme()).toBe("light");
   });

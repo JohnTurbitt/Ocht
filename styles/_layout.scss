@@ -104,7 +104,7 @@
   width: 7px;
   height: 7px;
   margin-top: -3px;
-  background: var(--lime);
+  background: var(--motif-dot);
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 
@@ -134,13 +134,13 @@
 
 .hero__octo-line {
   fill: none;
-  stroke: color-mix(in srgb, var(--lime) 40%, transparent);
+  stroke: var(--motif-line);
   stroke-width: 1.5;
 }
 
 .hero__octo-dots circle {
-  fill: var(--lime);
-  opacity: 0.65;
+  fill: var(--motif-dot);
+  opacity: 0.7;
 }
 
 .hero__shield {

@@ -31,7 +31,7 @@ const themeScript = `
   try {
     var theme = localStorage.getItem("ocht.theme") || localStorage.getItem("reprun.theme");
     if (theme !== "light" && theme !== "dark") {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      theme = "dark";
     }
     document.documentElement.dataset.theme = theme;
   } catch (_) {}

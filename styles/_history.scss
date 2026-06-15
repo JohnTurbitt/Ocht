@@ -99,7 +99,7 @@
 }
 
 .progress-stat--pb {
-  border-left: 3px solid var(--lime);
+  border-left: 3px solid var(--accent);
   background:
     linear-gradient(135deg, var(--accent-soft), transparent 60%),
     var(--surface);
@@ -417,7 +417,7 @@
 
 .history-compare__panel p {
   grid-column: 1 / -1;
-  border-left: 5px solid var(--lime);
+  border-left: 5px solid var(--accent);
   border-radius: 8px;
   padding: 12px;
   background: var(--panel);

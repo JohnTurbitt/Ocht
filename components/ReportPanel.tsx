@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { toBlob } from "html-to-image";
 import { Analysis, formatTime } from "@/lib/analysis";
 import { trackEvent } from "@/lib/analytics";
@@ -905,7 +906,7 @@ export function ReportPanel({
         </>
       )}
       </div>
-      {shareModalOpen ? (
+      {shareModalOpen ? createPortal(
         <div
           className="share-preview-modal"
           role="presentation"
@@ -1061,7 +1062,8 @@ export function ReportPanel({
               {exportMessage}
             </p>
           </section>
-        </div>
+        </div>,
+        document.body,
       ) : null}
       {fullReportUnlocked ? (
         <div className="share-capture" aria-hidden="true">

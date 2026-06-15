@@ -10,7 +10,7 @@
   gap: 12px 16px;
   margin-bottom: 16px;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--lime);
+  border-left: 4px solid var(--accent);
   border-radius: 12px;
   padding: 14px 16px;
   background: var(--surface);
@@ -133,7 +133,7 @@
   display: grid;
   gap: 2px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--lime);
+  border-left: 3px solid var(--accent);
   border-radius: 10px;
   padding: 10px 12px;
   background: var(--surface);
@@ -392,7 +392,7 @@
   grid-column: 1 / -1;
   display: grid;
   gap: 8px;
-  border-left: 5px solid var(--lime);
+  border-left: 5px solid var(--accent);
   padding: 14px 16px;
 }
 
@@ -693,7 +693,7 @@
   display: grid;
   gap: 6px;
   margin: 16px 0;
-  border-left: 5px solid var(--lime);
+  border-left: 5px solid var(--accent);
   border-radius: 8px;
   padding: 12px 14px;
   background: var(--field);
@@ -723,7 +723,7 @@
   gap: 8px;
   min-height: 150px;
   border: 1px solid var(--line);
-  border-top: 5px solid var(--lime);
+  border-top: 5px solid var(--accent);
   border-radius: 8px;
   padding: 14px;
   background:
@@ -803,7 +803,7 @@
 }
 
 .score-gauge__arc--high {
-  stroke: var(--lime);
+  stroke: var(--accent);
 }
 
 .score-gauge__arc--mid {
@@ -1372,9 +1372,9 @@
   width: 88px;
   height: 112px;
   place-items: center;
-  border: 2px solid var(--lime);
+  border: 2px solid var(--accent);
   border-radius: 10px;
-  color: var(--lime);
+  color: var(--accent);
   font-size: 1.5rem;
   font-weight: 900;
 }
@@ -2178,7 +2178,7 @@
 }
 
 .race-story__phase {
-  border-top: 5px solid var(--lime);
+  border-top: 5px solid var(--accent);
 }
 
 .race-story__phase--steady {
@@ -2714,7 +2714,7 @@
 }
 
 .race-cockpit__stats button:nth-of-type(2) {
-  border-left: 3px solid var(--lime);
+  border-left: 3px solid var(--accent);
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--lime) 9%, transparent), transparent 56%),
     var(--panel);

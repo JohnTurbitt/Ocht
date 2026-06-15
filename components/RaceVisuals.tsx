@@ -7,6 +7,7 @@ import {
   type CSSProperties,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   Bar,
   BarChart,
@@ -521,7 +522,7 @@ export function RaceFlowMap({
           </BarChart>
         </ResponsiveContainer>
       </div>
-      {modalOpen && modalSegment ? (
+      {modalOpen && modalSegment ? createPortal(
         <div
           className="race-flow-modal"
           role="presentation"
@@ -535,7 +536,8 @@ export function RaceFlowMap({
             segment={modalSegment}
             onClose={() => setModalOpen(false)}
           />
-        </div>
+        </div>,
+        document.body,
       ) : null}
       <div className="race-visual__legend">
         <span className="race-visual__legend-item race-visual__legend-item--strong">
