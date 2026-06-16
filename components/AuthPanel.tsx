@@ -1,12 +1,10 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Level, levelLabels } from "@/lib/analysis";
 import { AuthFormInput, AuthUser, ProfileFormInput } from "@/lib/apiClient";
-import { AVATAR_ICONS, AvatarMark } from "./AvatarMark";
+import { AvatarMark } from "./AvatarMark";
 import {
   Theme,
   applyTheme,
-  avatarColors,
   persistDistanceUnit,
   persistTheme,
   readPreferredDistanceUnit,
@@ -14,7 +12,7 @@ import {
 } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
 import { OctagonSpinner } from "./OctagonSpinner";
-import { PremiumBadge } from "./PremiumBadge";
+import { SettingsModal } from "./SettingsModal";
 
 type AuthPanelProps = {
   user: AuthUser | null;
@@ -37,13 +35,6 @@ type AuthPanelProps = {
 };
 
 type AuthMode = "login" | "signup";
-
-const subscriptionLabels: Record<AuthUser["subscription"], string> = {
-  ACTIVE: "Premium",
-  CANCELED: "Subscription canceled",
-  FREE: "Free account",
-  PAST_DUE: "Payment past due",
-};
 
 export function AuthPanel({
   user,
@@ -70,14 +61,9 @@ export function AuthPanel({
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [signupCode, setSignupCode] = useState("");
-  const [profileOpen, setProfileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [profileName, setProfileName] = useState("");
-  const [profileLevel, setProfileLevel] = useState<Level>("competitive");
-  const [profileTargetTime, setProfileTargetTime] = useState("1:25:00");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const accountRef = useRef<HTMLElement>(null);
   const displayName = user?.name || user?.email || "";
   const userInitial = displayName.trim().charAt(0).toUpperCase() || "O";
@@ -98,7 +84,6 @@ export function AuthPanel({
 
     function closeAccountMenu() {
       setAccountOpen(false);
-      setProfileOpen(false);
     }
 
     function handlePointerDown(event: PointerEvent) {
@@ -212,16 +197,13 @@ export function AuthPanel({
   }
 
   if (user) {
-    const canManageBilling = user.subscription !== "FREE";
-    const canUpgrade = user.subscription === "FREE" || user.subscription === "CANCELED";
-
     return (
-      <aside className="auth-panel auth-panel--signed-in auth-panel--compact" ref={accountRef}>
+      <aside className="auth-panel auth-panel--signed-in auth-panel--compact">
         <button
           className="auth-panel__account-trigger"
           type="button"
-          onClick={() => setAccountOpen((isOpen) => !isOpen)}
-          aria-expanded={accountOpen}
+          onClick={() => setSettingsOpen(true)}
+          aria-haspopup="dialog"
         >
           <span
             className={
@@ -236,280 +218,28 @@ export function AuthPanel({
           </span>
           <span className="auth-panel__chevron" aria-hidden="true" />
         </button>
-
-        {accountOpen ? (
-          <div className="auth-panel__account-menu">
-            <div className="auth-panel__account-summary">
-              <span
-              className={
-                isPremium
-                  ? "auth-panel__avatar auth-panel__avatar--premium"
-                  : "auth-panel__avatar"
-              }
-              style={{ background: avatarColor }}
-              aria-hidden="true"
-            >
-                <AvatarMark icon={avatarIcon} initial={userInitial} />
-              </span>
-              <div>
-                <span className="auth-panel__meta">Signed in</span>
-                <strong>{displayName}</strong>
-                <span className="auth-panel__email">{user.email}</span>
-                <p>
-                  {subscriptionLabels[user.subscription]}{" "}
-                  {user.subscription === "ACTIVE" ? <PremiumBadge /> : null}
-                </p>
-                {!user.emailVerified ? (
-                  <p className="auth-panel__verification-status">Email unverified</p>
-                ) : null}
-              </div>
-            </div>
-            <p className="auth-panel__defaults">
-              Defaults: {levelLabels[user.defaultLevel]} - {user.defaultTargetTime}
-            </p>
-            {!user.emailVerified ? (
-              <div className="auth-panel__verify">
-                <span>Email not verified</span>
-                <p>Verify your email to keep account recovery reliable.</p>
-                <button
-                  className="button-secondary"
-                  type="button"
-                  onClick={() => void onResendVerification()}
-                  disabled={loading || submitting}
-                >
-                  Resend verification email
-                </button>
-              </div>
-            ) : null}
-            {profileOpen ? (
-              <form
-                className="profile-form"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  setSubmitting(true);
-
-                  try {
-                    await onSaveProfile({
-                      name: profileName,
-                      defaultLevel: profileLevel,
-                      defaultTargetTime: profileTargetTime,
-                    });
-                    setProfileOpen(false);
-                  } finally {
-                    setSubmitting(false);
-                  }
-                }}
-              >
-                <label className="field">
-                  <span>Email</span>
-                  <input value={user.email} readOnly aria-readonly="true" />
-                </label>
-                <label className="field">
-                  <span>Name</span>
-                  <input
-                    value={profileName}
-                    onChange={(event) => setProfileName(event.target.value)}
-                    placeholder="Runner name"
-                  />
-                </label>
-                <label className="field">
-                  <span>Default athlete level</span>
-                  <select
-                    value={profileLevel}
-                    onChange={(event) => setProfileLevel(event.target.value as Level)}
-                  >
-                    {Object.entries(levelLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>Default target time</span>
-                  <input
-                    value={profileTargetTime}
-                    onChange={(event) => setProfileTargetTime(event.target.value)}
-                    inputMode="numeric"
-                    placeholder="1:25:00"
-                  />
-                </label>
-                <div className="profile-form__actions">
-                  <button
-                    className="button-secondary"
-                    type="button"
-                    onClick={() => setProfileOpen(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={submitting || loading}>
-                    {submitting ? (
-                      <span className="button-loading">
-                        <OctagonSpinner size={16} />
-                        Saving...
-                      </span>
-                    ) : (
-                      "Save profile"
-                    )}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                className="button-secondary auth-panel__menu-item"
-                type="button"
-                onClick={() => {
-                  setProfileName(user.name ?? "");
-                  setProfileLevel(user.defaultLevel);
-                  setProfileTargetTime(user.defaultTargetTime);
-                  setProfileOpen(true);
-                }}
-                disabled={loading}
-              >
-                Profile settings
-              </button>
-            )}
-            <a
-              className="button-secondary auth-panel__menu-item"
-              href="/api/auth/me/export"
-            >
-              Download my data
-            </a>
-            {deleteConfirmOpen ? (
-              <div className="auth-panel__delete-confirm">
-                <p>
-                  This permanently deletes your account, saved reports, and
-                  cancels any subscription. This can&apos;t be undone.
-                </p>
-                <div className="auth-panel__delete-confirm-actions">
-                  <button
-                    className="button-secondary"
-                    type="button"
-                    onClick={() => setDeleteConfirmOpen(false)}
-                    disabled={deleting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="button-secondary auth-panel__menu-item--danger"
-                    type="button"
-                    onClick={async () => {
-                      setDeleting(true);
-
-                      try {
-                        await onDeleteAccount();
-                      } finally {
-                        setDeleting(false);
-                      }
-                    }}
-                    disabled={deleting}
-                  >
-                    {deleting ? (
-                      <span className="button-loading">
-                        <OctagonSpinner size={16} />
-                        Deleting...
-                      </span>
-                    ) : (
-                      "Yes, delete my account"
-                    )}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                className="button-secondary auth-panel__menu-item auth-panel__menu-item--danger"
-                type="button"
-                onClick={() => setDeleteConfirmOpen(true)}
-                disabled={loading}
-              >
-                Delete account
-              </button>
-            )}
-            {canUpgrade ? (
-              <button
-                className="button-secondary auth-panel__menu-item auth-panel__upgrade"
-                type="button"
-                onClick={onStartCheckout}
-                disabled={loading || billingLoading}
-              >
-                {billingLoading ? (
-                  <span className="button-loading">
-                    <OctagonSpinner size={16} />
-                    Opening...
-                  </span>
-                ) : (
-                  "Upgrade to premium"
-                )}
-              </button>
-            ) : null}
-            {canManageBilling ? (
-              <button
-                className="button-secondary auth-panel__menu-item"
-                type="button"
-                onClick={onManageBilling}
-                disabled={loading || billingLoading}
-              >
-                {billingLoading ? (
-                  <span className="button-loading">
-                    <OctagonSpinner size={16} />
-                    Opening...
-                  </span>
-                ) : (
-                  "Manage billing"
-                )}
-              </button>
-            ) : null}
-            <div className="account-settings avatar-picker">
-              <span className="account-settings__label">Avatar</span>
-              <div className="avatar-icons">
-                {AVATAR_ICONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={
-                      option.id === avatarIcon
-                        ? "avatar-icon is-active"
-                        : "avatar-icon"
-                    }
-                    onClick={() => onAvatarIconChange(option.id)}
-                    aria-label={`${option.label} avatar`}
-                    aria-pressed={option.id === avatarIcon}
-                  >
-                    <AvatarMark icon={option.id} initial={userInitial} />
-                  </button>
-                ))}
-              </div>
-              <div className="avatar-swatches">
-                {avatarColors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={
-                      color === avatarColor
-                        ? "avatar-swatch is-active"
-                        : "avatar-swatch"
-                    }
-                    style={{ background: color }}
-                    onClick={() => onAvatarColorChange(color)}
-                    aria-label={`Use ${color} avatar colour`}
-                    aria-pressed={color === avatarColor}
-                  />
-                ))}
-              </div>
-            </div>
-            {settingsControls}
-            <button
-              className="button-secondary auth-panel__menu-item"
-              type="button"
-              onClick={() => void onLogout()}
-              disabled={loading}
-            >
-              Log out
-            </button>
-          </div>
+        {settingsOpen ? (
+          <SettingsModal
+            user={user}
+            theme={theme}
+            loading={loading}
+            billingLoading={billingLoading}
+            distanceUnit={distanceUnit}
+            onDistanceUnitChange={updateUnit}
+            avatarColor={avatarColor}
+            onAvatarColorChange={onAvatarColorChange}
+            avatarIcon={avatarIcon}
+            onAvatarIconChange={onAvatarIconChange}
+            onThemeChange={updateTheme}
+            onLogout={onLogout}
+            onStartCheckout={onStartCheckout}
+            onManageBilling={onManageBilling}
+            onResendVerification={onResendVerification}
+            onSaveProfile={onSaveProfile}
+            onDeleteAccount={onDeleteAccount}
+            onClose={() => setSettingsOpen(false)}
+          />
         ) : null}
-
       </aside>
     );
   }
