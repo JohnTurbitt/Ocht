@@ -29,6 +29,8 @@ model User {
   defaultTargetTime       String                   @default("1:25:00")
   subscription            SubscriptionStatus       @default(FREE)
   stripeCustomerId        String?                  @unique
+  onboardingCompletedAt   DateTime?
+  stravaConnection        StravaConnection?
   sessions                UserSession[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -93,4 +95,45 @@ model RaceReport {
   updatedAt              DateTime     @updatedAt
 
   @@index([userId, createdAt])
+}
+
+model StravaConnection {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stravaAthleteId Int            @unique
+  accessToken     String
+  refreshToken    String
+  expiresAt       DateTime
+  scope           String
+  connectedAt     DateTime       @default(now())
+  revokedAt       DateTime?
+
+  profile         StravaProfile?
+
+  @@index([userId])
+}
+
+model StravaProfile {
+  id                   String           @id @default(cuid())
+  connectionId         String           @unique
+  connection           StravaConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  userId               String           @unique
+  lthrBpm              Int?
+  cardiacDecouplingPct Float?
+  ctlScore             Float?
+  atlScore             Float?
+  bestEffort5kSeconds  Int?
+  bestEffort10kSeconds Int?
+  paceZonesJson        Json?
+  runsPerWeek          Float?
+  weeklyDistanceKm     Float?
+  longestRunKm         Float?
+  hardRunsPerWeek      Float?
+  restDaysPerWeek      Float?
+  lastSyncedAt         DateTime
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([userId])
 }
