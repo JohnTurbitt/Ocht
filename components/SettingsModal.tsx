@@ -68,6 +68,9 @@ export function SettingsModal({
   const [submitting, setSubmitting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [stravaConnected, setStravaConnected] = useState<boolean | null>(null);
+  const [stravaSyncedAt, setStravaSyncedAt] = useState<string | null>(null);
+  const [stravaDisconnecting, setStravaDisconnecting] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const isPremium = user.subscription === "ACTIVE";
@@ -127,6 +130,29 @@ export function SettingsModal({
       });
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    fetch("/api/strava/status")
+      .then((r) => r.json())
+      .then((data) => {
+        setStravaConnected(data.connected);
+        setStravaSyncedAt(data.syncedAt);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleStravaDisconnect() {
+    setStravaDisconnecting(true);
+    try {
+      const res = await fetch("/api/strava/connection", { method: "DELETE" });
+      if (res.ok) {
+        setStravaConnected(false);
+        setStravaSyncedAt(null);
+      }
+    } finally {
+      setStravaDisconnecting(false);
     }
   }
 
@@ -436,6 +462,45 @@ export function SettingsModal({
           {/* Privacy tab */}
           {activeTab === "privacy" && (
             <div className="settings-modal__privacy">
+              <section className="settings-modal__section">
+                <h3 className="settings-modal__section-title">Strava</h3>
+                {stravaConnected === null && (
+                  <p className="settings-modal__hint">Loading…</p>
+                )}
+                {stravaConnected === false && (
+                  <>
+                    <p className="settings-modal__hint">
+                      Connect Strava to auto-fill your training data and get personalised predictions.
+                    </p>
+                    <a
+                      href="/api/strava/connect"
+                      className="settings-modal__btn settings-modal__btn--primary"
+                    >
+                      Connect with Strava
+                    </a>
+                  </>
+                )}
+                {stravaConnected === true && (
+                  <>
+                    <p className="settings-modal__hint">
+                      Connected
+                      {stravaSyncedAt
+                        ? ` · Last synced ${new Date(stravaSyncedAt).toLocaleDateString()}`
+                        : ""}
+                    </p>
+                    <button
+                      className="settings-modal__btn settings-modal__btn--danger"
+                      onClick={handleStravaDisconnect}
+                      disabled={stravaDisconnecting}
+                    >
+                      {stravaDisconnecting ? "Disconnecting…" : "Disconnect Strava"}
+                    </button>
+                  </>
+                )}
+              </section>
+
+              <hr className="settings-modal__divider" />
+
               <div className="settings-modal__section">
                 <h3>Your data</h3>
                 <p>
