@@ -3,6 +3,7 @@ import { DM_Mono, Inter, Saira_Condensed } from "next/font/google";
 import { ConsentedAnalytics } from "@/components/ConsentedAnalytics";
 import { CookieBanner } from "@/components/CookieBanner";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OnboardingGate } from "@/components/OnboardingGate";
 import "./globals.scss";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
@@ -104,6 +105,7 @@ export default function RootLayout({
         className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}
       >
         {children}
+        <OnboardingGate />
         <SiteFooter />
         <CookieBanner />
         <ConsentedAnalytics />
