@@ -1,8 +1,20 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { StravaTokenResponse } from "./stravaTypes";
+
+export class StravaTokenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StravaTokenError";
+  }
+}
 
 function getKey() {
-  return Buffer.from(process.env.STRAVA_TOKEN_ENCRYPTION_KEY!, "base64");
+  const buffer = Buffer.from(process.env.STRAVA_TOKEN_ENCRYPTION_KEY!, "base64");
+  if (buffer.length !== 32) {
+    throw new StravaTokenError("STRAVA_TOKEN_ENCRYPTION_KEY must be a 32-byte base64-encoded value");
+  }
+  return buffer;
 }
 
 export function encryptToken(plaintext: string): string {
@@ -14,20 +26,18 @@ export function encryptToken(plaintext: string): string {
 }
 
 export function decryptToken(encrypted: string): string {
-  const [ivHex, tagHex, ciphertextHex] = encrypted.split(":");
-  const decipher = createDecipheriv(
-    "aes-256-gcm",
-    getKey(),
-    Buffer.from(ivHex, "hex"),
-  );
-  decipher.setAuthTag(Buffer.from(tagHex, "hex"));
-  return decipher.update(Buffer.from(ciphertextHex, "hex")) + decipher.final("utf8");
-}
-
-export class StravaTokenError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "StravaTokenError";
+  try {
+    const [ivHex, tagHex, ciphertextHex] = encrypted.split(":");
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      getKey(),
+      Buffer.from(ivHex, "hex"),
+    );
+    decipher.setAuthTag(Buffer.from(tagHex, "hex"));
+    return decipher.update(Buffer.from(ciphertextHex, "hex")) + decipher.final("utf8");
+  } catch (err) {
+    if (err instanceof StravaTokenError) throw err;
+    throw new StravaTokenError("Token decryption failed");
   }
 }
 
@@ -53,7 +63,7 @@ export async function getValidAccessToken(userId: string): Promise<string> {
 
   if (!res.ok) throw new StravaTokenError("Token refresh failed");
 
-  const data = await res.json();
+  const data = (await res.json()) as StravaTokenResponse;
 
   await prisma.stravaConnection.update({
     where: { userId },

@@ -36,6 +36,19 @@ describe("encryptToken / decryptToken", () => {
   });
 });
 
+describe("decryptToken error handling", () => {
+  it("throws StravaTokenError on malformed input (missing colons)", () => {
+    expect(() => decryptToken("notvalidatall")).toThrow(StravaTokenError);
+  });
+
+  it("throws StravaTokenError on corrupted auth tag", () => {
+    const encrypted = encryptToken("token");
+    const [iv, , ciphertext] = encrypted.split(":");
+    const tampered = `${iv}:ffffffffffffffffffffffffffffffff:${ciphertext}`;
+    expect(() => decryptToken(tampered)).toThrow(StravaTokenError);
+  });
+});
+
 describe("getValidAccessToken", () => {
   it("throws StravaTokenError when no connection exists", async () => {
     vi.mocked(prisma.stravaConnection.findUnique).mockResolvedValue(null);
@@ -75,6 +88,11 @@ describe("getValidAccessToken", () => {
     const result = await getValidAccessToken("user_1");
     expect(result).toBe("new_access_token");
     expect(prisma.stravaConnection.update).toHaveBeenCalledOnce();
+    const updateCall = vi.mocked(prisma.stravaConnection.update).mock.calls[0][0];
+    expect(updateCall.data.accessToken).not.toBe("new_access_token"); // stored encrypted
+    expect(updateCall.data.refreshToken).not.toBe("new_refresh_token"); // stored encrypted
+    expect(decryptToken(updateCall.data.accessToken as string)).toBe("new_access_token");
+    expect(decryptToken(updateCall.data.refreshToken as string)).toBe("new_refresh_token");
   });
 
   it("throws StravaTokenError when refresh request fails", async () => {
