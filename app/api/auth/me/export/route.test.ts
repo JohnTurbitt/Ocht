@@ -49,6 +49,7 @@ const testUser = {
   subscription: "ACTIVE" as const,
   defaultLevel: "competitive" as const,
   defaultTargetTime: "1:25:00",
+  onboardingCompletedAt: null,
   createdAt: "2026-01-01T00:00:00.000Z",
 };
 

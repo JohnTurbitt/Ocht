@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateProfilePayload } from "@/lib/apiValidation";
+import { validateMePatchPayload } from "@/lib/apiValidation";
 import { getCurrentUser, requireCurrentUser } from "@/lib/apiAuth";
 import { getStripe } from "@/lib/billing";
 import { logServerError } from "@/lib/logging";
@@ -31,7 +31,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ errors: ["Sign in required."] }, { status: 401 });
   }
 
-  const validation = validateProfilePayload(await request.json().catch(() => null));
+  const validation = validateMePatchPayload(await request.json().catch(() => null));
 
   if (!validation.valid || !validation.value) {
     return NextResponse.json({ errors: validation.errors }, { status: 400 });
@@ -43,6 +43,9 @@ export async function PATCH(request: NextRequest) {
       name: validation.value.name ?? null,
       defaultLevel: athleteLevelByLevel[validation.value.defaultLevel],
       defaultTargetTime: validation.value.defaultTargetTime,
+      ...(validation.value.onboardingCompleted === true
+        ? { onboardingCompletedAt: new Date() }
+        : {}),
     },
     select: {
       id: true,
@@ -52,6 +55,7 @@ export async function PATCH(request: NextRequest) {
       subscription: true,
       defaultLevel: true,
       defaultTargetTime: true,
+      onboardingCompletedAt: true,
       createdAt: true,
     },
   });

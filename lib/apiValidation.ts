@@ -98,3 +98,29 @@ export function validateProfilePayload(payload: unknown): {
     },
   };
 }
+
+export type MePatchPayload = ProfilePayload & {
+  onboardingCompleted?: boolean;
+};
+
+export function validateMePatchPayload(payload: unknown): {
+  valid: boolean;
+  errors: string[];
+  value?: MePatchPayload;
+} {
+  const record = typeof payload === "object" && payload ? payload : {};
+  const onboardingCompleted = (record as Record<string, unknown>).onboardingCompleted;
+
+  const profileResult = validateProfilePayload(payload);
+  if (!profileResult.valid || !profileResult.value) return profileResult;
+
+  return {
+    valid: true,
+    errors: [],
+    value: {
+      ...profileResult.value,
+      onboardingCompleted:
+        typeof onboardingCompleted === "boolean" ? onboardingCompleted : undefined,
+    },
+  };
+}
