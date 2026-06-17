@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Level, formatTime, levelLabels } from "@/lib/analysis";
 import { AuthUser, ProfileFormInput } from "@/lib/apiClient";
 import { SavedReport } from "@/lib/reportStorage";
+import { raceFormatLabels, type RaceFormat } from "@/lib/raceFormats";
 import { AVATAR_ICONS, AvatarMark } from "./AvatarMark";
 import { avatarColors, Theme } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
@@ -38,6 +40,7 @@ type SettingsModalProps = {
   onSaveProfile: (input: ProfileFormInput) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
   onClose: () => void;
+  onViewHistory?: () => void;
   savedReports?: SavedReport[];
 };
 
@@ -60,6 +63,7 @@ export function SettingsModal({
   onSaveProfile,
   onDeleteAccount,
   onClose,
+  onViewHistory,
   savedReports = [],
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
@@ -76,16 +80,23 @@ export function SettingsModal({
   const [stravaDisconnecting, setStravaDisconnecting] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const pb = savedReports.length > 0
-    ? savedReports.reduce((best, r) => r.finishSeconds < best.finishSeconds ? r : best)
-    : null;
-
-  const improvement = savedReports.length >= 2
-    ? (() => {
-        const sorted = [...savedReports].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        return sorted[0].finishSeconds - sorted[sorted.length - 1].finishSeconds;
-      })()
-    : null;
+  const formatPBs = (() => {
+    const byFormat = new Map<string, SavedReport[]>();
+    for (const r of savedReports) {
+      const key = r.raceFormat ?? "hyrox";
+      const group = byFormat.get(key) ?? [];
+      group.push(r);
+      byFormat.set(key, group);
+    }
+    return [...byFormat.entries()].map(([format, reports]) => {
+      const sorted = [...reports].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      const best = reports.reduce((b, r) => (r.finishSeconds < b.finishSeconds ? r : b));
+      const improvement = sorted[0].finishSeconds - best.finishSeconds;
+      return { format, best, improvement, count: reports.length };
+    });
+  })();
 
   const isPremium = user.subscription === "ACTIVE";
   const canManageBilling =
@@ -130,7 +141,13 @@ export function SettingsModal({
       ?.querySelector<HTMLElement>("button, [href], input, select")
       ?.focus();
 
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   async function handleSaveProfile(event: FormEvent<HTMLFormElement>) {
@@ -175,11 +192,11 @@ export function SettingsModal({
     setDeleteConfirmOpen(false);
   }
 
-  return (
+  return createPortal(
     <div
       className="settings-modal-overlay"
       role="presentation"
-      onPointerDown={(event) => {
+      onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
@@ -219,22 +236,42 @@ export function SettingsModal({
           </button>
         </div>
 
-        {savedReports.length > 0 && (
-          <div className="settings-stats">
-            <div className="settings-stats__item">
-              <span>Personal best</span>
-              <strong>{pb ? formatTime(pb.finishSeconds) : "—"}</strong>
+        {formatPBs.length > 0 && (
+          <div className="settings-pb">
+            <div className="settings-pb__cards">
+              {formatPBs.map(({ format, best, improvement }) => (
+                <div key={format} className="settings-pb__card">
+                  <p className="settings-pb__format">
+                    {raceFormatLabels[format as RaceFormat] ?? format}
+                  </p>
+                  <p className="settings-pb__time">{formatTime(best.finishSeconds)}</p>
+                  <p className="settings-pb__meta">
+                    {new Date(best.createdAt).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                    {improvement > 0 && (
+                      <> · −{formatTime(improvement)}</>
+                    )}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="settings-stats__item">
-              <span>Reports</span>
-              <strong>{savedReports.length}</strong>
+            <div className="settings-pb__footer">
+              <span className="settings-pb__count">
+                {savedReports.length} {savedReports.length === 1 ? "race" : "races"}
+              </span>
+              {onViewHistory && (
+                <button
+                  type="button"
+                  className="settings-pb__view"
+                  onClick={onViewHistory}
+                >
+                  View history →
+                </button>
+              )}
             </div>
-            {improvement !== null && improvement > 0 && (
-              <div className="settings-stats__item">
-                <span>Improvement</span>
-                <strong>−{formatTime(improvement)}</strong>
-              </div>
-            )}
           </div>
         )}
 
@@ -331,44 +368,6 @@ export function SettingsModal({
                   placeholder="1:25:00"
                 />
               </label>
-              <div className="account-settings avatar-picker">
-                <span className="account-settings__label">Avatar</span>
-                <div className="avatar-icons">
-                  {AVATAR_ICONS.map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      className={
-                        option.id === avatarIcon
-                          ? "avatar-icon is-active"
-                          : "avatar-icon"
-                      }
-                      onClick={() => onAvatarIconChange(option.id)}
-                      aria-label={`${option.label} avatar`}
-                      aria-pressed={option.id === avatarIcon}
-                    >
-                      <AvatarMark icon={option.id} initial={userInitial} />
-                    </button>
-                  ))}
-                </div>
-                <div className="avatar-swatches">
-                  {avatarColors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={
-                        color === avatarColor
-                          ? "avatar-swatch is-active"
-                          : "avatar-swatch"
-                      }
-                      style={{ background: color }}
-                      onClick={() => onAvatarColorChange(color)}
-                      aria-label={`Use ${color} avatar colour`}
-                      aria-pressed={color === avatarColor}
-                    />
-                  ))}
-                </div>
-              </div>
               <div className="settings-modal__form-actions">
                 <button type="submit" disabled={submitting || loading}>
                   {submitting ? (
@@ -427,6 +426,44 @@ export function SettingsModal({
                   >
                     Miles
                   </button>
+                </div>
+              </div>
+              <div className="account-settings avatar-picker">
+                <span className="account-settings__label">Avatar</span>
+                <div className="avatar-icons">
+                  {AVATAR_ICONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={
+                        option.id === avatarIcon
+                          ? "avatar-icon is-active"
+                          : "avatar-icon"
+                      }
+                      onClick={() => onAvatarIconChange(option.id)}
+                      aria-label={`${option.label} avatar`}
+                      aria-pressed={option.id === avatarIcon}
+                    >
+                      <AvatarMark icon={option.id} initial={userInitial} />
+                    </button>
+                  ))}
+                </div>
+                <div className="avatar-swatches">
+                  {avatarColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={
+                        color === avatarColor
+                          ? "avatar-swatch is-active"
+                          : "avatar-swatch"
+                      }
+                      style={{ background: color }}
+                      onClick={() => onAvatarColorChange(color)}
+                      aria-label={`Use ${color} avatar colour`}
+                      aria-pressed={color === avatarColor}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -624,6 +661,7 @@ export function SettingsModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

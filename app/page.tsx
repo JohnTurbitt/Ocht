@@ -1239,22 +1239,13 @@ export default function Home() {
           <AuthPanel
             user={user}
             loading={authLoading || reportsLoading}
-            billingLoading={billingLoading}
             distanceUnit={distanceUnit}
             onDistanceUnitChange={setDistanceUnit}
             avatarColor={avatarColor}
-            onAvatarColorChange={updateAvatarColor}
             avatarIcon={avatarIcon}
-            onAvatarIconChange={updateAvatarIcon}
             onLogin={handleLogin}
             onSignup={handleSignup}
             onLogout={handleLogout}
-            onStartCheckout={handleStartCheckout}
-            onManageBilling={handleManageBilling}
-            onResendVerification={handleResendVerification}
-            onSaveProfile={handleSaveProfile}
-            onDeleteAccount={handleDeleteAccount}
-            savedReports={savedReports}
           />
         </div>
       </header>

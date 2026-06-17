@@ -503,9 +503,8 @@
   z-index: 200;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 10vh 16px 24px;
-  overflow-y: auto;
+  align-items: center;
+  padding: 24px 16px;
 }
 
 .settings-modal {
@@ -514,6 +513,7 @@
   border-radius: 16px;
   width: 100%;
   max-width: 580px;
+  max-height: calc(100vh - 48px);
   overflow: hidden;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -597,6 +597,7 @@
   padding: 20px 24px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .settings-modal__footer {
@@ -785,38 +786,82 @@
 }
 
 /* ── Settings stats strip ── */
-.settings-stats {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
+.settings-pb {
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--lime) 4%, var(--surface));
 }
 
-.settings-stats__item {
+.settings-pb__cards {
+  display: flex;
+  gap: 0;
+}
+
+.settings-pb__card {
   flex: 1;
-  display: grid;
-  gap: 2px;
-  padding: 12px 14px;
+  padding: 16px 20px 14px;
   border-right: 1px solid var(--line);
-  background: var(--surface);
 
   &:last-child {
     border-right: none;
   }
+}
 
-  span {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-  }
+.settings-pb__format {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
 
-  strong {
-    font-size: 1rem;
-    font-variant-numeric: tabular-nums;
+.settings-pb__time {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--lime);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.settings-pb__meta {
+  margin: 5px 0 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.settings-pb__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-pb__count {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.settings-pb__view {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 28px;
+  padding: 3px 12px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--teal);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--lime);
     color: var(--lime);
-    line-height: 1.1;
   }
 }

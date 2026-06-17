@@ -1,8 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AuthFormInput, AuthUser, ProfileFormInput } from "@/lib/apiClient";
+import { AuthFormInput, AuthUser } from "@/lib/apiClient";
 import { AvatarMark } from "./AvatarMark";
-import { SavedReport } from "@/lib/reportStorage";
 import {
   Theme,
   applyTheme,
@@ -13,27 +12,17 @@ import {
 } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
 import { OctagonSpinner } from "./OctagonSpinner";
-import { SettingsModal } from "./SettingsModal";
 
 type AuthPanelProps = {
   user: AuthUser | null;
   loading: boolean;
-  billingLoading: boolean;
   distanceUnit: DistanceUnit;
   onDistanceUnitChange: (unit: DistanceUnit) => void;
   avatarColor: string;
-  onAvatarColorChange: (color: string) => void;
   avatarIcon: string;
-  onAvatarIconChange: (icon: string) => void;
   onLogin: (input: AuthFormInput) => Promise<void>;
   onSignup: (input: AuthFormInput) => Promise<void>;
   onLogout: () => Promise<void>;
-  onStartCheckout: () => void;
-  onManageBilling: () => void;
-  onResendVerification: () => Promise<void>;
-  onSaveProfile: (input: ProfileFormInput) => Promise<void>;
-  onDeleteAccount: () => Promise<void>;
-  savedReports?: SavedReport[];
 };
 
 type AuthMode = "login" | "signup";
@@ -41,22 +30,13 @@ type AuthMode = "login" | "signup";
 export function AuthPanel({
   user,
   loading,
-  billingLoading,
   distanceUnit,
   onDistanceUnitChange,
   avatarColor,
-  onAvatarColorChange,
   avatarIcon,
-  onAvatarIconChange,
   onLogin,
   onSignup,
   onLogout,
-  onStartCheckout,
-  onManageBilling,
-  onResendVerification,
-  onSaveProfile,
-  onDeleteAccount,
-  savedReports = [],
 }: AuthPanelProps) {
   const [mode, setMode] = useState<AuthMode | null>(null);
   const [theme, setTheme] = useState<Theme>("light");
@@ -65,7 +45,6 @@ export function AuthPanel({
   const [name, setName] = useState("");
   const [signupCode, setSignupCode] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const accountRef = useRef<HTMLElement>(null);
   const displayName = user?.name || user?.email || "";
@@ -202,11 +181,10 @@ export function AuthPanel({
   if (user) {
     return (
       <aside className="auth-panel auth-panel--signed-in auth-panel--compact">
-        <button
+        <Link
+          href="/settings"
           className="auth-panel__account-trigger"
-          type="button"
-          onClick={() => setSettingsOpen(true)}
-          aria-haspopup="dialog"
+          aria-label="Account settings"
         >
           <span
             className={
@@ -220,30 +198,7 @@ export function AuthPanel({
             <AvatarMark icon={avatarIcon} initial={userInitial} />
           </span>
           <span className="auth-panel__chevron" aria-hidden="true" />
-        </button>
-        {settingsOpen ? (
-          <SettingsModal
-            user={user}
-            theme={theme}
-            loading={loading}
-            billingLoading={billingLoading}
-            distanceUnit={distanceUnit}
-            onDistanceUnitChange={updateUnit}
-            avatarColor={avatarColor}
-            onAvatarColorChange={onAvatarColorChange}
-            avatarIcon={avatarIcon}
-            onAvatarIconChange={onAvatarIconChange}
-            onThemeChange={updateTheme}
-            onLogout={onLogout}
-            onStartCheckout={onStartCheckout}
-            onManageBilling={onManageBilling}
-            onResendVerification={onResendVerification}
-            onSaveProfile={onSaveProfile}
-            onDeleteAccount={onDeleteAccount}
-            onClose={() => setSettingsOpen(false)}
-            savedReports={savedReports}
-          />
-        ) : null}
+        </Link>
       </aside>
     );
   }

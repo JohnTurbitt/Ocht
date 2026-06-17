@@ -1,0 +1,133 @@
+/* ── /settings page layout ── */
+/* Note: .settings-pb and .settings-modal__* classes live in _auth.scss */
+
+.settings-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.settings-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 clamp(20px, 5vw, 48px);
+  height: 60px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.settings-topbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 0;
+
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+.settings-topbar__title {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.settings-body {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px clamp(20px, 5vw, 48px);
+  gap: 40px;
+  align-items: start;
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 80px;
+}
+
+.settings-nav__item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover {
+    background: var(--field);
+    color: var(--ink);
+  }
+
+  &.is-active {
+    background: var(--field);
+    color: var(--ink);
+    font-weight: 700;
+  }
+}
+
+.settings-content {
+  display: grid;
+  gap: 28px;
+}
+
+.settings-section-heading {
+  margin: 0 0 20px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-form__actions {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .settings-body {
+    grid-template-columns: 1fr;
+    padding: 20px 16px;
+    gap: 24px;
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+    gap: 4px;
+  }
+
+  .settings-nav__item {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+}
