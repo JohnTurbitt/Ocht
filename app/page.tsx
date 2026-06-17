@@ -1086,6 +1086,78 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const stravaStatus = new URLSearchParams(window.location.search).get("strava");
+
+    if (stravaStatus === "connected") {
+      setToast({
+        id: Date.now(),
+        title: "Connected to Strava",
+        message: "Your training data is syncing in the background.",
+        tone: "success",
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    if (stravaStatus === "error") {
+      setToast({
+        id: Date.now(),
+        title: "Strava connection failed",
+        message: "Something went wrong. Please try connecting again.",
+        tone: "error",
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    if (stravaStatus === "insufficient_scope") {
+      setToast({
+        id: Date.now(),
+        title: "Strava permissions required",
+        message: "Please grant activity access when connecting Strava.",
+        tone: "error",
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadStravaProfile() {
+      try {
+        const res = await fetch("/api/strava/profile");
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          profile: {
+            runsPerWeek: number | null;
+            weeklyDistanceKm: number | null;
+            longestRunKm: number | null;
+            hardRunsPerWeek: number | null;
+            restDaysPerWeek: number | null;
+          } | null;
+        };
+        if (!data.profile) return;
+
+        const p = data.profile;
+        setTrainingContext((current) => {
+          if (hasTrainingContext(current)) return current;
+          return {
+            ...current,
+            runsPerWeek: p.runsPerWeek != null ? String(Math.round(p.runsPerWeek * 10) / 10) : current.runsPerWeek,
+            weeklyDistanceKm: p.weeklyDistanceKm != null ? String(p.weeklyDistanceKm) : current.weeklyDistanceKm,
+            longestRunKm: p.longestRunKm != null ? String(p.longestRunKm) : current.longestRunKm,
+            hardRunsPerWeek: p.hardRunsPerWeek != null ? String(Math.round(p.hardRunsPerWeek * 10) / 10) : current.hardRunsPerWeek,
+            restDaysPerWeek: p.restDaysPerWeek != null ? String(p.restDaysPerWeek) : current.restDaysPerWeek,
+          };
+        });
+      } catch {
+        // Strava profile is optional — ignore failures silently
+      }
+    }
+
+    void loadStravaProfile();
+  }, [user]);
+
+  useEffect(() => {
     function handleScroll() {
       const footer = document.querySelector<HTMLElement>(".site-footer");
       const footerOverlap = footer
