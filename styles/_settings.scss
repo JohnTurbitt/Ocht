@@ -1,79 +1,138 @@
-/* ── /settings page layout ── */
-/* Note: .settings-pb and .settings-modal__* classes live in _auth.scss */
+/* ── /settings page ── */
 
 .settings-page {
   min-height: 100vh;
   background: var(--bg);
 }
 
+/* ── Top bar ── */
 .settings-topbar {
   position: sticky;
   top: 0;
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 clamp(20px, 5vw, 48px);
-  height: 60px;
+  gap: 20px;
+  padding: 0 clamp(20px, 5vw, 60px);
+  height: 64px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--panel) 94%, transparent);
   backdrop-filter: blur(16px);
 }
 
-.settings-topbar__back {
+.settings-topbar__brand {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--muted);
+  gap: 8px;
   text-decoration: none;
-  padding: 4px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 
-  &:hover {
-    color: var(--ink);
+  &::before {
+    content: "←";
+    font-size: 1rem;
   }
+
+  &:hover { color: var(--ink); }
 }
 
 .settings-topbar__title {
   flex: 1;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
-.settings-body {
+/* ── Layout ── */
+.settings-layout {
   display: grid;
-  grid-template-columns: 200px 1fr;
-  max-width: 900px;
+  grid-template-columns: 240px 1fr;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 40px clamp(20px, 5vw, 48px);
-  gap: 40px;
+  padding: 40px clamp(20px, 5vw, 60px);
+  gap: 48px;
   align-items: start;
 }
 
-.settings-nav {
+/* ── Sidebar ── */
+.settings-sidebar {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settings-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.settings-sidebar__user-info {
+  min-width: 0;
+
+  strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  span {
+    display: block;
+    font-size: 0.74rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.settings-sidebar__nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  position: sticky;
-  top: 80px;
 }
 
-.settings-nav__item {
+.settings-sidebar__item {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 9px 14px;
+  padding: 9px 14px 9px 18px;
   border: none;
   border-radius: 8px;
   background: none;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--muted);
   cursor: pointer;
   text-align: left;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.12s, color 0.12s;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    border-radius: 2px;
+    background: var(--lime);
+    transition: height 0.15s ease;
+  }
 
   &:hover {
     background: var(--field);
@@ -84,50 +143,421 @@
     background: var(--field);
     color: var(--ink);
     font-weight: 700;
+
+    &::before {
+      height: 20px;
+    }
   }
 }
 
-.settings-content {
-  display: grid;
-  gap: 28px;
+/* ── Content area ── */
+.settings-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
 }
 
-.settings-section-heading {
-  margin: 0 0 20px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--ink);
-  padding-bottom: 12px;
+/* ── Card wrapper ── */
+.settings-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.settings-card__head {
+  padding: 14px 20px 12px;
   border-bottom: 1px solid var(--line);
+
+  h3 {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
 }
 
+.settings-card__body {
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+/* ── PB hero ── */
+.settings-pb-hero {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.settings-pb-hero__cards {
+  display: flex;
+}
+
+.settings-pb-hero__card {
+  flex: 1;
+  padding: 20px 24px;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--lime) 4%, var(--panel));
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.settings-pb-hero__format {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.settings-pb-hero__time {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--lime);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.settings-pb-hero__meta {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.settings-pb-hero__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-pb-hero__count {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.settings-pb-hero__view {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--teal);
+  text-decoration: none;
+  padding: 4px 0;
+
+  &:hover { color: var(--lime); }
+}
+
+/* ── Profile form ── */
 .settings-form {
   display: grid;
   gap: 16px;
 }
 
 .settings-form__actions {
-  display: flex;
-  justify-content: flex-start;
   padding-top: 4px;
 }
 
-@media (max-width: 640px) {
-  .settings-body {
+/* ── Appearance toggles ── */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-toggle-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ── Avatar section ── */
+.settings-avatar-section {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-avatar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── Plan card (Billing) ── */
+.settings-plan-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.settings-plan-card--premium {
+  border-color: color-mix(in srgb, var(--lime) 30%, var(--line));
+  background: color-mix(in srgb, var(--lime) 4%, var(--panel));
+}
+
+.settings-plan-card__info {
+  display: grid;
+  gap: 4px;
+}
+
+.settings-plan-card__tier {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-plan-card__desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ── Data row (Privacy) ── */
+.settings-data-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.5;
+    flex: 1;
+  }
+}
+
+.settings-strava-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-strava-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--lime);
+
+  &::before { content: "●"; font-size: 0.6rem; }
+}
+
+/* ── Danger zone ── */
+.settings-danger-card {
+  border: 1px solid color-mix(in srgb, #ef4444 40%, var(--line));
+  border-radius: 12px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.settings-danger-card__head {
+  padding: 12px 20px;
+  border-bottom: 1px solid color-mix(in srgb, #ef4444 25%, var(--line));
+  background: color-mix(in srgb, #ef4444 6%, var(--panel));
+
+  h3 {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #ef4444;
+  }
+}
+
+.settings-danger-card__body {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+
+  strong {
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+}
+
+.settings-danger-confirm {
+  display: grid;
+  gap: 10px;
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+}
+
+.settings-danger-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  background: none;
+  color: #ef4444;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+  width: auto;
+  min-height: 40px;
+
+  &:hover {
+    background: color-mix(in srgb, #ef4444 10%, transparent);
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* ── Verify email strip ── */
+.settings-verify-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, #f59e0b 40%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, #f59e0b 8%, var(--panel));
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.4;
+    flex: 1;
+  }
+}
+
+/* ── Strava connect link ── */
+.settings-connect-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--lime);
+    color: var(--lime);
+  }
+}
+
+/* ── Email row / badge (kept from _auth.scss usage) ── */
+.settings-email-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input { flex: 1; }
+}
+
+.settings-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &--verified {
+    background: color-mix(in srgb, var(--lime) 15%, transparent);
+    color: var(--lime);
+  }
+
+  &--unverified {
+    background: color-mix(in srgb, #f59e0b 15%, transparent);
+    color: #f59e0b;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 680px) {
+  .settings-layout {
     grid-template-columns: 1fr;
     padding: 20px 16px;
     gap: 24px;
   }
 
-  .settings-nav {
+  .settings-sidebar {
+    position: static;
+  }
+
+  .settings-sidebar__user {
+    display: none;
+  }
+
+  .settings-sidebar__nav {
     flex-direction: row;
     flex-wrap: wrap;
-    position: static;
     gap: 4px;
   }
 
-  .settings-nav__item {
-    padding: 6px 12px;
+  .settings-sidebar__item {
+    padding: 6px 14px;
     font-size: 0.82rem;
+
+    &::before { display: none; }
+  }
+
+  .settings-pb-hero__time {
+    font-size: 2rem;
+  }
+
+  .settings-plan-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

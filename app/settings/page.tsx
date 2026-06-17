@@ -258,7 +258,7 @@ export default function SettingsPage() {
     return (
       <div className="settings-page">
         <div className="settings-topbar">
-          <Link href="/" className="settings-topbar__back">← Ocht</Link>
+          <Link href="/" className="settings-topbar__brand">Ocht</Link>
           <span className="settings-topbar__title">Settings</span>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function SettingsPage() {
     <div className="settings-page">
       {/* Top bar */}
       <div className="settings-topbar">
-        <Link href="/" className="settings-topbar__back">← Ocht</Link>
+        <Link href="/" className="settings-topbar__brand">Ocht</Link>
         <span className="settings-topbar__title">Settings</span>
         <span
           className={isPremium ? "auth-panel__avatar auth-panel__avatar--premium" : "auth-panel__avatar"}
@@ -289,40 +289,52 @@ export default function SettingsPage() {
         </span>
       </div>
 
-      {/* Body */}
-      <div className="settings-body">
-        {/* Sidebar nav */}
-        <nav className="settings-nav" aria-label="Settings sections">
-          {sections.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              className={activeSection === id ? "settings-nav__item is-active" : "settings-nav__item"}
-              onClick={() => switchSection(id)}
+      <div className="settings-layout">
+        {/* Sidebar */}
+        <aside className="settings-sidebar">
+          <div className="settings-sidebar__user">
+            <span
+              className={isPremium ? "auth-panel__avatar auth-panel__avatar--premium" : "auth-panel__avatar"}
+              style={{ background: avatarColor }}
+              aria-hidden="true"
             >
-              {label}
-            </button>
-          ))}
-        </nav>
+              <AvatarMark icon={avatarIcon} initial={userInitial} />
+            </span>
+            <div className="settings-sidebar__user-info">
+              <strong>{displayName}</strong>
+              <span>{subscriptionLabels[user.subscription]}</span>
+            </div>
+          </div>
+          <nav className="settings-sidebar__nav" aria-label="Settings sections">
+            {sections.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                className={activeSection === id ? "settings-sidebar__item is-active" : "settings-sidebar__item"}
+                onClick={() => switchSection(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
-        {/* Content */}
-        <div className="settings-content">
+        {/* Main content */}
+        <main className="settings-main">
 
-          {/* Profile */}
+          {/* ── Profile ── */}
           {activeSection === "profile" && (
             <>
-              <h2 className="settings-section-heading">Profile</h2>
-
               {formatPBs.length > 0 && (
-                <div className="settings-pb">
-                  <div className="settings-pb__cards">
+                <div className="settings-pb-hero">
+                  <div className="settings-pb-hero__cards">
                     {formatPBs.map(({ format, best, improvement }) => (
-                      <div key={format} className="settings-pb__card">
-                        <p className="settings-pb__format">
+                      <div key={format} className="settings-pb-hero__card">
+                        <p className="settings-pb-hero__format">
                           {raceFormatLabels[format as RaceFormat] ?? format}
                         </p>
-                        <p className="settings-pb__time">{formatTime(best.finishSeconds)}</p>
-                        <p className="settings-pb__meta">
+                        <p className="settings-pb-hero__time">{formatTime(best.finishSeconds)}</p>
+                        <p className="settings-pb-hero__meta">
                           {new Date(best.createdAt).toLocaleDateString(undefined, {
                             day: "numeric",
                             month: "short",
@@ -333,325 +345,319 @@ export default function SettingsPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="settings-pb__footer">
-                    <span className="settings-pb__count">
+                  <div className="settings-pb-hero__footer">
+                    <span className="settings-pb-hero__count">
                       {savedReports.length} {savedReports.length === 1 ? "race" : "races"}
                     </span>
-                    <Link href="/" className="settings-pb__view">View race history →</Link>
+                    <Link href="/" className="settings-pb-hero__view">View race history →</Link>
                   </div>
                 </div>
               )}
 
-              <form onSubmit={handleSaveProfile} className="settings-form">
-                <label className="field">
-                  <span>Name</span>
-                  <input
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Runner name"
-                  />
-                </label>
-                <label className="field">
-                  <span>Email</span>
-                  <div className="settings-modal__email-row">
-                    <input value={user.email} readOnly aria-readonly="true" />
-                    <span
-                      className={
-                        user.emailVerified
-                          ? "settings-modal__badge settings-modal__badge--verified"
-                          : "settings-modal__badge settings-modal__badge--unverified"
-                      }
-                    >
-                      {user.emailVerified ? "Verified" : "Unverified"}
-                    </span>
-                  </div>
-                </label>
-                {!user.emailVerified && (
-                  <div className="settings-modal__verify">
-                    <p>Verify your email to keep account recovery reliable.</p>
-                    <button
-                      className="button-secondary"
-                      type="button"
-                      onClick={() => void handleResendVerification()}
-                      disabled={submitting}
-                    >
-                      Resend verification email
-                    </button>
-                  </div>
-                )}
-                <label className="field">
-                  <span>Default athlete level</span>
-                  <select
-                    value={profileLevel}
-                    onChange={(e) => setProfileLevel(e.target.value as Level)}
-                  >
-                    {Object.entries(levelLabels).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>Default target time</span>
-                  <input
-                    value={profileTargetTime}
-                    onChange={(e) => setProfileTargetTime(e.target.value)}
-                    inputMode="numeric"
-                    placeholder="1:25:00"
-                  />
-                </label>
-                <div className="settings-form__actions">
-                  <button type="submit" disabled={submitting}>
-                    {submitting ? (
-                      <span className="button-loading">
-                        <OctagonSpinner size={16} />
-                        Saving...
-                      </span>
-                    ) : (
-                      "Save profile"
+              <div className="settings-card">
+                <div className="settings-card__head"><h3>Profile</h3></div>
+                <div className="settings-card__body">
+                  <form onSubmit={handleSaveProfile} className="settings-form">
+                    <label className="field">
+                      <span>Name</span>
+                      <input
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Runner name"
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Email</span>
+                      <div className="settings-email-row">
+                        <input value={user.email} readOnly aria-readonly="true" />
+                        <span className={user.emailVerified ? "settings-badge settings-badge--verified" : "settings-badge settings-badge--unverified"}>
+                          {user.emailVerified ? "Verified" : "Unverified"}
+                        </span>
+                      </div>
+                    </label>
+                    {!user.emailVerified && (
+                      <div className="settings-verify-strip">
+                        <p>Verify your email to keep account recovery reliable.</p>
+                        <button
+                          className="button-secondary"
+                          type="button"
+                          onClick={() => void handleResendVerification()}
+                          disabled={submitting}
+                        >
+                          Resend email
+                        </button>
+                      </div>
                     )}
-                  </button>
+                    <label className="field">
+                      <span>Default athlete level</span>
+                      <select
+                        value={profileLevel}
+                        onChange={(e) => setProfileLevel(e.target.value as Level)}
+                      >
+                        {Object.entries(levelLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Default target time</span>
+                      <input
+                        value={profileTargetTime}
+                        onChange={(e) => setProfileTargetTime(e.target.value)}
+                        inputMode="numeric"
+                        placeholder="1:25:00"
+                      />
+                    </label>
+                    <div className="settings-form__actions">
+                      <button type="submit" disabled={submitting}>
+                        {submitting ? (
+                          <span className="button-loading">
+                            <OctagonSpinner size={16} />
+                            Saving...
+                          </span>
+                        ) : (
+                          "Save profile"
+                        )}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              </form>
+              </div>
             </>
           )}
 
-          {/* Appearance */}
+          {/* ── Appearance ── */}
           {activeSection === "appearance" && (
             <>
-              <h2 className="settings-section-heading">Appearance</h2>
-              <div className="account-settings">
-                <div className="account-settings__group">
-                  <span className="account-settings__label">Theme</span>
-                  <div className="account-settings__switch">
-                    <button
-                      type="button"
-                      className={theme === "light" ? "is-active" : undefined}
-                      onClick={() => handleThemeChange("light")}
-                    >
-                      Light
-                    </button>
-                    <button
-                      type="button"
-                      className={theme === "dark" ? "is-active" : undefined}
-                      onClick={() => handleThemeChange("dark")}
-                    >
-                      Dark
-                    </button>
-                  </div>
-                </div>
-                <div className="account-settings__group">
-                  <span className="account-settings__label">Distance</span>
-                  <div className="account-settings__switch">
-                    <button
-                      type="button"
-                      className={distanceUnit === "km" ? "is-active" : undefined}
-                      onClick={() => handleDistanceUnitChange("km")}
-                    >
-                      KM
-                    </button>
-                    <button
-                      type="button"
-                      className={distanceUnit === "mi" ? "is-active" : undefined}
-                      onClick={() => handleDistanceUnitChange("mi")}
-                    >
-                      Miles
-                    </button>
-                  </div>
-                </div>
-                <div className="account-settings avatar-picker">
-                  <span className="account-settings__label">Avatar</span>
-                  <div className="avatar-icons">
-                    {AVATAR_ICONS.map((option) => (
+              <div className="settings-card">
+                <div className="settings-card__head"><h3>Display</h3></div>
+                <div className="settings-card__body">
+                  <div className="settings-toggle-row">
+                    <span className="settings-toggle-label">Theme</span>
+                    <div className="account-settings__switch">
                       <button
-                        key={option.id}
                         type="button"
-                        className={option.id === avatarIcon ? "avatar-icon is-active" : "avatar-icon"}
-                        onClick={() => handleAvatarIconChange(option.id)}
-                        aria-label={`${option.label} avatar`}
-                        aria-pressed={option.id === avatarIcon}
+                        className={theme === "light" ? "is-active" : undefined}
+                        onClick={() => handleThemeChange("light")}
                       >
-                        <AvatarMark icon={option.id} initial={userInitial} />
+                        Light
                       </button>
-                    ))}
-                  </div>
-                  <div className="avatar-swatches">
-                    {avatarColors.map((color) => (
                       <button
-                        key={color}
                         type="button"
-                        className={color === avatarColor ? "avatar-swatch is-active" : "avatar-swatch"}
-                        style={{ background: color }}
-                        onClick={() => handleAvatarColorChange(color)}
-                        aria-label={`Use ${color} avatar colour`}
-                        aria-pressed={color === avatarColor}
-                      />
-                    ))}
+                        className={theme === "dark" ? "is-active" : undefined}
+                        onClick={() => handleThemeChange("dark")}
+                      >
+                        Dark
+                      </button>
+                    </div>
+                  </div>
+                  <div className="settings-toggle-row">
+                    <span className="settings-toggle-label">Distance</span>
+                    <div className="account-settings__switch">
+                      <button
+                        type="button"
+                        className={distanceUnit === "km" ? "is-active" : undefined}
+                        onClick={() => handleDistanceUnitChange("km")}
+                      >
+                        KM
+                      </button>
+                      <button
+                        type="button"
+                        className={distanceUnit === "mi" ? "is-active" : undefined}
+                        onClick={() => handleDistanceUnitChange("mi")}
+                      >
+                        Miles
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-card">
+                <div className="settings-card__head"><h3>Avatar</h3></div>
+                <div className="settings-card__body">
+                  <div className="settings-avatar-section">
+                    <p className="settings-avatar-label">Icon</p>
+                    <div className="avatar-icons">
+                      {AVATAR_ICONS.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={option.id === avatarIcon ? "avatar-icon is-active" : "avatar-icon"}
+                          onClick={() => handleAvatarIconChange(option.id)}
+                          aria-label={`${option.label} avatar`}
+                          aria-pressed={option.id === avatarIcon}
+                        >
+                          <AvatarMark icon={option.id} initial={userInitial} />
+                        </button>
+                      ))}
+                    </div>
+                    <p className="settings-avatar-label">Colour</p>
+                    <div className="avatar-swatches">
+                      {avatarColors.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={color === avatarColor ? "avatar-swatch is-active" : "avatar-swatch"}
+                          style={{ background: color }}
+                          onClick={() => handleAvatarColorChange(color)}
+                          aria-label={`Use ${color} avatar colour`}
+                          aria-pressed={color === avatarColor}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </>
           )}
 
-          {/* Billing */}
+          {/* ── Billing ── */}
           {activeSection === "billing" && (
-            <>
-              <h2 className="settings-section-heading">Billing</h2>
-              <div className="settings-modal__billing">
-                <p className="settings-modal__billing-status">
+            <div className={isPremium ? "settings-plan-card settings-plan-card--premium" : "settings-plan-card"}>
+              <div className="settings-plan-card__info">
+                <div className="settings-plan-card__tier">
                   {subscriptionLabels[user.subscription]}
-                  {isPremium ? (
-                    <> <PremiumBadge /></>
-                  ) : null}
-                  {user.subscription === "PAST_DUE" ? (
-                    <span className="settings-modal__billing-warning">
-                      Payment past due — please update your billing details.
-                    </span>
-                  ) : null}
-                </p>
-                {canUpgrade ? (
-                  <button
-                    className="button-secondary auth-panel__upgrade"
-                    type="button"
-                    onClick={() => void handleStartCheckout()}
-                    disabled={billingLoading}
-                  >
-                    {billingLoading ? (
-                      <span className="button-loading">
-                        <OctagonSpinner size={16} />
-                        Opening...
-                      </span>
-                    ) : (
-                      "Upgrade to premium"
-                    )}
-                  </button>
-                ) : null}
-                {canManageBilling ? (
-                  <button
-                    className="button-secondary"
-                    type="button"
-                    onClick={() => void handleManageBilling()}
-                    disabled={billingLoading}
-                  >
-                    {billingLoading ? (
-                      <span className="button-loading">
-                        <OctagonSpinner size={16} />
-                        Opening...
-                      </span>
-                    ) : (
-                      "Manage billing"
-                    )}
-                  </button>
-                ) : null}
+                  {isPremium && <PremiumBadge />}
+                </div>
+                <div className="settings-plan-card__desc">
+                  {user.subscription === "PAST_DUE"
+                    ? "Payment past due — please update your billing details."
+                    : isPremium
+                      ? "Full access to all features and insights."
+                      : "Upgrade to unlock Fitness Insights, Race Blueprint, and more."}
+                </div>
               </div>
-            </>
+              {canUpgrade && (
+                <button
+                  className="button-secondary auth-panel__upgrade"
+                  type="button"
+                  onClick={() => void handleStartCheckout()}
+                  disabled={billingLoading}
+                >
+                  {billingLoading ? (
+                    <span className="button-loading">
+                      <OctagonSpinner size={16} />
+                      Opening...
+                    </span>
+                  ) : (
+                    "Upgrade to premium"
+                  )}
+                </button>
+              )}
+              {canManageBilling && (
+                <button
+                  className="button-secondary"
+                  type="button"
+                  onClick={() => void handleManageBilling()}
+                  disabled={billingLoading}
+                >
+                  {billingLoading ? (
+                    <span className="button-loading">
+                      <OctagonSpinner size={16} />
+                      Opening...
+                    </span>
+                  ) : (
+                    "Manage billing"
+                  )}
+                </button>
+              )}
+            </div>
           )}
 
-          {/* Privacy */}
+          {/* ── Privacy ── */}
           {activeSection === "privacy" && (
             <>
-              <h2 className="settings-section-heading">Privacy</h2>
-              <div className="settings-modal__privacy">
-                <section className="settings-modal__section">
-                  <h3 className="settings-modal__section-title">Strava</h3>
+              <div className="settings-card">
+                <div className="settings-card__head"><h3>Strava</h3></div>
+                <div className="settings-card__body">
                   {stravaConnected === null && (
-                    <p className="settings-modal__hint">Loading…</p>
+                    <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>Loading…</p>
                   )}
                   {stravaConnected === false && (
-                    <>
-                      <p className="settings-modal__hint">
-                        Connect Strava to auto-fill your training data and get personalised predictions.
-                      </p>
-                      <a
-                        href="/api/strava/connect"
-                        className="settings-modal__btn settings-modal__btn--primary"
-                      >
-                        Connect with Strava
-                      </a>
-                    </>
+                    <div className="settings-data-row">
+                      <p>Connect Strava to auto-fill your training data and get personalised predictions.</p>
+                      <a href="/api/strava/connect" className="settings-connect-btn">Connect Strava</a>
+                    </div>
                   )}
                   {stravaConnected === true && (
-                    <>
-                      <p className="settings-modal__hint">
-                        Connected
-                        {stravaSyncedAt
-                          ? ` · Last synced ${new Date(stravaSyncedAt).toLocaleDateString()}`
-                          : ""}
-                      </p>
+                    <div className="settings-strava-status">
+                      <span className="settings-strava-badge">
+                        Connected{stravaSyncedAt ? ` · synced ${new Date(stravaSyncedAt).toLocaleDateString()}` : ""}
+                      </span>
                       <button
-                        className="settings-modal__btn settings-modal__btn--danger"
+                        className="button-secondary"
+                        type="button"
                         onClick={() => void handleStravaDisconnect()}
                         disabled={stravaDisconnecting}
                       >
-                        {stravaDisconnecting ? "Disconnecting…" : "Disconnect Strava"}
+                        {stravaDisconnecting ? "Disconnecting…" : "Disconnect"}
                       </button>
-                    </>
+                    </div>
                   )}
-                </section>
-
-                <hr className="settings-modal__divider" />
-
-                <div className="settings-modal__section">
-                  <h3>Your data</h3>
-                  <p>Download a copy of your account and all saved reports as JSON.</p>
-                  <a className="button-secondary" href="/api/auth/me/export">
-                    ↓ Download my data
-                  </a>
                 </div>
+              </div>
 
-                <hr className="settings-modal__divider" />
-
-                <div className="settings-modal__section">
-                  <p className="settings-modal__danger-label">Danger zone</p>
-                  <div className="settings-modal__danger-zone">
-                    <strong>Delete account</strong>
-                    <p>
-                      Permanently deletes your account, all reports, and cancels your subscription. This cannot be undone.
-                    </p>
-                    {deleteConfirmOpen ? (
-                      <div className="settings-modal__delete-confirm">
-                        <p>Are you sure? We recommend downloading your data first.</p>
-                        <div className="settings-modal__delete-confirm-actions">
-                          <button
-                            className="button-secondary"
-                            type="button"
-                            onClick={() => setDeleteConfirmOpen(false)}
-                            disabled={deleting}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            className="settings-modal__delete-btn"
-                            aria-label="Permanently delete my account"
-                            onClick={() => void handleDeleteAccount()}
-                            disabled={deleting}
-                          >
-                            {deleting ? (
-                              <span className="button-loading">
-                                <OctagonSpinner size={16} />
-                                Deleting...
-                              </span>
-                            ) : (
-                              "Yes, delete"
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="settings-modal__delete-btn settings-modal__delete-btn--outline"
-                        onClick={() => setDeleteConfirmOpen(true)}
-                      >
-                        Delete account
-                      </button>
-                    )}
+              <div className="settings-card">
+                <div className="settings-card__head"><h3>Your data</h3></div>
+                <div className="settings-card__body">
+                  <div className="settings-data-row">
+                    <p>Download a copy of your account and all saved reports as JSON.</p>
+                    <a className="button-secondary" href="/api/auth/me/export">↓ Download</a>
                   </div>
+                </div>
+              </div>
+
+              <div className="settings-danger-card">
+                <div className="settings-danger-card__head"><h3>Danger zone</h3></div>
+                <div className="settings-danger-card__body">
+                  <strong>Delete account</strong>
+                  <p>Permanently deletes your account, all reports, and cancels your subscription. This cannot be undone.</p>
+                  {deleteConfirmOpen ? (
+                    <div className="settings-danger-confirm">
+                      <p>Are you sure? We recommend downloading your data first.</p>
+                      <div className="settings-danger-actions">
+                        <button
+                          className="button-secondary"
+                          type="button"
+                          onClick={() => setDeleteConfirmOpen(false)}
+                          disabled={deleting}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="settings-delete-btn"
+                          aria-label="Permanently delete my account"
+                          onClick={() => void handleDeleteAccount()}
+                          disabled={deleting}
+                        >
+                          {deleting ? (
+                            <span className="button-loading">
+                              <OctagonSpinner size={16} />
+                              Deleting...
+                            </span>
+                          ) : (
+                            "Yes, delete my account"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="settings-delete-btn"
+                      onClick={() => setDeleteConfirmOpen(true)}
+                    >
+                      Delete account
+                    </button>
+                  )}
                 </div>
               </div>
             </>
           )}
-        </div>
+
+        </main>
       </div>
     </div>
   );
