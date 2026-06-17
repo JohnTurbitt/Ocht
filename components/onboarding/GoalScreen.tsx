@@ -39,7 +39,7 @@ export function GoalScreen({ onSelect }: Props) {
           </svg>
           <div>
             <div className="onboarding-goal-item__label">I&apos;m training for my first Hyrox</div>
-            <div className="onboarding-goal-item__desc">Connect Strava and we&apos;ll predict what time you could realistically target</div>
+            <div className="onboarding-goal-item__desc">Connect Strava and we&apos;ll analyse your running base and explain what&apos;s holding you back</div>
           </div>
           <span className="onboarding-goal-item__arrow">›</span>
         </button>

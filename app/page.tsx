@@ -156,6 +156,7 @@ export default function Home() {
   );
   const [trainingContext, setTrainingContext] =
     useState<TrainingContext>(emptyTrainingContext);
+  const [stravaConnected, setStravaConnected] = useState(false);
   const [runGainPerKm, setRunGainPerKm] = useState("8");
   const [stationGain, setStationGain] = useState("2:30");
   const [transitionGain, setTransitionGain] = useState("0:45");
@@ -1137,6 +1138,7 @@ export default function Home() {
         };
         if (!data.profile) return;
 
+        setStravaConnected(true);
         const p = data.profile;
         setTrainingContext((current) => {
           if (hasTrainingContext(current)) return current;
@@ -1400,6 +1402,7 @@ export default function Home() {
               stationDefinitions={activeStationDefinitions}
               stationSplits={stationSplits}
               trainingContext={trainingContext}
+              stravaConnected={stravaConnected}
               errors={validationErrors}
               fieldErrors={fieldErrors}
               customTemplates={customTemplates}

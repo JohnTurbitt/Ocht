@@ -6,10 +6,10 @@ interface Props {
 }
 
 const BENEFITS = [
-  { title: "Your predicted Hyrox time", desc: "Based on your real 5k and 10k times — not a generic estimate" },
-  { title: "Training automatically filled in", desc: "We calculate your mileage, long run and intensity from your history" },
-  { title: "Fade risk warning", desc: "We spot if your aerobic fitness suggests you'll slow in the second half" },
-  { title: "Personal pace zones", desc: "Tailored to your heart rate — not textbook averages" },
+  { title: "Training automatically filled in", desc: "We calculate your mileage, long run and intensity from your Strava history" },
+  { title: "Running limiter diagnosis", desc: "Ocht explains whether your aerobic base, hard sessions or recovery is holding you back" },
+  { title: "Fade risk warning", desc: "We spot if your training suggests you'll slow in the second half of the race" },
+  { title: "Fitness insights (premium)", desc: "Lactate threshold, training load and pace zones calculated from your data" },
 ];
 
 export function StravaConnectScreen({ goal, onSkip }: Props) {

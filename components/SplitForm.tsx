@@ -25,6 +25,7 @@ type SplitFormProps = {
   stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
   trainingContext: TrainingContext;
+  stravaConnected?: boolean;
   errors: string[];
   fieldErrors: Record<string, string>;
   customTemplates: CustomTemplate[];
@@ -64,6 +65,7 @@ export function SplitForm({
   stationDefinitions,
   stationSplits,
   trainingContext,
+  stravaConnected = false,
   errors,
   fieldErrors,
   customTemplates,
@@ -317,9 +319,11 @@ export function SplitForm({
               only ranking race splits.
             </p>
           </div>
-          <button type="button" disabled>
-            Connect Strava <PremiumBadge />
-          </button>
+          {stravaConnected && (
+            <span className="training-context-input__strava-badge">
+              Synced from Strava
+            </span>
+          )}
         </div>
         <div className="training-context-grid">
           <label className="field">

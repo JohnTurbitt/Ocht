@@ -801,10 +801,10 @@ export function ReportPanel({
                 </p>
               </div>
               <div className="strava-upsell">
-                <strong>Premium automation</strong>
+                <strong>Auto-fill from Strava</strong>
                 <p>
-                  Strava import will auto-fill these fields and track trends over
-                  time.
+                  Connect Strava in Settings to fill in your training data
+                  automatically.
                 </p>
               </div>
             </div>
