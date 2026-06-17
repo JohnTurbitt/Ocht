@@ -11,6 +11,7 @@ interface StravaInsightsProfile {
   paceZonesJson: unknown;
   bestEffort5kSeconds: number | null;
   bestEffort10kSeconds: number | null;
+  lastSyncedAt: string;
 }
 
 interface Props {
@@ -40,6 +41,19 @@ function fmtTime(s: number): string {
   const m = Math.floor(s / 60);
   const sec = Math.round(s % 60);
   return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function relativeTime(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function predictHyroxRunSecs(bestEffort5kSeconds: number): number {
+  // 8 × 1km runs with 12% fatigue factor for running after station work
+  return Math.round((bestEffort5kSeconds / 5) * 1.12 * 8);
 }
 
 function isPaceZones(val: unknown): val is PaceZones {
@@ -98,19 +112,27 @@ function MetricRow({
 
 export function FitnessInsights({ fullReportUnlocked }: Props) {
   const [profile, setProfile] = useState<StravaInsightsProfile | null | undefined>(undefined);
+  const [authenticated, setAuthenticated] = useState(true);
   const [openHint, setOpenHint] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/strava/profile")
-      .then((r) => r.json())
-      .then((data: { profile: StravaInsightsProfile | null }) => {
-        setProfile(data.profile ?? null);
+      .then((r) => {
+        if (r.status === 401) {
+          setAuthenticated(false);
+          return null;
+        }
+        return r.json() as Promise<{ profile: StravaInsightsProfile | null }>;
+      })
+      .then((data) => {
+        if (data) setProfile(data.profile ?? null);
       })
       .catch(() => {
         setProfile(null);
       });
   }, []);
 
+  if (!authenticated) return null;
   if (profile === undefined) return null;
 
   function handleToggle(id: string) {
@@ -145,6 +167,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     paceZonesJson,
     bestEffort5kSeconds,
     bestEffort10kSeconds,
+    lastSyncedAt,
   } = profile;
 
   const parsedZones = isPaceZones(paceZonesJson) ? paceZonesJson : null;
@@ -153,10 +176,13 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
   if (bestEffort5kSeconds !== null) effortParts.push(`5k ${fmtTime(bestEffort5kSeconds)}`);
   if (bestEffort10kSeconds !== null) effortParts.push(`10k ${fmtTime(bestEffort10kSeconds)}`);
 
+  const hyroxRunSecs = bestEffort5kSeconds !== null ? predictHyroxRunSecs(bestEffort5kSeconds) : null;
+
   return (
     <div className="fitness-insights">
       <p className="eyebrow">Fitness insights</p>
       <h3>Your training data</h3>
+      <p className="fitness-insights__synced-at">Last synced {relativeTime(lastSyncedAt)}</p>
       <div className="fitness-insights__rows">
         {lthrBpm !== null && (
           <MetricRow
@@ -204,6 +230,16 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             label="Running fitness"
             value={effortParts.join(" · ")}
             hint="Estimated from your Strava activities using the Riegel formula. They represent your current running fitness rather than a specific race result — useful as a baseline for your Hyrox run targets."
+            openHint={openHint}
+            onToggle={handleToggle}
+          />
+        )}
+        {hyroxRunSecs !== null && (
+          <MetricRow
+            id="hyrox"
+            label="Hyrox run target"
+            value={`${fmtTime(hyroxRunSecs)} · ${fmtPace(hyroxRunSecs / 8)}/km`}
+            hint="Total running time across 8 × 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction — station performance and transitions are separate."
             openHint={openHint}
             onToggle={handleToggle}
           />
