@@ -15,8 +15,12 @@ export async function GET(request: NextRequest) {
       hardRunsPerWeek: true,
       restDaysPerWeek: true,
       lthrBpm: true,
+      cardiacDecouplingPct: true,
       ctlScore: true,
       atlScore: true,
+      paceZonesJson: true,
+      bestEffort5kSeconds: true,
+      bestEffort10kSeconds: true,
       lastSyncedAt: true,
     },
   });

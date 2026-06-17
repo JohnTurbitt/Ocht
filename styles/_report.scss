@@ -2751,3 +2751,104 @@
 .metric-row strong {
   font-variant-numeric: tabular-nums;
 }
+
+// Fitness Insights card
+.fitness-insights {
+  margin: 24px 0;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  padding: 20px;
+  background: var(--color-surface, rgba(255, 255, 255, 0.03));
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin: 0 0 6px;
+  }
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+  }
+
+  p {
+    font-size: 13px;
+    opacity: 0.7;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.fitness-insights--connect,
+.fitness-insights--locked {
+  p:not(.eyebrow) {
+    margin-top: 8px;
+  }
+}
+
+.fitness-insights__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fitness-insights__row {
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  padding: 12px 0;
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.fitness-insights__row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fitness-insights__row-label {
+  flex: 1;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.fitness-insights__row-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fitness-insights__hint-toggle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, border-color 0.15s;
+
+  &:hover,
+  &--open {
+    opacity: 1;
+    border-color: #c8ff2e;
+    color: #c8ff2e;
+  }
+}
+
+.fitness-insights__hint-body {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  opacity: 0.65;
+  padding-left: 0;
+}

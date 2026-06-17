@@ -17,6 +17,7 @@ import {
   secondsPerDistanceUnit,
 } from "@/lib/units";
 import { AthleteArchetypeCard } from "./AthleteArchetypeCard";
+import { FitnessInsights } from "./FitnessInsights";
 import { CalculationExplainer } from "./CalculationExplainer";
 import { CountUp } from "./CountUp";
 import { Hint } from "./Hint";
@@ -810,6 +811,8 @@ export function ReportPanel({
             </div>
           )}
         </ReportSection>
+
+        <FitnessInsights fullReportUnlocked={fullReportUnlocked} />
 
       {!fullReportUnlocked ? (
         <div className="paywall">
