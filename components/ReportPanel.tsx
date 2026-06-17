@@ -18,6 +18,7 @@ import {
 } from "@/lib/units";
 import { AthleteArchetypeCard } from "./AthleteArchetypeCard";
 import { FitnessInsights } from "./FitnessInsights";
+import { RaceBlueprint } from "./RaceBlueprint";
 import { CalculationExplainer } from "./CalculationExplainer";
 import { CountUp } from "./CountUp";
 import { Hint } from "./Hint";
@@ -813,6 +814,7 @@ export function ReportPanel({
         </ReportSection>
 
         <FitnessInsights fullReportUnlocked={fullReportUnlocked} />
+        <RaceBlueprint analysis={analysis} fullReportUnlocked={fullReportUnlocked} />
 
       {!fullReportUnlocked ? (
         <div className="paywall">
