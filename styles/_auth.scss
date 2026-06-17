@@ -783,3 +783,40 @@
   background: var(--red);
   color: #fff;
 }
+
+/* ── Settings stats strip ── */
+.settings-stats {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.settings-stats__item {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+
+  &:last-child {
+    border-right: none;
+  }
+
+  span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  strong {
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--lime);
+    line-height: 1.1;
+  }
+}

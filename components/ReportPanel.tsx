@@ -554,8 +554,10 @@ export function ReportPanel({
       </nav>
 
       <div id="report-profile" className="report-scroll-anchor">
-        <div className="premium-highlights">
+        <div className="archetype-hero">
           <AthleteArchetypeCard analysis={analysis} />
+        </div>
+        <div className="premium-highlights">
           <RoxzoneCard analysis={analysis} />
         </div>
       </div>

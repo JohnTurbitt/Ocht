@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Level, levelLabels } from "@/lib/analysis";
+import { Level, formatTime, levelLabels } from "@/lib/analysis";
 import { AuthUser, ProfileFormInput } from "@/lib/apiClient";
+import { SavedReport } from "@/lib/reportStorage";
 import { AVATAR_ICONS, AvatarMark } from "./AvatarMark";
 import { avatarColors, Theme } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
@@ -37,6 +38,7 @@ type SettingsModalProps = {
   onSaveProfile: (input: ProfileFormInput) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
   onClose: () => void;
+  savedReports?: SavedReport[];
 };
 
 export function SettingsModal({
@@ -58,6 +60,7 @@ export function SettingsModal({
   onSaveProfile,
   onDeleteAccount,
   onClose,
+  savedReports = [],
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [profileName, setProfileName] = useState(user.name ?? "");
@@ -72,6 +75,17 @@ export function SettingsModal({
   const [stravaSyncedAt, setStravaSyncedAt] = useState<string | null>(null);
   const [stravaDisconnecting, setStravaDisconnecting] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const pb = savedReports.length > 0
+    ? savedReports.reduce((best, r) => r.finishSeconds < best.finishSeconds ? r : best)
+    : null;
+
+  const improvement = savedReports.length >= 2
+    ? (() => {
+        const sorted = [...savedReports].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return sorted[0].finishSeconds - sorted[sorted.length - 1].finishSeconds;
+      })()
+    : null;
 
   const isPremium = user.subscription === "ACTIVE";
   const canManageBilling =
@@ -204,6 +218,25 @@ export function SettingsModal({
             ×
           </button>
         </div>
+
+        {savedReports.length > 0 && (
+          <div className="settings-stats">
+            <div className="settings-stats__item">
+              <span>Personal best</span>
+              <strong>{pb ? formatTime(pb.finishSeconds) : "—"}</strong>
+            </div>
+            <div className="settings-stats__item">
+              <span>Reports</span>
+              <strong>{savedReports.length}</strong>
+            </div>
+            {improvement !== null && improvement > 0 && (
+              <div className="settings-stats__item">
+                <span>Improvement</span>
+                <strong>−{formatTime(improvement)}</strong>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="settings-modal__tabs" role="tablist">

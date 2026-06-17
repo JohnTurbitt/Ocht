@@ -8,6 +8,7 @@ import { DemoModal } from "@/components/DemoModal";
 import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
+import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import {
   persistAvatarColor,
@@ -1253,6 +1254,7 @@ export default function Home() {
             onResendVerification={handleResendVerification}
             onSaveProfile={handleSaveProfile}
             onDeleteAccount={handleDeleteAccount}
+            savedReports={savedReports}
           />
         </div>
       </header>
@@ -1518,6 +1520,7 @@ export default function Home() {
         ) : activeTab === "history" ? (
           <>
             <ProgressDashboard reports={savedReports} />
+            <PersonalRecords reports={savedReports} />
             <ReportHistory
               reports={savedReports}
               storageLabel={

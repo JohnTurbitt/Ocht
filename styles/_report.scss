@@ -2970,3 +2970,29 @@
   margin: 14px 0 0;
   line-height: 1.5;
 }
+
+/* ── Archetype hero ── */
+.archetype-hero {
+  margin-bottom: 12px;
+
+  .archetype-card {
+    padding: 24px 28px;
+
+    .archetype-card__mark {
+      width: 48px;
+      height: 48px;
+    }
+
+    .archetype-card__name {
+      font-size: 1.9rem;
+    }
+
+    .archetype-card__tagline {
+      font-size: 0.82rem;
+    }
+
+    .archetype-card__desc {
+      font-size: 1rem;
+    }
+  }
+}

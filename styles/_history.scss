@@ -514,3 +514,48 @@
   background: var(--lime);
   color: var(--ink);
 }
+
+/* ── Personal Records ── */
+.personal-records {
+  margin: 0 0 32px;
+}
+
+.personal-records__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.personal-records__card {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+}
+
+.personal-records__card--run {
+  border-left: 3px solid var(--lime);
+}
+
+.personal-records__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.personal-records__time {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.personal-records__date {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: normal;
+}

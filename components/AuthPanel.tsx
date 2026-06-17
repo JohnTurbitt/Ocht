@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AuthFormInput, AuthUser, ProfileFormInput } from "@/lib/apiClient";
 import { AvatarMark } from "./AvatarMark";
+import { SavedReport } from "@/lib/reportStorage";
 import {
   Theme,
   applyTheme,
@@ -32,6 +33,7 @@ type AuthPanelProps = {
   onResendVerification: () => Promise<void>;
   onSaveProfile: (input: ProfileFormInput) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  savedReports?: SavedReport[];
 };
 
 type AuthMode = "login" | "signup";
@@ -54,6 +56,7 @@ export function AuthPanel({
   onResendVerification,
   onSaveProfile,
   onDeleteAccount,
+  savedReports = [],
 }: AuthPanelProps) {
   const [mode, setMode] = useState<AuthMode | null>(null);
   const [theme, setTheme] = useState<Theme>("light");
@@ -238,6 +241,7 @@ export function AuthPanel({
             onSaveProfile={onSaveProfile}
             onDeleteAccount={onDeleteAccount}
             onClose={() => setSettingsOpen(false)}
+            savedReports={savedReports}
           />
         ) : null}
       </aside>
