@@ -987,6 +987,13 @@ export default function Home() {
 
     setAvatarColor(readAvatarColor());
     setAvatarIcon(readAvatarIcon());
+
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    if (tabParam === "history" || tabParam === "compare") {
+      setActiveTab(tabParam);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
 
   function updateAvatarColor(color: string) {

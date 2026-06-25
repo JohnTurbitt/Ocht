@@ -3,7 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Level, formatTime, levelLabels } from "@/lib/analysis";
+import { Level, formatTime, levelLabels, parseTime, stations, buildAnalysis } from "@/lib/analysis";
+import { AthleteArchetypeCard } from "@/components/AthleteArchetypeCard";
 import {
   AuthUser,
   ProfileFormInput,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
 import { OctagonSpinner } from "@/components/OctagonSpinner";
+import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PremiumBadge } from "@/components/PremiumBadge";
 
 type Section = "profile" | "appearance" | "billing" | "privacy";
@@ -59,6 +61,7 @@ export default function SettingsPage() {
 
   // Reports
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
+  const [selectedReport, setSelectedReport] = useState<SavedReport | null>(null);
 
   // Profile form
   const [profileName, setProfileName] = useState("");
@@ -148,12 +151,27 @@ export default function SettingsPage() {
       byFormat.set(key, group);
     }
     return [...byFormat.entries()].map(([format, reports]) => {
-      const sorted = [...reports].sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-      const best = reports.reduce((b, r) => (r.finishSeconds < b.finishSeconds ? r : b));
-      const improvement = sorted[0].finishSeconds - best.finishSeconds;
-      return { format, best, improvement, count: reports.length };
+      const byTime = [...reports].sort((a, b) => a.finishSeconds - b.finishSeconds);
+      const top3 = byTime.slice(0, 3).map((report, idx) => {
+        const runSecs = report.runs.map(parseTime).filter((n) => n > 0);
+        const bestRunSec = runSecs.length ? Math.min(...runSecs) : null;
+
+        const stationDefs = report.stationDefinitions ?? stations;
+        const stationEntries = Object.entries(report.stationSplits)
+          .map(([key, val]) => ({ key, sec: parseTime(val) }))
+          .filter((e) => e.sec > 0);
+        const bestStationEntry = stationEntries.length
+          ? stationEntries.reduce((a, b) => (a.sec < b.sec ? a : b))
+          : null;
+        const bestStationLabel = bestStationEntry
+          ? (stationDefs.find((s) => s.key === bestStationEntry.key)?.label ?? bestStationEntry.key)
+          : null;
+        const bestStationTime = bestStationEntry?.sec ?? null;
+
+        return { report, rank: (idx + 1) as 1 | 2 | 3, bestRunSec, bestStationLabel, bestStationTime };
+      });
+
+      return { format, top3, count: reports.length };
     });
   })();
 
@@ -327,30 +345,46 @@ export default function SettingsPage() {
             <>
               {formatPBs.length > 0 && (
                 <div className="settings-pb-hero">
-                  <div className="settings-pb-hero__cards">
-                    {formatPBs.map(({ format, best, improvement }) => (
-                      <div key={format} className="settings-pb-hero__card">
-                        <p className="settings-pb-hero__format">
-                          {raceFormatLabels[format as RaceFormat] ?? format}
-                        </p>
-                        <p className="settings-pb-hero__time">{formatTime(best.finishSeconds)}</p>
-                        <p className="settings-pb-hero__meta">
-                          {new Date(best.createdAt).toLocaleDateString(undefined, {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                          {improvement > 0 && <> · −{formatTime(improvement)}</>}
-                        </p>
+                  {formatPBs.map(({ format, top3, count }) => (
+                    <div key={format}>
+                      <div className="settings-pb-hero__format-label">
+                        {raceFormatLabels[format as RaceFormat] ?? format}
                       </div>
-                    ))}
-                  </div>
-                  <div className="settings-pb-hero__footer">
-                    <span className="settings-pb-hero__count">
-                      {savedReports.length} {savedReports.length === 1 ? "race" : "races"}
-                    </span>
-                    <Link href="/" className="settings-pb-hero__view">View race history →</Link>
-                  </div>
+                      <div className="settings-pb-hero__podium">
+                        {top3.map(({ report, rank, bestRunSec, bestStationLabel, bestStationTime }) => (
+                          <button
+                            key={rank}
+                            type="button"
+                            className={`settings-pb-hero__entry settings-pb-hero__entry--rank${rank}`}
+                            onClick={() => setSelectedReport(report)}
+                            aria-label={`View archetype for ${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} place result`}
+                          >
+                            <PBTrophyBadge rank={rank} size={80} />
+                            <p className="settings-pb-hero__time">{formatTime(report.finishSeconds)}</p>
+                            <p className="settings-pb-hero__meta">
+                              {new Date(report.createdAt).toLocaleDateString(undefined, {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </p>
+                            {(bestRunSec !== null || bestStationLabel !== null) && (
+                              <p className="settings-pb-hero__meta">
+                                {bestRunSec !== null && <>Run {formatTime(bestRunSec)}</>}
+                                {bestRunSec !== null && bestStationLabel !== null && <> · </>}
+                                {bestStationLabel !== null && bestStationTime !== null && (
+                                  <>{bestStationLabel} {formatTime(bestStationTime)}</>
+                                )}
+                              </p>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="settings-pb-hero__footer">
+                        <span className="settings-pb-hero__count">{count} {count === 1 ? "race" : "races"}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -577,7 +611,12 @@ export default function SettingsPage() {
                   {stravaConnected === false && (
                     <div className="settings-data-row">
                       <p>Connect Strava to auto-fill your training data and get personalised predictions.</p>
-                      <a href="/api/strava/connect" className="settings-connect-btn">Connect Strava</a>
+                      <a href="/api/strava/connect" className="settings-connect-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+                          <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+                        </svg>
+                        Connect with Strava
+                      </a>
                     </div>
                   )}
                   {stravaConnected === true && (
@@ -659,6 +698,47 @@ export default function SettingsPage() {
 
         </main>
       </div>
+
+      {selectedReport && (() => {
+        const analysis = buildAnalysis(
+          selectedReport.goal,
+          selectedReport.targetTime,
+          selectedReport.level,
+          selectedReport.runs,
+          selectedReport.stationSplits,
+          selectedReport.stationDefinitions ?? stations,
+          selectedReport.raceFormat ?? "hyrox",
+          selectedReport.officialFinishTime ?? "",
+        );
+        return (
+          <div
+            className="pb-archetype-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Athlete archetype"
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedReport(null); }}
+          >
+            <div className="pb-archetype-modal__panel">
+              <div className="pb-archetype-modal__header">
+                <p className="pb-archetype-modal__date">
+                  {new Date(selectedReport.createdAt).toLocaleDateString(undefined, {
+                    day: "numeric", month: "long", year: "numeric",
+                  })} · {formatTime(selectedReport.finishSeconds)}
+                </p>
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={() => setSelectedReport(null)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <AthleteArchetypeCard analysis={analysis} />
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
