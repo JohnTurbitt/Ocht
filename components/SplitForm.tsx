@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Hint } from "@/components/Hint";
 import { PremiumBadge } from "@/components/PremiumBadge";
 import {
@@ -92,6 +92,41 @@ export function SplitForm({
   onSubmit,
 }: SplitFormProps) {
   const isCustom = raceFormat === "custom";
+
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const pickerWrapRef = useRef<HTMLDivElement>(null);
+  const presetRef = useRef<HTMLDivElement>(null);
+  const presetWrapRef = useRef<HTMLDivElement>(null);
+
+  function syncEdge(el: HTMLDivElement | null, wrap: HTMLDivElement | null) {
+    if (!el || !wrap) return;
+    const overflow = el.scrollWidth > el.clientWidth + 4;
+    if (!overflow) { wrap.dataset.edge = "none"; return; }
+    const atEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 4;
+    wrap.dataset.edge = el.scrollLeft < 4 ? "start" : atEnd ? "end" : "mid";
+  }
+
+  useEffect(() => {
+    const picker = pickerRef.current;
+    const pickerWrap = pickerWrapRef.current;
+    const preset = presetRef.current;
+    const presetWrap = presetWrapRef.current;
+    const updatePicker = () => syncEdge(picker, pickerWrap);
+    const updatePreset = () => syncEdge(preset, presetWrap);
+    updatePicker();
+    updatePreset();
+    picker?.addEventListener("scroll", updatePicker);
+    preset?.addEventListener("scroll", updatePreset);
+    window.addEventListener("resize", updatePicker);
+    window.addEventListener("resize", updatePreset);
+    return () => {
+      picker?.removeEventListener("scroll", updatePicker);
+      preset?.removeEventListener("scroll", updatePreset);
+      window.removeEventListener("resize", updatePicker);
+      window.removeEventListener("resize", updatePreset);
+    };
+  }, []);
+
   const [openRounds, setOpenRounds] = useState<Record<number, boolean>>({});
   const setRoundOpen = (index: number, open: boolean) =>
     setOpenRounds((current) => ({ ...current, [index]: open }));
@@ -123,23 +158,25 @@ export function SplitForm({
           <p className="eyebrow">Race input</p>
           <h2>Build your race file</h2>
         </div>
-        <div className="preset-actions" aria-label="Report presets">
-          <button type="button" onClick={onLoadSample}>
-            Load sample race
-          </button>
-          <button type="button" onClick={onResetDefaults}>
-            Reset defaults
-          </button>
-          <button type="button" onClick={onClearForm}>
-            Clear form
-          </button>
-          <button
-            className="preset-actions__help"
-            type="button"
-            onClick={onShowGuide}
-          >
-            How it works
-          </button>
+        <div className="scroll-fade-wrap" ref={presetWrapRef}>
+          <div className="preset-actions" aria-label="Report presets" ref={presetRef}>
+            <button type="button" onClick={(e) => { onLoadSample(); e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }}>
+              Load sample race
+            </button>
+            <button type="button" onClick={(e) => { onResetDefaults(); e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }}>
+              Reset defaults
+            </button>
+            <button type="button" onClick={(e) => { onClearForm(); e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }}>
+              Clear form
+            </button>
+            <button
+              className="preset-actions__help"
+              type="button"
+              onClick={(e) => { onShowGuide(); e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }}
+            >
+              How it works
+            </button>
+          </div>
         </div>
       </div>
 
@@ -163,24 +200,34 @@ export function SplitForm({
         </div>
       ) : null}
 
-      <div className="format-picker" aria-label="Race format">
-        {raceFormatOptions.map((option) => (
+      <div className="scroll-fade-wrap format-picker-wrap" ref={pickerWrapRef}>
+        <div className="format-picker" aria-label="Race format" ref={pickerRef}>
+          {raceFormatOptions.map((option) => (
+            <button
+              key={option.id}
+              className={option.id === raceFormat ? "format-card is-active" : "format-card"}
+              type="button"
+              onClick={(e) => {
+                onRaceFormatChange(option.id);
+                e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+              }}
+            >
+              <span className="format-card__name">{option.label}</span>
+              <span className="format-card__sub">{option.runLabel} · {option.stations.length} rounds</span>
+            </button>
+          ))}
           <button
-            key={option.id}
-            className={option.id === raceFormat ? "is-active" : undefined}
+            className={isCustom ? "format-card is-active" : "format-card"}
             type="button"
-            onClick={() => onRaceFormatChange(option.id)}
+            onClick={(e) => {
+              onCustomFormatClick();
+              e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+            }}
           >
-            {option.label}
+            <span className="format-card__name">Custom <PremiumBadge /></span>
+            <span className="format-card__sub">Build your own</span>
           </button>
-        ))}
-        <button
-          className={isCustom ? "is-active" : undefined}
-          type="button"
-          onClick={onCustomFormatClick}
-        >
-          Custom <PremiumBadge />
-        </button>
+        </div>
       </div>
 
       {isCustom ? (
@@ -321,6 +368,9 @@ export function SplitForm({
           </div>
           {stravaConnected && (
             <span className="training-context-input__strava-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+              </svg>
               Synced from Strava
             </span>
           )}

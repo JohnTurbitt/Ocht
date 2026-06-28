@@ -443,25 +443,22 @@ export function ReportPanel({
           <h2>{hasGeneratedReport ? "Your race breakdown" : "Live preview"}</h2>
         </div>
         <div className="report-actions report-actions--header">
-          {fullReportUnlocked ? (
-            <button
-              className="share-trigger"
-              type="button"
-              onClick={() => {
-                setShareModalOpen(true);
-                trackEvent("share_options_opened");
-              }}
-              aria-label="Open share options"
-              title="Share and export"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-                <path d="M12 16V4" />
-                <path d="M7 9l5-5 5 5" />
-              </svg>
-              <PremiumBadge />
-            </button>
-          ) : null}
+          <button
+            className="share-trigger"
+            type="button"
+            onClick={() => {
+              setShareModalOpen(true);
+              trackEvent("share_options_opened");
+            }}
+            aria-label="Open share options"
+            title="Share and export"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+              <path d="M12 16V4" />
+              <path d="M7 9l5-5 5 5" />
+            </svg>
+          </button>
           <button
             className="report__print"
             type="button"
@@ -471,7 +468,6 @@ export function ReportPanel({
               });
               window.print();
             }}
-            disabled={!fullReportUnlocked}
           >
             Print report
           </button>
@@ -543,19 +539,35 @@ export function ReportPanel({
         <button
           type="button"
           className="report-jump-nav__cta"
-          onClick={() =>
-            fullReportUnlocked
-              ? (setShareModalOpen(true), trackEvent("share_options_opened"))
-              : scrollToReportSection("report-training")
-          }
+          onClick={() => {
+            setShareModalOpen(true);
+            trackEvent("share_options_opened");
+          }}
         >
-          {fullReportUnlocked ? "Share" : "Upgrade"}
+          Share
         </button>
       </nav>
 
       <div id="report-profile" className="report-scroll-anchor">
         <div className="archetype-hero">
           <AthleteArchetypeCard analysis={analysis} />
+          <button
+            type="button"
+            className="archetype-hero__share"
+            onClick={() => {
+              setShareTemplate("archetype");
+              setShareModalOpen(true);
+              trackEvent("share_options_opened");
+            }}
+            aria-label="Share your archetype"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+              <path d="M12 16V4" />
+              <path d="M7 9l5-5 5 5" />
+            </svg>
+            Share archetype
+          </button>
         </div>
         <div className="premium-highlights">
           <RoxzoneCard analysis={analysis} />
@@ -804,13 +816,15 @@ export function ReportPanel({
                   useful running recommendation.
                 </p>
               </div>
-              <div className="strava-upsell">
-                <strong>Auto-fill from Strava</strong>
-                <p>
-                  Connect Strava in Settings to fill in your training data
-                  automatically.
-                </p>
-              </div>
+              <a href="/settings?section=privacy" className="strava-upsell">
+                <strong>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#FC5200" aria-hidden="true">
+                    <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+                  </svg>
+                  Auto-fill from Strava
+                </strong>
+                <p>Connect in Settings to fill in your training data automatically.</p>
+              </a>
             </div>
           )}
         </ReportSection>

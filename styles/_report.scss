@@ -143,6 +143,18 @@
   border-left-color: var(--red);
 }
 
+.results-reveal__panel--clickable {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-left-color: var(--action-bg);
+    background: var(--accent-soft);
+  }
+}
+
 .results-reveal__panel span {
   font-family: var(--font-mono), var(--font-body), monospace;
   font-size: 0.6rem;
@@ -1020,8 +1032,69 @@
   color: var(--muted);
 }
 
+.strava-upsell {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: #FC5200; }
+}
+
 .strava-upsell strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.fitness-insights__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.strava-collab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #FC5200 35%, transparent);
+  background: color-mix(in srgb, #FC5200 10%, transparent);
+  color: #FC5200;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.strava-connect-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #FC5200;
+  background: color-mix(in srgb, #FC5200 12%, transparent);
+  color: #FC5200;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: #FC5200; color: #fff; }
+}
+
+.strava-chevron {
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .leak-card {
@@ -2994,5 +3067,33 @@
     .archetype-card__desc {
       font-size: 1rem;
     }
+  }
+}
+
+.archetype-hero__share {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
+  border-color: var(--line);
+  background: var(--field);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  svg {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    border-color: var(--action-bg);
+    color: var(--action-bg);
   }
 }

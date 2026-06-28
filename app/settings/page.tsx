@@ -53,6 +53,13 @@ export default function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState<Section>("profile");
 
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("section");
+    if (param === "profile" || param === "appearance" || param === "billing" || param === "privacy") {
+      setActiveSection(param);
+    }
+  }, []);
+
   // Preferences
   const [theme, setTheme] = useState<Theme>("dark");
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>("km");

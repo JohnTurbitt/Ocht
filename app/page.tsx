@@ -1572,6 +1572,15 @@ export default function Home() {
               });
             });
           }}
+          onViewArchetype={() => {
+            setShowResultsReveal(false);
+            window.requestAnimationFrame(() => {
+              document.getElementById("report-profile")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            });
+          }}
         />
       ) : null}
       {eventsSheetOpen ? (

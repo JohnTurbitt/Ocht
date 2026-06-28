@@ -10,12 +10,14 @@ type ResultsRevealProps = {
   analysis: Analysis;
   isNewPB?: boolean;
   onClose: () => void;
+  onViewArchetype: () => void;
 };
 
 export function ResultsReveal({
   analysis,
   isNewPB = false,
   onClose,
+  onViewArchetype,
 }: ResultsRevealProps) {
   const readiness = calculateRaceReadiness(analysis);
   const topLeak = analysis.topLeaks[0];
@@ -77,11 +79,15 @@ export function ResultsReveal({
           </div>
 
           <div className="results-reveal__panels">
-            <div className="results-reveal__panel">
+            <button
+              className="results-reveal__panel results-reveal__panel--clickable"
+              type="button"
+              onClick={onViewArchetype}
+            >
               <span>Athlete archetype</span>
               <strong>{archetype.label}</strong>
               <em>{archetype.tagline}</em>
-            </div>
+            </button>
             {topLeak ? (
               <div className="results-reveal__panel results-reveal__panel--leak">
                 <span>Biggest leak</span>

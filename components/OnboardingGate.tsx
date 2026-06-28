@@ -7,6 +7,7 @@ export function OnboardingGate() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (localStorage.getItem("ocht.onboardingCompleted") === "true") return;
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => {

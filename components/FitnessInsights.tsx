@@ -143,8 +143,19 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     return (
       <div className="fitness-insights fitness-insights--connect">
         <p className="eyebrow">Fitness insights</p>
-        <h3>Connect Strava to unlock <PremiumBadge /></h3>
+        <h3>
+          <svg className="strava-chevron" width="16" height="16" viewBox="0 0 24 24" fill="#FC5200" aria-hidden="true">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+          </svg>
+          Connect Strava to unlock <PremiumBadge />
+        </h3>
         <p>Lactate threshold, training load, aerobic efficiency and pace zones — calculated from your Strava history.</p>
+        <a href="/api/strava/connect" className="settings-connect-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+          </svg>
+          Connect with Strava
+        </a>
       </div>
     );
   }
@@ -180,7 +191,15 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
 
   return (
     <div className="fitness-insights">
-      <p className="eyebrow">Fitness insights</p>
+      <div className="fitness-insights__header">
+        <p className="eyebrow">Fitness insights</p>
+        <span className="strava-collab">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+          </svg>
+          Ocht × Strava
+        </span>
+      </div>
       <h3>Your training data</h3>
       <p className="fitness-insights__synced-at">Last synced {relativeTime(lastSyncedAt)}</p>
       <div className="fitness-insights__rows">

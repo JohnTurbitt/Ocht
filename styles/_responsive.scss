@@ -208,16 +208,44 @@
   }
 
   .form-heading {
-    display: grid;
+    display: block;
   }
 
-  .preset-actions,
-  .preset-actions button {
-    width: 100%;
+  .scroll-fade-wrap {
+    margin-inline: -14px;
+    padding-block: 8px;
+    background: var(--surface);
+    --fade-bg: var(--surface);
   }
 
   .preset-actions {
-    display: grid;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 8px;
+    padding-inline: 14px;
+    justify-content: flex-start;
+
+    &::-webkit-scrollbar { display: none; }
+
+    button {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .format-picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-inline: 14px;
+
+    &::-webkit-scrollbar { display: none; }
+
+    .format-card {
+      flex-shrink: 0;
+    }
   }
 
   .start-guide {

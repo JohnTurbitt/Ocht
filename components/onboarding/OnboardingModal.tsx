@@ -25,6 +25,7 @@ export function OnboardingModal({ onComplete }: Props) {
   }
 
   function markComplete() {
+    localStorage.setItem("ocht.onboardingCompleted", "true");
     fetch("/api/auth/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
