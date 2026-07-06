@@ -1,8 +1,8 @@
 import { upcomingEvents } from "@/lib/upcomingEvents";
 
 function daysUntil(startDate: string): number {
-  const now = new Date(); now.setHours(0,0,0,0);
-  const target = new Date(startDate); target.setHours(0,0,0,0);
+  const now = new Date(new Date().toISOString().split("T")[0]);
+  const target = new Date(startDate);
   return Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
@@ -30,7 +30,7 @@ export function EventsList() {
               </div>
               <div className="events-timeline__card">
                 <div className="events-timeline__card-head">
-                  <span className={`events-menu__badge events-menu__badge--${event.series.toLowerCase()}`}>{event.series}</span>
+                  <span className={`events-menu__badge events-menu__badge--${event.series.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>{event.series}</span>
                   {!isPast && <span className="events-timeline__countdown">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : `${days}d`}</span>}
                 </div>
                 <strong className="events-timeline__name">{event.name}</strong>
