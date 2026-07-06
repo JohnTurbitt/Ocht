@@ -496,21 +496,23 @@
 .settings-connect-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 18px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 20px;
+  margin-top: 16px;
   border: none;
   border-radius: 8px;
-  background: #fc5200;
+  background: #FC4C02;
   color: #fff;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 800;
   text-decoration: none;
-  flex-shrink: 0;
-  white-space: nowrap;
-  transition: opacity 0.12s;
+  cursor: pointer;
+  transition: background 0.15s ease;
 
-  &:hover { opacity: 0.88; color: #fff; }
+  &:hover { background: #e04400; }
 }
 
 /* ── Email row / badge (kept from _auth.scss usage) ── */
