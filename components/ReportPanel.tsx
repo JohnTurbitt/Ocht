@@ -186,14 +186,20 @@ export function ReportPanel({
     })),
     [analysis.stationResults, prMap]
   );
-  const latestDate = savedReports.length > 0
-    ? savedReports.reduce((l, r) => r.createdAt > l ? r.createdAt : l, savedReports[0].createdAt)
-    : null;
-  const prRows = analysis.stationResults.map((sr) => ({
-    label: sr.label,
-    time: formatTime(sr.seconds),
-    isNew: latestDate !== null && prMap.get(sr.key)?.createdAt === latestDate,
-  }));
+  const latestDate = useMemo(
+    () => savedReports.length > 0
+      ? savedReports.reduce((l, r) => r.createdAt > l ? r.createdAt : l, savedReports[0].createdAt)
+      : null,
+    [savedReports]
+  );
+  const prRows = useMemo(
+    () => analysis.stationResults.map((sr) => ({
+      label: sr.label,
+      time: formatTime(sr.seconds),
+      isNew: latestDate !== null && prMap.get(sr.key)?.createdAt === latestDate,
+    })),
+    [analysis.stationResults, prMap, latestDate]
+  );
   const strongSegments = analysis.raceSegments.filter(
     (segment) => segment.status === "strong",
   );

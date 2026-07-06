@@ -1,4 +1,6 @@
-import { RefObject } from "react";
+"use client";
+
+import { RefObject, useId } from "react";
 import { Analysis, formatTime } from "@/lib/analysis";
 import { AvatarMark } from "./AvatarMark";
 import { OchtShield } from "./OchtShield";
@@ -202,6 +204,7 @@ type ShareStoryCardProps = {
 };
 
 export function ShareStoryCard({ score, tierLabel, athleteName, eventDate, prRows, captureRef }: ShareStoryCardProps) {
+  const glowId = useId();
   const octPts = "30,4 70,4 96,30 96,70 70,96 30,96 4,70 4,30";
   return (
     <div className="share-card share-card--story" ref={captureRef}>
@@ -212,12 +215,12 @@ export function ShareStoryCard({ score, tierLabel, athleteName, eventDate, prRow
       <div className="share-card__story-octagon">
         <svg width="100" height="100" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
-            <filter id="story-glow">
+            <filter id={glowId}>
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
-          <polygon points={octPts} fill="none" stroke="#C8FF2E" strokeWidth="2" filter="url(#story-glow)" />
+          <polygon points={octPts} fill="none" stroke="#C8FF2E" strokeWidth="2" filter={`url(#${glowId})`} />
           <text x="50" y="46" textAnchor="middle" fontSize="28" fontWeight="900" fill="#C8FF2E" fontFamily="var(--font-display),sans-serif">{score}</text>
           <text x="50" y="62" textAnchor="middle" fontSize="9" fill="#e8e8e8" fontFamily="var(--font-display),sans-serif" fontWeight="700">{tierLabel.toUpperCase()}</text>
         </svg>
