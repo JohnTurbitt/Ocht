@@ -501,11 +501,12 @@
 .demo-modal {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 500;
   display: grid;
   place-items: center;
-  padding: 18px;
-  background: var(--overlay);
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
 }
 
 .demo-modal__panel {
@@ -517,10 +518,8 @@
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 16px;
-  padding: 24px 22px;
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 140px),
-    var(--panel);
+  padding: 28px 24px;
+  background: var(--panel);
   box-shadow: var(--shadow-md);
 }
 
@@ -589,15 +588,17 @@
 }
 
 .demo-modal__steps span {
-  display: inline-grid;
-  width: 30px;
-  height: 30px;
-  grid-row: span 2;
-  place-items: center;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   background: var(--lime);
   color: var(--badge-ink);
+  font-size: 0.72rem;
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .demo-modal__steps strong {
