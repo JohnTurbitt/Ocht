@@ -90,7 +90,7 @@ export function PersonalRecords({ reports }: Props) {
             <span className="personal-records__icon" aria-hidden="true">{pr.abbrev}</span>
             <div className="personal-records__row-body">
               <span className="personal-records__name">{pr.label}</span>
-              {pr.isNew && <span className="personal-records__pulse-dot" aria-label="New personal record" />}
+              {pr.isNew && <span role="img" className="personal-records__pulse-dot" aria-label="New personal record" />}
               <span className="personal-records__meta">{formatDate(pr.createdAt)}</span>
             </div>
             <strong className="personal-records__time">{formatTime(pr.seconds)}</strong>
