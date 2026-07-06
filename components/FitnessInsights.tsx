@@ -228,10 +228,10 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     <div className="fitness-insights">
       <div className="fitness-insights__header">
         <p className="eyebrow">Fitness insights</p>
-        <span className="strava-wordmark-chip" aria-label="Powered by Ocht and Strava">
-          <span className="strava-wordmark-chip__ocht">ocht.</span>
-          <span className="strava-wordmark-chip__sep">x</span>
-          <span className="strava-wordmark-chip__strava">STRAVA</span>
+        <span className="strava-wordmark-chip" role="img" aria-label="Powered by Ocht and Strava">
+          <span className="strava-wordmark-chip__ocht" aria-hidden="true">ocht.</span>
+          <span className="strava-wordmark-chip__sep" aria-hidden="true">x</span>
+          <span className="strava-wordmark-chip__strava" aria-hidden="true">STRAVA</span>
         </span>
       </div>
       <h3>Your training data</h3>
