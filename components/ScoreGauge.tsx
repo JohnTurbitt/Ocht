@@ -19,6 +19,7 @@ export function ScoreGauge({ score, label, size = 160 }: ScoreGaugeProps) {
 
   return (
     <div
+      role="img"
       className={`score-gauge score-gauge--octagon score-gauge--${cls}`}
       aria-label={`${tierLabel} — ${clamped} / 100 — ${label}`}
     >

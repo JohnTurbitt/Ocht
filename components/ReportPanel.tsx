@@ -972,6 +972,7 @@ export function ReportPanel({
 
             <div className="share-studio__tabs" role="tablist">
               <button
+                role="tab"
                 type="button"
                 className={shareTemplate === "finish" ? "is-active" : undefined}
                 onClick={() => setShareTemplate("finish")}
@@ -979,6 +980,7 @@ export function ReportPanel({
                 Finish card
               </button>
               <button
+                role="tab"
                 type="button"
                 className={
                   shareTemplate === "archetype" ? "is-active" : undefined
@@ -988,6 +990,7 @@ export function ReportPanel({
                 Archetype
               </button>
               <button
+                role="tab"
                 type="button"
                 className={
                   shareTemplate === "story" ? "is-active" : undefined
