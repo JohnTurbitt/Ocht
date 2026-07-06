@@ -3120,3 +3120,17 @@
 .personal-records__pulse-dot { display:inline-block; width:6px; height:6px; flex-shrink:0; border-radius:50%; background:var(--lime); animation:pr-dot-pulse 1.5s ease-in-out infinite; }
 @keyframes pr-dot-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.5); opacity:.6; } }
 @media (prefers-reduced-motion:reduce) { .personal-records__pulse-dot { animation:none; } }
+
+/* -- Fitness Insights: Pace Zones + Wordmark Chip ---------------------------------------- */
+.fitness-insights__pace-zones { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+.fitness-insights__zones-title { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 10px; }
+.fitness-insights__zone-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; &:last-child { margin-bottom:0; } }
+.fitness-insights__zone-label { font-size:.65rem; font-weight:700; color:var(--muted); width:20px; flex-shrink:0; }
+.fitness-insights__zone-bar-wrap { flex:1; background:var(--surface-strong); border-radius:4px; height:18px; overflow:hidden; }
+.fitness-insights__zone-bar { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; min-width:40px; }
+.fitness-insights__zone-pace { font-size:.6rem; font-weight:700; }
+.fitness-insights__zone-name { font-size:.6rem; color:var(--muted); width:58px; text-align:right; flex-shrink:0; }
+.strava-wordmark-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; background:var(--surface); border:1px solid var(--line); border-radius:6px; font-size:.65rem; font-weight:700; }
+.strava-wordmark-chip__ocht { color:var(--lime); }
+.strava-wordmark-chip__sep { color:var(--muted); }
+.strava-wordmark-chip__strava { color:#FC4C02; letter-spacing:.04em; }

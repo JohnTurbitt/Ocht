@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { PremiumBadge } from "./PremiumBadge";
@@ -52,7 +52,7 @@ function relativeTime(iso: string): string {
 }
 
 function predictHyroxRunSecs(bestEffort5kSeconds: number): number {
-  // 8 × 1km runs with 12% fatigue factor for running after station work
+  // 8 x 1km runs with 12% fatigue factor for running after station work
   return Math.round((bestEffort5kSeconds / 5) * 1.12 * 8);
 }
 
@@ -106,6 +106,41 @@ function MetricRow({
       {isOpen && (
         <p className="fitness-insights__hint-body">{hint}</p>
       )}
+    </div>
+  );
+}
+
+const ZONE_META = [
+  { key: "z1" as const, name: "Recovery",  color: "#4ade80" },
+  { key: "z2" as const, name: "Aerobic",   color: "#a3e635" },
+  { key: "z3" as const, name: "Tempo",     color: "#C8FF2E" },
+  { key: "z4" as const, name: "Threshold", color: "#fb923c" },
+  { key: "z5" as const, name: "VO2 Max",   color: "#f87171" },
+];
+const ZONE_WIDTHS = [100, 82, 65, 50, 36];
+
+function PaceZonesBars({ zones }: { zones: PaceZones }) {
+  return (
+    <div className="fitness-insights__pace-zones">
+      <p className="fitness-insights__zones-title">Pace zones</p>
+      {ZONE_META.map((z, i) => {
+        const zone = zones[z.key];
+        const range = `${fmtPace(zone.minPaceSec)}-${fmtPace(zone.maxPaceSec)} /km`;
+        return (
+          <div key={z.key} className="fitness-insights__zone-row">
+            <span className="fitness-insights__zone-label">{z.key.toUpperCase()}</span>
+            <div className="fitness-insights__zone-bar-wrap">
+              <div
+                className="fitness-insights__zone-bar"
+                style={{ width: `${ZONE_WIDTHS[i]}%`, background: `${z.color}44`, color: z.color }}
+              >
+                <span className="fitness-insights__zone-pace">{range}</span>
+              </div>
+            </div>
+            <span className="fitness-insights__zone-name">{z.name}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -193,14 +228,14 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     <div className="fitness-insights">
       <div className="fitness-insights__header">
         <p className="eyebrow">Fitness insights</p>
-        <span className="strava-collab">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
-          </svg>
-          Ocht × Strava
+        <span className="strava-wordmark-chip" aria-label="Powered by Ocht and Strava">
+          <span className="strava-wordmark-chip__ocht">ocht.</span>
+          <span className="strava-wordmark-chip__sep">x</span>
+          <span className="strava-wordmark-chip__strava">STRAVA</span>
         </span>
       </div>
       <h3>Your training data</h3>
+      {parsedZones !== null && <PaceZonesBars zones={parsedZones} />}
       <p className="fitness-insights__synced-at">Last synced {relativeTime(lastSyncedAt)}</p>
       <div className="fitness-insights__rows">
         {lthrBpm !== null && (
@@ -233,16 +268,6 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             onToggle={handleToggle}
           />
         )}
-        {parsedZones !== null && (
-          <MetricRow
-            id="zones"
-            label="Pace zones"
-            value={`Z2 ${fmtPace(parsedZones.z2.minPaceSec)}–${fmtPace(parsedZones.z2.maxPaceSec)} /km`}
-            hint="Your pace zones are calculated from your estimated 5k fitness. Zone 2 is your aerobic base pace — where most of your easy running should sit. Zones 4 and 5 are race and interval intensity. Running your Hyrox runs in Zone 3–4 is the target for most athletes."
-            openHint={openHint}
-            onToggle={handleToggle}
-          />
-        )}
         {effortParts.length > 0 && (
           <MetricRow
             id="efforts"
@@ -258,7 +283,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             id="hyrox"
             label="Hyrox run target"
             value={`${fmtTime(hyroxRunSecs)} · ${fmtPace(hyroxRunSecs / 8)}/km`}
-            hint="Total running time across 8 × 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction — station performance and transitions are separate."
+            hint="Total running time across 8 x 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction — station performance and transitions are separate."
             openHint={openHint}
             onToggle={handleToggle}
           />
