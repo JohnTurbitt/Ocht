@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { toBlob } from "html-to-image";
-import { Analysis, formatTime } from "@/lib/analysis";
+import { Analysis, formatTime, tierFor } from "@/lib/analysis";
 import { trackEvent } from "@/lib/analytics";
 import { SavedReport } from "@/lib/reportStorage";
 import { buildPRMap } from "@/lib/prUtils";
@@ -29,7 +29,7 @@ import { PremiumBadge } from "./PremiumBadge";
 import { RaceFlowMap, RaceStory } from "./RaceVisuals";
 import { RoxzoneCard } from "./RoxzoneCard";
 import { ScoreGauge } from "./ScoreGauge";
-import { ShareArchetypeCard, ShareFinishCard } from "./ShareCards";
+import { ShareArchetypeCard, ShareFinishCard, ShareStoryCard } from "./ShareCards";
 import { TargetSimulator } from "./TargetSimulator";
 
 const JUMP_SECTIONS = [
@@ -153,10 +153,11 @@ export function ReportPanel({
   const jumpNavRef = useRef<HTMLElement>(null);
   const shareFinishRef = useRef<HTMLDivElement>(null);
   const shareArchetypeRef = useRef<HTMLDivElement>(null);
+  const shareStoryRef = useRef<HTMLDivElement>(null);
   const [generatedDate, setGeneratedDate] = useState("");
   const [exportMessage, setExportMessage] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareTemplate, setShareTemplate] = useState<"finish" | "archetype">(
+  const [shareTemplate, setShareTemplate] = useState<"finish" | "archetype" | "story">(
     "finish",
   );
   const [flowModalRequest, setFlowModalRequest] = useState({
@@ -185,6 +186,14 @@ export function ReportPanel({
     })),
     [analysis.stationResults, prMap]
   );
+  const latestDate = savedReports.length > 0
+    ? savedReports.reduce((l, r) => r.createdAt > l ? r.createdAt : l, savedReports[0].createdAt)
+    : null;
+  const prRows = analysis.stationResults.map((sr) => ({
+    label: sr.label,
+    time: formatTime(sr.seconds),
+    isNew: latestDate !== null && prMap.get(sr.key)?.createdAt === latestDate,
+  }));
   const strongSegments = analysis.raceSegments.filter(
     (segment) => segment.status === "strong",
   );
@@ -343,7 +352,9 @@ export function ReportPanel({
   }
 
   const activeShareRef =
-    shareTemplate === "finish" ? shareFinishRef : shareArchetypeRef;
+    shareTemplate === "finish" ? shareFinishRef :
+    shareTemplate === "story" ? shareStoryRef :
+    shareArchetypeRef;
 
   async function createCardBlob(targetRef: RefObject<HTMLDivElement | null>) {
     if (!targetRef.current) {
@@ -970,6 +981,15 @@ export function ReportPanel({
               >
                 Archetype
               </button>
+              <button
+                type="button"
+                className={
+                  shareTemplate === "story" ? "is-active" : undefined
+                }
+                onClick={() => setShareTemplate("story")}
+              >
+                Story
+              </button>
             </div>
 
             <div className="share-studio__stage">
@@ -982,6 +1002,14 @@ export function ReportPanel({
                       athleteName={athleteName}
                       avatarColor={avatarColor}
                       avatarIcon={avatarIcon}
+                    />
+                  ) : shareTemplate === "story" ? (
+                    <ShareStoryCard
+                      score={readiness.overall}
+                      tierLabel={tierFor(readiness.overall).label}
+                      athleteName={athleteName}
+                      eventDate={generatedDate}
+                      prRows={prRows}
                     />
                   ) : (
                     <ShareArchetypeCard
@@ -1098,6 +1126,14 @@ export function ReportPanel({
             avatarColor={avatarColor}
             avatarIcon={avatarIcon}
             captureRef={shareArchetypeRef}
+          />
+          <ShareStoryCard
+            score={readiness.overall}
+            tierLabel={tierFor(readiness.overall).label}
+            athleteName={athleteName}
+            eventDate={generatedDate}
+            prRows={prRows}
+            captureRef={shareStoryRef}
           />
         </div>
       ) : null}

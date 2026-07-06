@@ -1,18 +1,13 @@
 "use client";
 
 import { useId } from "react";
+import { tierFor } from "@/lib/analysis";
 
 type ScoreGaugeProps = {
   score: number;
   label: string;
   size?: number;
 };
-
-function tierFor(score: number): { cls: string; label: string } {
-  if (score >= 70) return { cls: "high", label: "Elite" };
-  if (score >= 45) return { cls: "mid", label: "Pro" };
-  return { cls: "low", label: "Finisher" };
-}
 
 export function ScoreGauge({ score, label, size = 160 }: ScoreGaugeProps) {
   const clipId = useId();

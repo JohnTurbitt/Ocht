@@ -798,3 +798,9 @@ export function buildAnalysis(
     report: `The model projects ${formatTime(finishSeconds)} from these splits. ${targetLine} The biggest recoverable leak is ${primaryLeak?.label.toLowerCase() ?? "not clear yet"}, worth about ${formatTime(primaryLeak?.recoverableSeconds ?? 0)} if trained well. Based on the top three leaks, a realistic next step is ${formatTime(predictedTargetSeconds)} without needing random extra volume.`,
   };
 }
+
+export function tierFor(score: number): { cls: string; label: string } {
+  if (score >= 70) return { cls: "high", label: "Elite" };
+  if (score >= 45) return { cls: "mid", label: "Pro" };
+  return { cls: "low", label: "Finisher" };
+}

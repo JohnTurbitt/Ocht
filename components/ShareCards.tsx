@@ -185,3 +185,58 @@ export function ShareArchetypeCard({
     </div>
   );
 }
+
+type StoryPRRow = {
+  label: string;
+  time: string;
+  isNew: boolean;
+};
+
+type ShareStoryCardProps = {
+  score: number;
+  tierLabel: string;
+  athleteName?: string;
+  eventDate: string;
+  prRows: StoryPRRow[];
+  captureRef?: RefObject<HTMLDivElement | null>;
+};
+
+export function ShareStoryCard({ score, tierLabel, athleteName, eventDate, prRows, captureRef }: ShareStoryCardProps) {
+  const octPts = "30,4 70,4 96,30 96,70 70,96 30,96 4,70 4,30";
+  return (
+    <div className="share-card share-card--story" ref={captureRef}>
+      <div className="share-card__story-brand">
+        <OchtShield size={28} />
+        <span className="share-card__wordmark">ocht<em>.</em></span>
+      </div>
+      <div className="share-card__story-octagon">
+        <svg width="100" height="100" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <filter id="story-glow">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <polygon points={octPts} fill="none" stroke="#C8FF2E" strokeWidth="2" filter="url(#story-glow)" />
+          <text x="50" y="46" textAnchor="middle" fontSize="28" fontWeight="900" fill="#C8FF2E" fontFamily="var(--font-display),sans-serif">{score}</text>
+          <text x="50" y="62" textAnchor="middle" fontSize="9" fill="#e8e8e8" fontFamily="var(--font-display),sans-serif" fontWeight="700">{tierLabel.toUpperCase()}</text>
+        </svg>
+      </div>
+      {athleteName && <p className="share-card__story-athlete">{athleteName}</p>}
+      <p className="share-card__story-date">{eventDate}</p>
+      {prRows.length > 0 && (
+        <div className="share-card__pr-table">
+          <p className="share-card__pr-table-title">Personal Records</p>
+          {prRows.map((row) => (
+            <div key={row.label} className="share-card__pr-row">
+              <span className="share-card__pr-station">{row.label}</span>
+              <span className="share-card__pr-time">{row.time}</span>
+              {row.isNew && <span className="share-card__pr-badge">PR</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      <span className="share-card__story-handle">ocht.app</span>
+    </div>
+  );
+}
