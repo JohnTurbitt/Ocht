@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { toBlob } from "html-to-image";
 import { Analysis, formatTime } from "@/lib/analysis";
 import { trackEvent } from "@/lib/analytics";
+import { SavedReport } from "@/lib/reportStorage";
+import { buildPRMap } from "@/lib/prUtils";
 import { calculateRaceReadiness, readinessLabel } from "@/lib/readiness";
 import { buildReportExportText } from "@/lib/reportExport";
 import {
@@ -52,13 +54,8 @@ type ReportPanelProps = {
   canStartCheckout: boolean;
   billingLoading: boolean;
   showHints: boolean;
-  runGainPerKm: string;
-  stationGain: string;
-  transitionGain: string;
+  savedReports: SavedReport[];
   onStartCheckout: () => void;
-  onRunGainPerKmChange: (value: string) => void;
-  onStationGainChange: (value: string) => void;
-  onTransitionGainChange: (value: string) => void;
   trainingContext: TrainingContext;
 };
 
@@ -148,13 +145,8 @@ export function ReportPanel({
   canStartCheckout,
   billingLoading,
   showHints,
-  runGainPerKm,
-  stationGain,
-  transitionGain,
+  savedReports,
   onStartCheckout,
-  onRunGainPerKmChange,
-  onStationGainChange,
-  onTransitionGainChange,
   trainingContext,
 }: ReportPanelProps) {
   const reportCaptureRef = useRef<HTMLElement>(null);
@@ -180,6 +172,14 @@ export function ReportPanel({
     (a, b) => a.leakSeconds - b.leakSeconds,
   )[0];
   const bestStation = [...analysis.stationResults].sort((a, b) => a.gap - b.gap)[0];
+  const stationKeys = analysis.stationResults.map((sr) => sr.key);
+  const prMap = buildPRMap(savedReports, stationKeys);
+  const stationSliders = analysis.stationResults.map((sr) => ({
+    key: sr.key,
+    label: sr.label,
+    prSeconds: prMap.get(sr.key)?.seconds ?? sr.seconds,
+    currentSeconds: sr.seconds,
+  }));
   const strongSegments = analysis.raceSegments.filter(
     (segment) => segment.status === "strong",
   );
@@ -877,17 +877,7 @@ export function ReportPanel({
           </p>
 
           <ReportSection title="Target simulator" defaultOpen premium>
-            <TargetSimulator
-              analysis={analysis}
-              distanceUnit={distanceUnit}
-              runGainPerKm={runGainPerKm}
-              stationGain={stationGain}
-              transitionGain={transitionGain}
-              showHints={showHints}
-              onRunGainPerKmChange={onRunGainPerKmChange}
-              onStationGainChange={onStationGainChange}
-              onTransitionGainChange={onTransitionGainChange}
-            />
+            <TargetSimulator stations={stationSliders} />
           </ReportSection>
 
           <ReportSection title="Training priorities" defaultOpen premium>

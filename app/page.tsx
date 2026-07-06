@@ -158,9 +158,6 @@ export default function Home() {
   const [trainingContext, setTrainingContext] =
     useState<TrainingContext>(emptyTrainingContext);
   const [stravaConnected, setStravaConnected] = useState(false);
-  const [runGainPerKm, setRunGainPerKm] = useState("8");
-  const [stationGain, setStationGain] = useState("2:30");
-  const [transitionGain, setTransitionGain] = useState("0:45");
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>("km");
   const [showHints, setShowHints] = useState(true);
   const [hasGeneratedReportEver, setHasGeneratedReportEver] = useState(false);
@@ -1483,13 +1480,8 @@ export default function Home() {
                   canStartCheckout={Boolean(user) && !fullReportUnlocked}
                   billingLoading={billingLoading}
                   showHints={showHints}
-                  runGainPerKm={runGainPerKm}
-                  stationGain={stationGain}
-                  transitionGain={transitionGain}
+                  savedReports={savedReports}
                   onStartCheckout={handleStartCheckout}
-                  onRunGainPerKmChange={setRunGainPerKm}
-                  onStationGainChange={setStationGain}
-                  onTransitionGainChange={setTransitionGain}
                   trainingContext={trainingContext}
                 />
               ) : (
