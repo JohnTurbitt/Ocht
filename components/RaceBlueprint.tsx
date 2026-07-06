@@ -105,79 +105,42 @@ export function RaceBlueprint({ analysis, fullReportUnlocked }: Props) {
   const blueprint = computeBlueprint(analysis, profile.bestEffort5kSeconds);
   if (!blueprint) return null;
 
+  const saving = analysis.finishSeconds - blueprint.totalBlueprint;
+  const savingPositive = saving > 0;
+
   return (
-    <div className="race-blueprint">
-      <p className="eyebrow">Race blueprint</p>
-      <h3>Your personalised split plan</h3>
-
-      <p className="race-blueprint__summary">
-        Based on your Strava fitness, your {blueprint.runCount} runs should take{" "}
-        {formatTime(blueprint.totalRunBudget)} total ({formatTime(blueprint.blueprintRunPerSplit)}{" "}
-        per {blueprint.runDistanceKm}km). Stations need to come in at{" "}
-        {formatTime(blueprint.totalBlueprintStation)} combined to hit your{" "}
-        {formatTime(analysis.targetSeconds)} target.
-      </p>
-
-      {!blueprint.feasible && (
-        <p className="race-blueprint__warning">
-          ⚠ Your run target alone makes this goal very aggressive. Consider adjusting
-          your target time or focusing on one area at a time.
-        </p>
-      )}
-
-      <div className="race-blueprint__table">
-        <div className="race-blueprint__thead">
-          <span>Segment</span>
-          <span>Now</span>
-          <span>Blueprint</span>
-          <span>Save</span>
-        </div>
-
-        {blueprint.runSegments.map((seg, i) => {
-          const saving = seg.actualSeconds - blueprint.blueprintRunPerSplit;
-          return (
-            <div key={seg.id} className="race-blueprint__row race-blueprint__row--run">
-              <span>{seg.label || `Run ${i + 1}`}</span>
-              <span>{formatTime(seg.actualSeconds)}</span>
-              <span className="race-blueprint__target">{formatTime(blueprint.blueprintRunPerSplit)}</span>
-              <span className={saving > 0 ? "race-blueprint__save" : "race-blueprint__behind"}>
-                {saving > 0 ? `-${formatTime(saving)}` : `+${formatTime(Math.abs(saving))}`}
-              </span>
-            </div>
-          );
-        })}
-
-        {blueprint.stationTargets.map((st) => {
-          const saving = st.currentSeconds - st.blueprintSeconds;
-          return (
-            <div key={st.key} className="race-blueprint__row race-blueprint__row--station">
-              <span>{st.label}</span>
-              <span>{formatTime(st.currentSeconds)}</span>
-              <span className="race-blueprint__target">{formatTime(st.blueprintSeconds)}</span>
-              <span className={saving > 0 ? "race-blueprint__save" : "race-blueprint__behind"}>
-                {saving > 0 ? `-${formatTime(saving)}` : `+${formatTime(Math.abs(saving))}`}
-              </span>
-            </div>
-          );
-        })}
-
-        <div className="race-blueprint__row race-blueprint__row--total">
-          <span>Total</span>
-          <span>{formatTime(analysis.finishSeconds)}</span>
-          <span className="race-blueprint__target">{formatTime(blueprint.totalBlueprint)}</span>
-          <span className={blueprint.totalSaving > 0 ? "race-blueprint__save" : "race-blueprint__behind"}>
-            {blueprint.totalSaving > 0
-              ? `-${formatTime(blueprint.totalSaving)}`
-              : `+${formatTime(Math.abs(blueprint.totalSaving))}`}
-          </span>
+    <div className="race-blueprint race-blueprint--mission">
+      <div className="race-blueprint__goal-card">
+        <p className="race-blueprint__goal-eyebrow">Target</p>
+        <div className="race-blueprint__goal-time">{formatTime(analysis.targetSeconds)}</div>
+        <div className="race-blueprint__goal-stats">
+          <div>
+            <span className="race-blueprint__stat-label">Current PR</span>
+            <span className="race-blueprint__stat-val">{formatTime(analysis.finishSeconds)}</span>
+          </div>
+          <div>
+            <span className="race-blueprint__stat-label">To cut</span>
+            <span className={`race-blueprint__delta-chip${savingPositive ? "" : " race-blueprint__delta-chip--over"}`}>
+              {savingPositive ? `-${formatTime(saving)}` : `+${formatTime(Math.abs(saving))}`}
+            </span>
+          </div>
         </div>
       </div>
-
-      <p className="race-blueprint__footnote">
-        Run targets use a 12% adjustment for post-station fatigue. Station targets are
-        distributed proportionally from your current times and capped at your level
-        benchmark — nothing asks you to go below it.
-      </p>
+      <div className="race-blueprint__plan">
+        {blueprint.runSegments.map((seg, i) => (
+          <div key={seg.id} className="race-blueprint__plan-row race-blueprint__plan-row--run">
+            <span className="race-blueprint__plan-label">{seg.label || `Run ${i + 1}`}</span>
+            <span className="race-blueprint__plan-target">{formatTime(blueprint.blueprintRunPerSplit)}</span>
+          </div>
+        ))}
+        {blueprint.stationTargets.map((st) => (
+          <div key={st.key} className="race-blueprint__plan-row race-blueprint__plan-row--station">
+            <span className="race-blueprint__plan-label">{st.label}</span>
+            <span className="race-blueprint__plan-target">{formatTime(st.blueprintSeconds)}</span>
+            <span className="race-blueprint__plan-pr">PR {formatTime(st.currentSeconds)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

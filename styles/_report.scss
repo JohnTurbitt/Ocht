@@ -3134,3 +3134,19 @@
 .strava-wordmark-chip__ocht { color:var(--lime); }
 .strava-wordmark-chip__sep { color:var(--muted); }
 .strava-wordmark-chip__strava { color:#FC4C02; letter-spacing:.04em; }
+
+/* ── Race Blueprint: Mission Briefing ───────────────────────────────── */
+.race-blueprint--mission { display:flex; flex-direction:column; gap:14px; }
+.race-blueprint__goal-card { background:color-mix(in srgb,var(--lime) 8%,transparent); border:1px solid color-mix(in srgb,var(--lime) 30%,transparent); border-radius:12px; padding:14px 16px; }
+.race-blueprint__goal-eyebrow { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:0 0 4px; }
+.race-blueprint__goal-time { font-family:var(--font-display),var(--font-body),sans-serif; font-size:1.6rem; font-weight:900; color:var(--lime); line-height:1; margin-bottom:10px; }
+.race-blueprint__goal-stats { display:flex; gap:20px; }
+.race-blueprint__stat-label { font-size:.6rem; color:var(--muted); display:block; text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; }
+.race-blueprint__stat-val { font-size:.88rem; font-weight:700; color:var(--ink); }
+.race-blueprint__delta-chip { font-size:.88rem; font-weight:800; color:var(--lime); &--over { color:#FC4C02; } }
+.race-blueprint__plan { display:flex; flex-direction:column; gap:4px; }
+.race-blueprint__plan-row { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--surface); }
+.race-blueprint__plan-row--run { background:color-mix(in srgb,var(--teal) 6%,transparent); border-color:color-mix(in srgb,var(--teal) 20%,transparent); }
+.race-blueprint__plan-label { flex:1; font-size:.68rem; color:var(--muted); }
+.race-blueprint__plan-target { font-size:.74rem; font-weight:800; color:var(--lime); .race-blueprint__plan-row--run & { color:var(--teal); } }
+.race-blueprint__plan-pr { font-size:.6rem; color:var(--muted); opacity:.6; }
