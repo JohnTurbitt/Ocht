@@ -423,6 +423,10 @@
   gap: 9px;
 }
 
+.app-splash__tier { display:flex; align-items:center; gap:8px; animation:loader-fade-up .5s .9s ease both; }
+.app-splash__tier-label { font-size:.62rem; font-weight:800; letter-spacing:.14em; color:var(--teal); }
+.app-splash__tier-score { font-family:var(--font-display),var(--font-body),sans-serif; font-size:1.1rem; font-weight:900; color:var(--lime); }
+
 // ── Reduced motion ─────────────────────────────────────────────────
 @media (prefers-reduced-motion: reduce) {
   .app-splash *,

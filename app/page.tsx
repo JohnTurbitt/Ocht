@@ -30,7 +30,9 @@ import {
   Station,
   StationKey,
   buildAnalysis,
+  tierFor,
 } from "@/lib/analysis";
+import { calculateRaceReadiness } from "@/lib/readiness";
 import {
   SavedReport,
   loadSavedReports,
@@ -212,6 +214,26 @@ export default function Home() {
       stationSplits,
     ],
   );
+
+  const latestScore = useMemo(() => {
+    if (savedReports.length === 0) return undefined;
+    const r = savedReports[0];
+    try {
+      const a = buildAnalysis(
+        r.goal,
+        r.targetTime,
+        r.level,
+        r.runs,
+        r.stationSplits,
+        r.stationDefinitions ?? getRaceFormatStations(r.raceFormat ?? "hyrox"),
+        r.raceFormat ?? "hyrox",
+        r.officialFinishTime ?? "",
+      );
+      return calculateRaceReadiness(a).overall;
+    } catch {
+      return undefined;
+    }
+  }, [savedReports]);
 
   function updateRun(index: number, value: string) {
     setRuns((current) =>
@@ -1548,6 +1570,8 @@ export default function Home() {
         <AppLaunchSplash
           ready={!authLoading}
           onDone={() => setShowSplash(false)}
+          score={latestScore}
+          tierLabel={latestScore !== undefined ? tierFor(latestScore).label : undefined}
         />
       ) : null}
       {generatingReport ? <ReportGenerationOverlay /> : null}

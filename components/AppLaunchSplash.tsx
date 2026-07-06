@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 type AppLaunchSplashProps = {
-  // True once the app has finished its initial work and content is ready.
   ready: boolean;
-  // Called after the exit animation finishes so the parent can unmount.
   onDone: () => void;
+  score?: number;
+  tierLabel?: string;
 };
 
 // Keep the splash up long enough to register as a deliberate launch screen,
@@ -12,7 +12,7 @@ type AppLaunchSplashProps = {
 const MIN_VISIBLE_MS = 1400;
 const EXIT_MS = 450;
 
-export function AppLaunchSplash({ ready, onDone }: AppLaunchSplashProps) {
+export function AppLaunchSplash({ ready, onDone, score, tierLabel }: AppLaunchSplashProps) {
   const [minElapsed, setMinElapsed] = useState(false);
   const [exiting, setExiting] = useState(false);
   // Keep the latest onDone without making it an effect dependency, so the
@@ -76,6 +76,13 @@ export function AppLaunchSplash({ ready, onDone }: AppLaunchSplashProps) {
         ocht<em>.</em>
       </div>
       <div className="app-splash__tagline">8 stations · 8 runs · 1 race</div>
+
+      {score !== undefined && tierLabel !== undefined && (
+        <div className="app-splash__tier" aria-label={`${tierLabel} score ${score}`}>
+          <span className="app-splash__tier-label">{tierLabel.toUpperCase()}</span>
+          <span className="app-splash__tier-score">{score}</span>
+        </div>
+      )}
 
       <div className="app-splash__dots" aria-hidden="true">
         <span />
