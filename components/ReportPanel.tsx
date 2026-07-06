@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { toBlob } from "html-to-image";
 import { Analysis, formatTime } from "@/lib/analysis";
@@ -172,14 +172,19 @@ export function ReportPanel({
     (a, b) => a.leakSeconds - b.leakSeconds,
   )[0];
   const bestStation = [...analysis.stationResults].sort((a, b) => a.gap - b.gap)[0];
-  const stationKeys = analysis.stationResults.map((sr) => sr.key);
-  const prMap = buildPRMap(savedReports, stationKeys);
-  const stationSliders = analysis.stationResults.map((sr) => ({
-    key: sr.key,
-    label: sr.label,
-    prSeconds: prMap.get(sr.key)?.seconds ?? sr.seconds,
-    currentSeconds: sr.seconds,
-  }));
+  const prMap = useMemo(
+    () => buildPRMap(savedReports, analysis.stationResults.map((sr) => sr.key)),
+    [savedReports, analysis.stationResults]
+  );
+  const stationSliders = useMemo(
+    () => analysis.stationResults.map((sr) => ({
+      key: sr.key,
+      label: sr.label,
+      prSeconds: prMap.get(sr.key)?.seconds ?? sr.seconds,
+      currentSeconds: sr.seconds,
+    })),
+    [analysis.stationResults, prMap]
+  );
   const strongSegments = analysis.raceSegments.filter(
     (segment) => segment.status === "strong",
   );
@@ -877,7 +882,7 @@ export function ReportPanel({
           </p>
 
           <ReportSection title="Target simulator" defaultOpen premium>
-            <TargetSimulator stations={stationSliders} />
+            <TargetSimulator key={analysis.finishSeconds} stations={stationSliders} />
           </ReportSection>
 
           <ReportSection title="Training priorities" defaultOpen premium>

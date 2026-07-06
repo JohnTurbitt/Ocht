@@ -56,6 +56,7 @@ export function TargetSimulator({ stations }: TargetSimulatorProps) {
                 min={minVal} max={maxVal} step={1} value={val}
                 onChange={(e) => handleSlider(station.key, Number(e.target.value))}
                 aria-label={`Target time for ${station.label}`}
+                aria-valuetext={formatTime(val)}
               />
             </div>
           );
