@@ -105,7 +105,7 @@ export function RaceBlueprint({ analysis, fullReportUnlocked }: Props) {
   const blueprint = computeBlueprint(analysis, profile.bestEffort5kSeconds);
   if (!blueprint) return null;
 
-  const saving = analysis.finishSeconds - blueprint.totalBlueprint;
+  const saving = blueprint.totalSaving;
   const savingPositive = saving > 0;
 
   return (

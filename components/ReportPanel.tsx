@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+﻿import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { toBlob } from "html-to-image";
 import { Analysis, formatTime, tierFor } from "@/lib/analysis";
@@ -332,7 +332,7 @@ export function ReportPanel({
       return;
     }
 
-    // Centre the active chip within the nav's own horizontal scroll only —
+    // Centre the active chip within the nav's own horizontal scroll only â€”
     // never call scrollIntoView, which would also scroll the page vertically.
     const navRect = nav.getBoundingClientRect();
     const buttonRect = activeButton.getBoundingClientRect();
@@ -686,7 +686,7 @@ export function ReportPanel({
                 means
               </h3>
               <p>
-                A single 0-100 read on how race-ready this profile looks — it blends
+                A single 0-100 read on how race-ready this profile looks â€” it blends
                 run pacing control, station times vs the benchmark, late-race
                 durability, and how realistic your target is. Each metric below is
                 also out of 100; higher is closer to race-ready.
@@ -840,7 +840,7 @@ export function ReportPanel({
               </div>
               <a href="/settings?section=privacy" className="strava-upsell">
                 <strong>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#FC5200" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#FC4C02" aria-hidden="true">
                     <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
                   </svg>
                   Auto-fill from Strava
@@ -966,7 +966,7 @@ export function ReportPanel({
                 onClick={() => setShareModalOpen(false)}
                 aria-label="Close"
               >
-                ×
+                Ã—
               </button>
             </header>
 
@@ -1149,3 +1149,4 @@ export function ReportPanel({
     </aside>
   );
 }
+

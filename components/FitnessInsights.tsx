@@ -37,12 +37,6 @@ function fmtPace(s: number): string {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
 
-function fmtTime(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = Math.round(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
-}
-
 function relativeTime(iso: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (mins < 60) return `${mins}m ago`;
@@ -167,19 +161,19 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
       });
   }, []);
 
-  if (!authenticated) return null;
-  if (profile === undefined) return null;
-
   function handleToggle(id: string) {
     setOpenHint((prev) => (prev === id ? null : id));
   }
+
+  if (!authenticated) return null;
+  if (profile === undefined) return null;
 
   if (profile === null) {
     return (
       <div className="fitness-insights fitness-insights--connect">
         <p className="eyebrow">Fitness insights</p>
         <h3>
-          <svg className="strava-chevron" width="16" height="16" viewBox="0 0 24 24" fill="#FC5200" aria-hidden="true">
+          <svg className="strava-chevron" width="16" height="16" viewBox="0 0 24 24" fill="#FC4C02" aria-hidden="true">
             <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
           </svg>
           Connect Strava to unlock <PremiumBadge />
@@ -219,8 +213,8 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
   const parsedZones = isPaceZones(paceZonesJson) ? paceZonesJson : null;
 
   const effortParts: string[] = [];
-  if (bestEffort5kSeconds !== null) effortParts.push(`5k ${fmtTime(bestEffort5kSeconds)}`);
-  if (bestEffort10kSeconds !== null) effortParts.push(`10k ${fmtTime(bestEffort10kSeconds)}`);
+  if (bestEffort5kSeconds !== null) effortParts.push(`5k ${fmtPace(bestEffort5kSeconds)}`);
+  if (bestEffort10kSeconds !== null) effortParts.push(`10k ${fmtPace(bestEffort10kSeconds)}`);
 
   const hyroxRunSecs = bestEffort5kSeconds !== null ? predictHyroxRunSecs(bestEffort5kSeconds) : null;
 
@@ -282,7 +276,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
           <MetricRow
             id="hyrox"
             label="Hyrox run target"
-            value={`${fmtTime(hyroxRunSecs)} · ${fmtPace(hyroxRunSecs / 8)}/km`}
+            value={`${fmtPace(hyroxRunSecs)} · ${fmtPace(hyroxRunSecs / 8)}/km`}
             hint="Total running time across 8 x 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction — station performance and transitions are separate."
             openHint={openHint}
             onToggle={handleToggle}

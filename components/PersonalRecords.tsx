@@ -1,5 +1,6 @@
-import { formatTime, parseTime } from "@/lib/analysis";
+import { formatTime } from "@/lib/analysis";
 import { SavedReport } from "@/lib/reportStorage";
+import { buildPRMap } from "@/lib/prUtils";
 
 interface Props {
   reports: SavedReport[];
@@ -21,11 +22,6 @@ const STATION_ABBREV: Record<string, string> = {
   row:"RW", farmers:"FC", lunges:"LG", wallBalls:"WB",
 };
 
-type PREntry = {
-  key: string; label: string; abbrev: string;
-  seconds: number; createdAt: string; isNew: boolean;
-};
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     day: "numeric",
@@ -44,31 +40,16 @@ export function PersonalRecords({ reports }: Props) {
     return null;
   }
 
-  // Compute station PRs
-  const stationPRMap = new Map<string, PREntry>();
   const latestDate = latestReportDate(reports);
-
-  for (const report of reports) {
-    for (const [key, label] of Object.entries(STATION_LABELS)) {
-      const raw = report.stationSplits[key];
-      if (!raw || raw.trim() === "") continue;
-
-      const seconds = parseTime(raw);
-      if (seconds <= 0) continue;
-
-      const existing = stationPRMap.get(key);
-      if (!existing || seconds < existing.seconds) {
-        stationPRMap.set(key, {
-          key, label,
-          abbrev: STATION_ABBREV[key] ?? key.slice(0, 2).toUpperCase(),
-          seconds, createdAt: report.createdAt,
-          isNew: latestDate !== null && report.createdAt === latestDate,
-        });
-      }
-    }
-  }
-
-  const stationPRs = Array.from(stationPRMap.values());
+  const prMap = buildPRMap(reports, Object.keys(STATION_LABELS));
+  const stationPRs = Array.from(prMap.entries()).map(([key, pr]) => ({
+    key,
+    label: STATION_LABELS[key] ?? key,
+    abbrev: STATION_ABBREV[key] ?? key.slice(0, 2).toUpperCase(),
+    seconds: pr.seconds,
+    createdAt: pr.createdAt,
+    isNew: latestDate !== null && pr.createdAt === latestDate,
+  }));
 
   if (stationPRs.length === 0) {
     return null;
