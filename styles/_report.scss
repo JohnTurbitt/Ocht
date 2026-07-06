@@ -3097,3 +3097,12 @@
     color: var(--action-bg);
   }
 }
+
+/* ── Score gauge — octagon C3 tier hero ── */
+.score-gauge--octagon { display: inline-flex; flex-direction: column; align-items: center; }
+.score-gauge__shell { stroke: var(--lime); stroke-width: 2; }
+.score-gauge__fill { fill: color-mix(in srgb, var(--lime) 12%, transparent); }
+.score-gauge__waterline { fill: var(--lime); opacity: 0.65; }
+.score-gauge__tier-name { fill: var(--ink); font-size: 28px; }
+.score-gauge__score-line { fill: var(--lime); font-size: 14px; }
+.score-gauge__label-text { fill: var(--muted); font-size: 7px; letter-spacing: 1.5px; }
