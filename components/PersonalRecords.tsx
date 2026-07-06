@@ -16,11 +16,14 @@ const STATION_LABELS: Record<string, string> = {
   wallBalls: "Wall Balls",
 };
 
+const STATION_ABBREV: Record<string, string> = {
+  ski:"SK", sledPush:"SP", sledPull:"SL", burpees:"BB",
+  row:"RW", farmers:"FC", lunges:"LG", wallBalls:"WB",
+};
+
 type PREntry = {
-  key: string;
-  label: string;
-  seconds: number;
-  createdAt: string;
+  key: string; label: string; abbrev: string;
+  seconds: number; createdAt: string; isNew: boolean;
 };
 
 function formatDate(iso: string): string {
@@ -31,6 +34,11 @@ function formatDate(iso: string): string {
   });
 }
 
+function latestReportDate(reports: SavedReport[]): string | null {
+  if (reports.length === 0) return null;
+  return reports.reduce((l, r) => r.createdAt > l ? r.createdAt : l, reports[0].createdAt);
+}
+
 export function PersonalRecords({ reports }: Props) {
   if (reports.length === 0) {
     return null;
@@ -38,6 +46,7 @@ export function PersonalRecords({ reports }: Props) {
 
   // Compute station PRs
   const stationPRMap = new Map<string, PREntry>();
+  const latestDate = latestReportDate(reports);
 
   for (const report of reports) {
     for (const [key, label] of Object.entries(STATION_LABELS)) {
@@ -49,52 +58,44 @@ export function PersonalRecords({ reports }: Props) {
 
       const existing = stationPRMap.get(key);
       if (!existing || seconds < existing.seconds) {
-        stationPRMap.set(key, { key, label, seconds, createdAt: report.createdAt });
+        stationPRMap.set(key, {
+          key, label,
+          abbrev: STATION_ABBREV[key] ?? key.slice(0, 2).toUpperCase(),
+          seconds, createdAt: report.createdAt,
+          isNew: latestDate !== null && report.createdAt === latestDate,
+        });
       }
     }
   }
 
   const stationPRs = Array.from(stationPRMap.values());
 
-  // Compute run PR
-  let runPR: { seconds: number; createdAt: string } | null = null;
-
-  for (const report of reports) {
-    for (const run of report.runs) {
-      if (!run || run.trim() === "") continue;
-      const seconds = parseTime(run);
-      if (seconds <= 0) continue;
-      if (!runPR || seconds < runPR.seconds) {
-        runPR = { seconds, createdAt: report.createdAt };
-      }
-    }
-  }
-
-  if (stationPRs.length === 0 && runPR === null) {
+  if (stationPRs.length === 0) {
     return null;
   }
 
+  const newCount = stationPRs.filter((p) => p.isNew).length;
   return (
-    <section className="personal-records">
+    <section className="personal-records personal-records--list">
       <div className="section-heading">
         <p className="eyebrow">Records</p>
-        <h2>Personal bests</h2>
+        <div className="personal-records__list-header">
+          <h2>Personal bests</h2>
+          {newCount > 0 && <span className="personal-records__new-chip" aria-label={`${newCount} new personal records`}>{newCount} new</span>}
+        </div>
       </div>
-      <div className="personal-records__grid">
+      <div className="personal-records__list">
         {stationPRs.map((pr) => (
-          <div key={pr.key} className="personal-records__card">
-            <span className="personal-records__label">{pr.label}</span>
+          <div key={pr.key} className="personal-records__row">
+            <span className="personal-records__icon" aria-hidden="true">{pr.abbrev}</span>
+            <div className="personal-records__row-body">
+              <span className="personal-records__name">{pr.label}</span>
+              {pr.isNew && <span className="personal-records__pulse-dot" aria-label="New personal record" />}
+              <span className="personal-records__meta">{formatDate(pr.createdAt)}</span>
+            </div>
             <strong className="personal-records__time">{formatTime(pr.seconds)}</strong>
-            <em className="personal-records__date">{formatDate(pr.createdAt)}</em>
           </div>
         ))}
-        {runPR && (
-          <div className="personal-records__card personal-records__card--run">
-            <span className="personal-records__label">Best run split</span>
-            <strong className="personal-records__time">{formatTime(runPR.seconds)}</strong>
-            <em className="personal-records__date">{formatDate(runPR.createdAt)}</em>
-          </div>
-        )}
       </div>
     </section>
   );

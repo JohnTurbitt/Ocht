@@ -3106,3 +3106,17 @@
 .score-gauge__tier-name { fill: var(--ink); font-size: 28px; }
 .score-gauge__score-line { fill: var(--lime); font-size: 14px; }
 .score-gauge__label-text { fill: var(--muted); font-size: 7px; letter-spacing: 1.5px; }
+
+// ── Personal Records — Compact List ──────────────────────────────
+.personal-records--list .personal-records__list-header { display:flex; align-items:center; gap:10px; }
+.personal-records__new-chip { display:inline-flex; align-items:center; padding:2px 8px; border:1px solid color-mix(in srgb,var(--lime) 44%,transparent); border-radius:4px; font-size:.65rem; font-weight:700; color:var(--lime); }
+.personal-records__list { display:flex; flex-direction:column; }
+.personal-records__row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--line); &:last-child { border-bottom:none; } }
+.personal-records__icon { display:flex; align-items:center; justify-content:center; width:28px; height:28px; flex-shrink:0; border-radius:7px; background:var(--surface); border:1px solid var(--line); font-size:.65rem; font-weight:700; color:var(--lime); }
+.personal-records__row-body { flex:1; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.personal-records__name { font-size:.78rem; font-weight:600; color:var(--ink); }
+.personal-records__meta { font-size:.65rem; color:var(--muted); }
+.personal-records__time { font-size:.9rem; font-weight:900; color:var(--lime); }
+.personal-records__pulse-dot { display:inline-block; width:6px; height:6px; flex-shrink:0; border-radius:50%; background:var(--lime); animation:pr-dot-pulse 1.5s ease-in-out infinite; }
+@keyframes pr-dot-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.5); opacity:.6; } }
+@media (prefers-reduced-motion:reduce) { .personal-records__pulse-dot { animation:none; } }
