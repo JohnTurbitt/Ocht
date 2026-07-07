@@ -360,11 +360,12 @@
 
 .share-studio__carousel-track {
   display: flex;
+  width: 300%;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .share-studio__carousel-slide {
-  flex: 0 0 100%;
+  flex: 0 0 33.333%;
   display: flex;
   justify-content: center;
 }

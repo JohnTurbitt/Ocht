@@ -990,7 +990,7 @@ export function ReportPanel({
               <div className="share-studio__carousel-viewport">
                 <div
                   className="share-studio__carousel-track"
-                  style={{ transform: `translateX(-${shareIdx * 100}%)` }}
+                  style={{ transform: `translateX(-${(shareIdx * 100) / 3}%)` }}
                 >
                   <div className="share-studio__carousel-slide">
                     <div className="share-studio__frame">
@@ -1173,4 +1173,5 @@ export function ReportPanel({
     </aside>
   );
 }
+
 
