@@ -134,6 +134,13 @@ function ReadinessMetric({
   );
 }
 
+const SHARE_TEMPLATES = ["finish", "archetype", "story"] as const;
+const SHARE_LABELS: Record<typeof SHARE_TEMPLATES[number], string> = {
+  finish: "Finish card",
+  archetype: "Archetype",
+  story: "Story card",
+};
+
 export function ReportPanel({
   analysis,
   distanceUnit,
@@ -361,6 +368,7 @@ export function ReportPanel({
     shareTemplate === "finish" ? shareFinishRef :
     shareTemplate === "story" ? shareStoryRef :
     shareArchetypeRef;
+  const shareIdx = SHARE_TEMPLATES.indexOf(shareTemplate);
 
   async function createCardBlob(targetRef: RefObject<HTMLDivElement | null>) {
     if (!targetRef.current) {
@@ -970,66 +978,82 @@ export function ReportPanel({
               </button>
             </header>
 
-            <div className="share-studio__tabs" role="tablist">
+            <div className="share-studio__carousel">
               <button
-                role="tab"
+                className="share-studio__arrow"
                 type="button"
-                className={shareTemplate === "finish" ? "is-active" : undefined}
-                onClick={() => setShareTemplate("finish")}
+                onClick={() => setShareTemplate(SHARE_TEMPLATES[(shareIdx + 2) % 3])}
+                aria-label="Previous card"
               >
-                Finish card
+                ‹
               </button>
+              <div className="share-studio__carousel-viewport">
+                <div
+                  className="share-studio__carousel-track"
+                  style={{ transform: `translateX(-${shareIdx * 100}%)` }}
+                >
+                  <div className="share-studio__carousel-slide">
+                    <div className="share-studio__frame">
+                      <div className="share-studio__scale">
+                        <ShareFinishCard
+                          analysis={analysis}
+                          generatedDate={generatedDate}
+                          athleteName={athleteName}
+                          avatarColor={avatarColor}
+                          avatarIcon={avatarIcon}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="share-studio__carousel-slide">
+                    <div className="share-studio__frame">
+                      <div className="share-studio__scale">
+                        <ShareArchetypeCard
+                          analysis={analysis}
+                          generatedDate={generatedDate}
+                          athleteName={athleteName}
+                          avatarColor={avatarColor}
+                          avatarIcon={avatarIcon}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="share-studio__carousel-slide">
+                    <div className="share-studio__frame">
+                      <div className="share-studio__scale">
+                        <ShareStoryCard
+                          score={readiness.overall}
+                          tierLabel={tierFor(readiness.overall).label}
+                          athleteName={athleteName}
+                          eventDate={generatedDate}
+                          prRows={prRows}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <button
-                role="tab"
+                className="share-studio__arrow"
                 type="button"
-                className={
-                  shareTemplate === "archetype" ? "is-active" : undefined
-                }
-                onClick={() => setShareTemplate("archetype")}
+                onClick={() => setShareTemplate(SHARE_TEMPLATES[(shareIdx + 1) % 3])}
+                aria-label="Next card"
               >
-                Archetype
-              </button>
-              <button
-                role="tab"
-                type="button"
-                className={
-                  shareTemplate === "story" ? "is-active" : undefined
-                }
-                onClick={() => setShareTemplate("story")}
-              >
-                Story
+                ›
               </button>
             </div>
-
-            <div className="share-studio__stage">
-              <div className="share-studio__frame">
-                <div className="share-studio__scale">
-                  {shareTemplate === "finish" ? (
-                    <ShareFinishCard
-                      analysis={analysis}
-                      generatedDate={generatedDate}
-                      athleteName={athleteName}
-                      avatarColor={avatarColor}
-                      avatarIcon={avatarIcon}
-                    />
-                  ) : shareTemplate === "story" ? (
-                    <ShareStoryCard
-                      score={readiness.overall}
-                      tierLabel={tierFor(readiness.overall).label}
-                      athleteName={athleteName}
-                      eventDate={generatedDate}
-                      prRows={prRows}
-                    />
-                  ) : (
-                    <ShareArchetypeCard
-                      analysis={analysis}
-                      generatedDate={generatedDate}
-                      athleteName={athleteName}
-                      avatarColor={avatarColor}
-                      avatarIcon={avatarIcon}
-                    />
-                  )}
-                </div>
+            <div className="share-studio__carousel-footer">
+              <span className="share-studio__card-label">{SHARE_LABELS[shareTemplate]}</span>
+              <div className="share-studio__dots">
+                {SHARE_TEMPLATES.map((t, i) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`share-studio__dot${i === shareIdx ? " share-studio__dot--active" : ""}`}
+                    onClick={() => setShareTemplate(t)}
+                    aria-label={SHARE_LABELS[t]}
+                  />
+                ))}
               </div>
             </div>
 

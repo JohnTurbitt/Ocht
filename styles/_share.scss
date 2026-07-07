@@ -346,33 +346,91 @@
   text-transform: uppercase;
 }
 
-.share-studio__tabs {
+.share-studio__carousel {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
 }
 
-.share-studio__tabs button {
+.share-studio__carousel-viewport {
   flex: 1;
-  min-height: 42px;
-  margin: 0;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--field);
-  color: var(--ink);
-  font-weight: 800;
+  overflow: hidden;
+  border-radius: 14px;
 }
 
-.share-studio__tabs button.is-active {
-  border-color: var(--action-bg);
-  background: var(--action-bg);
-  color: var(--action-text);
+.share-studio__carousel-track {
+  display: flex;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.share-studio__stage {
+.share-studio__carousel-slide {
+  flex: 0 0 100%;
   display: flex;
   justify-content: center;
-  padding: 8px 0;
 }
+
+.share-studio__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--lime) 45%, var(--line));
+    color: var(--lime);
+  }
+}
+
+.share-studio__carousel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+}
+
+.share-studio__card-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.share-studio__dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.share-studio__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--line);
+  cursor: pointer;
+  transition: background 0.2s, width 0.2s;
+
+  &--active {
+    background: var(--lime);
+    width: 18px;
+    border-radius: 3px;
+  }
+}
+
+// .share-studio__stage removed — frame now lives inside .share-studio__carousel-slide
 
 .share-studio__frame {
   width: 300px;
