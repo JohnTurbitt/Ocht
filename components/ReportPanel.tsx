@@ -6,7 +6,6 @@ import { trackEvent } from "@/lib/analytics";
 import { SavedReport } from "@/lib/reportStorage";
 import { buildPRMap } from "@/lib/prUtils";
 import { calculateRaceReadiness, readinessLabel } from "@/lib/readiness";
-import { buildReportExportText } from "@/lib/reportExport";
 import {
   TrainingContext,
   buildRunningDiagnosis,
@@ -213,7 +212,6 @@ export function ReportPanel({
   const readiness = calculateRaceReadiness(analysis);
   const runningDiagnosis = buildRunningDiagnosis(analysis, trainingContext);
 
-  const exportText = buildReportExportText(analysis, generatedDate, distanceUnit);
   const averageRunPace = formatPaceForUnit(
     analysis.averageRunSeconds,
     analysis.raceFormat,
@@ -350,19 +348,6 @@ export function ReportPanel({
 
     nav.scrollBy({ left: delta, behavior: "smooth" });
   }, [activeSection]);
-
-  async function copyReport() {
-    try {
-      await navigator.clipboard.writeText(exportText);
-      setExportMessage("Report copied.");
-      setShareModalOpen(false);
-      trackEvent("report_exported", {
-        format: "text_clipboard",
-      });
-    } catch {
-      setExportMessage("Copy was blocked by the browser.");
-    }
-  }
 
   const activeShareRef =
     shareTemplate === "finish" ? shareFinishRef :
@@ -974,7 +959,7 @@ export function ReportPanel({
                 onClick={() => setShareModalOpen(false)}
                 aria-label="Close"
               >
-                Ã—
+                &times;
               </button>
             </header>
 
@@ -1113,26 +1098,6 @@ export function ReportPanel({
                   Save PNG
                 </button>
               </div>
-            </div>
-
-            <div className="share-studio__secondary">
-              <button
-                className="btn btn--ghost btn--sm"
-                type="button"
-                onClick={() => void copyReport()}
-              >
-                <svg
-                  className="btn__icon"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <rect x="6" y="3" width="12" height="18" rx="2" />
-                  <path d="M9 8h6M9 12h6M9 16h4" />
-                </svg>
-                Copy summary for a coach
-              </button>
             </div>
 
             <p className="share-studio__status" aria-live="polite">

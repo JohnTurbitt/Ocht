@@ -209,11 +209,11 @@ export function ShareStoryCard({ score, tierLabel, athleteName, eventDate, prRow
   return (
     <div className="share-card share-card--story" ref={captureRef}>
       <div className="share-card__story-brand">
-        <OchtShield size={28} />
+        <OchtShield size={34} />
         <span className="share-card__wordmark">ocht<em>.</em></span>
       </div>
       <div className="share-card__story-octagon">
-        <svg width="100" height="100" viewBox="0 0 100 100" aria-hidden="true">
+        <svg width="360" height="360" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <filter id={glowId}>
               <feGaussianBlur stdDeviation="3" result="blur" />
