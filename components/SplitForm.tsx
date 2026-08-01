@@ -591,7 +591,7 @@ export function SplitForm({
       ) : (
         <div className="split-group rounds">
           <div className="rounds__head">
-            <h3>{stationDefinitions.length} rounds — run + station</h3>
+            <h3>{stationDefinitions.length} rounds: run + station</h3>
             <div className="rounds__progress">
               <div className="rounds__dots" aria-hidden="true">
                 {stationDefinitions.map((station, index) => {
@@ -710,7 +710,7 @@ export function SplitForm({
       </button>
       {!hasAnyInput ? (
         <p className="split-form__cta-hint">
-          Add your target time and at least one split to generate a report — or use
+          Add your target time and at least one split to generate a report, or use
           Load sample race.
         </p>
       ) : null}

@@ -180,7 +180,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
           </svg>
           Connect Strava to unlock <PremiumBadge />
         </h3>
-        <p>Lactate threshold, training load, aerobic efficiency and pace zones — calculated from your Strava history.</p>
+        <p>Lactate threshold, training load, aerobic efficiency and pace zones, calculated from your Strava history.</p>
         <a href="/api/strava/connect" className="settings-connect-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
             <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
@@ -259,7 +259,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             id="decoupling"
             label="Aerobic efficiency"
             value={`${cardiacDecouplingPct}% decoupling`}
-            hint="Cardiac decoupling measures whether your heart rate drifts higher relative to your pace on long runs. Under 5% means your aerobic base is solid. Above 5% suggests more easy aerobic volume would help — especially for the later runs in a Hyrox."
+            hint="Cardiac decoupling measures whether your heart rate drifts higher relative to your pace on long runs. Under 5% means your aerobic base is solid. Above 5% suggests more easy aerobic volume would help, especially for the later runs in a Hyrox."
             openHint={openHint}
             onToggle={handleToggle}
           />
@@ -269,7 +269,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             id="efforts"
             label="Running fitness"
             value={effortParts.join(" · ")}
-            hint="Estimated from your Strava activities using the Riegel formula. They represent your current running fitness rather than a specific race result — useful as a baseline for your Hyrox run targets."
+            hint="Estimated from your Strava activities using the Riegel formula. They represent your current running fitness rather than a specific race result, useful as a baseline for your Hyrox run targets."
             openHint={openHint}
             onToggle={handleToggle}
           />
@@ -279,7 +279,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
             id="hyrox"
             label="Hyrox run target"
             value={`${fmtPace(hyroxRunSecs)} · ${fmtPace(hyroxRunSecs / 8)}/km`}
-            hint="Total running time across 8 x 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction — station performance and transitions are separate."
+            hint="Total running time across 8 x 1km runs, estimated from your 5k fitness with a 12% adjustment for running after station work. Use this as a pacing target for your runs, not a full race time prediction. Station performance and transitions are separate."
             openHint={openHint}
             onToggle={handleToggle}
           />

@@ -50,7 +50,7 @@ export function GoalScreen({ onSelect }: Props) {
           </svg>
           <div>
             <div className="onboarding-goal-item__label">Just having a look</div>
-            <div className="onboarding-goal-item__desc">Explore with a sample report — no data needed</div>
+            <div className="onboarding-goal-item__desc">Explore with a sample report, no data needed</div>
           </div>
           <span className="onboarding-goal-item__arrow">›</span>
         </button>

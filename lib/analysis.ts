@@ -456,7 +456,7 @@ function buildArchetype({
       "morrigan",
       "The Morrígan",
       "The race is lost in the in-between",
-      "The Morrígan was the goddess of the threshold — the space between life and death, the moment before battle breaks and after it ends. Your moving splits are competitive, but the in-between moments, the dead time around the stations, is where the race slips away. That is exactly where the Morrígan lives. Fast, decisive transitions are the cheapest time you can find.",
+      "The Morrígan was the goddess of the threshold: the space between life and death, the moment before battle breaks and after it ends. Your moving splits are competitive, but the in-between moments, the dead time around the stations, are where the race slips away. That is exactly where the Morrígan lives. Fast, decisive transitions are the cheapest time you can find.",
       ["Strong moving splits", "Transition-heavy losses", "High-value quick wins"],
     );
   }
@@ -467,7 +467,7 @@ function buildArchetype({
       "setanta",
       "Setanta",
       "Raw power, no rhythm yet",
-      "Setanta was the boy's name of Cú Chulainn — before he'd earned it. He had extraordinary strength from the start, but it came without control. He accidentally killed Culann's guard dog in a moment of unthinking force and had to take its place as penance. Your splits show the same profile: a real engine that surges and dips wildly, where the surges cost more than they gain. The power is already there. Pacing discipline is the craft that shapes it.",
+      "Setanta was the boy's name of Cú Chulainn, before he'd earned it. He had extraordinary strength from the start, but it came without control. He accidentally killed Culann's guard dog in a moment of unthinking force and had to take its place as penance. Your splits show the same profile: a real engine that surges and dips wildly, where the surges cost more than they gain. The power is already there. Pacing discipline is the craft that shapes it.",
       ["High power output", "Inconsistent pacing", "Needs rhythm and control"],
     );
   }
@@ -477,8 +477,8 @@ function buildArchetype({
     return pick(
       "cu-chulainn",
       "Cú Chulainn",
-      "All-out from the start — the back half pays for it",
-      "Cú Chulainn's defining power was the ríastrad — the battle warp-spasm — where he became an unstoppable force of nature. But the ríastrad consumed everything he had. Witnesses said he was unrecognisable afterwards, spent completely. Your race follows that arc: you go deep into the red early and the back half costs you heavily for it. The aggression is an asset. Channelling it into a pace that holds is where the time is.",
+      "All-out from the start. The back half pays for it.",
+      "Cú Chulainn's defining power was the ríastrad, the battle warp-spasm, where he became an unstoppable force of nature. But the ríastrad consumed everything he had. Witnesses said he was unrecognisable afterwards, spent completely. Your race follows that arc: you go deep into the red early and the back half costs you heavily for it. The aggression is an asset. Channelling it into a pace that holds is where the time is.",
       ["Explosive early pace", "Severe second-half fade", "Pacing the key lever"],
     );
   }
@@ -489,7 +489,7 @@ function buildArchetype({
       "brigid",
       "Brigid",
       "Two fires need stoking",
-      "Brigid was goddess of the forge and of healing — two entirely separate crafts, each with its own fire that needed tending. Let one go cold and the work suffered. Your race shows the same two flames: the runs fade in the second half, and the strength stations add to the cost on top of that. Neither alone is decisive, but together they matter. Two training targets, tended in parallel.",
+      "Brigid was goddess of the forge and of healing, two entirely separate crafts, each with its own fire that needed tending. Let one go cold and the work suffered. Your race shows the same two flames: the runs fade in the second half, and the strength stations add to the cost on top of that. Neither alone is decisive, but together they matter. Two training targets, tended in parallel.",
       ["Moderate second-half fade", "Station-limited", "Dual-focus training needed"],
     );
   }
@@ -499,8 +499,8 @@ function buildArchetype({
     return pick(
       "oisin",
       "Oisín",
-      "Strong through the middle — the back half catches up",
-      "Oisín was the greatest runner of the Fianna, celebrated for his speed and grace. He spent what felt like a few years in Tír na nÓg, the Land of Eternal Youth — but it was three hundred years in Ireland. When he returned and touched the ground, every one of those years hit him at once. Your race has that shape: strong, fluid running early, then the back half arrives all at once. Your stations hold up. Sustained aerobic work will keep the running with them.",
+      "Strong through the middle. The back half catches up.",
+      "Oisín was the greatest runner of the Fianna, celebrated for his speed and grace. He spent what felt like a few years in Tír na nÓg, the Land of Eternal Youth, but it was three hundred years in Ireland. When he returned and touched the ground, every one of those years hit him at once. Your race has that shape: strong, fluid running early, then the back half arrives all at once. Your stations hold up. Sustained aerobic work will keep the running with them.",
       ["Stations hold up", "Run endurance fades late", "Second-half pace drops"],
     );
   }
@@ -510,7 +510,7 @@ function buildArchetype({
     return pick(
       "fionn",
       "Fionn mac Cumhaill",
-      "The run engine leads — the stations are the gap",
+      "The run engine leads. The stations are the gap.",
       "Entry to the Fianna required a warrior to run at full pace through a dense forest without breaking a single twig underfoot or disturbing their braided hair. Fionn led this band of elite warrior-runners, and his ability across the ground was their standard. Your race shows the same quality: the runs carry you. The strength stations are where time is left behind. Strength-endurance work and station technique under fatigue are where your next gains live.",
       ["Strong run engine", "Station-limited", "Targets workout stations"],
     );
@@ -521,8 +521,8 @@ function buildArchetype({
     return pick(
       "dagda",
       "The Dagda",
-      "Immovable at the stations — the runs cost you",
-      "The Dagda was the father of the gods: enormous, immovable, and endlessly powerful. He carried a club so heavy it had to be dragged on a cart, and his cauldron never ran empty. He was not built for grace or speed — he was built to endure and to outlast. Your stations show that same quality. The runs are where time slips away. Aerobic running volume and pacing discipline are your biggest opportunity.",
+      "Immovable at the stations. The runs cost you.",
+      "The Dagda was the father of the gods: enormous, immovable and endlessly powerful. He carried a club so heavy it had to be dragged on a cart, and his cauldron never ran empty. He was not built for grace or speed. He was built to endure and to outlast. Your stations show that same quality. The runs are where time slips away. Aerobic running volume and pacing discipline are your biggest opportunity.",
       ["Strong stations", "Run-limited", "Needs aerobic running base"],
     );
   }
@@ -532,8 +532,8 @@ function buildArchetype({
     return pick(
       "lugh",
       "Lugh",
-      "Master of every discipline — no single weakness",
-      "When Lugh arrived at the gates of Tara, the doorkeeper asked what skill he brought. He named a craft. 'We already have one of those.' He named another. 'We have one.' This went on until Lugh asked: 'But do you have one man who masters all of them at once?' He was let in immediately. Your race profile is Lugh's answer: no single phase dominates your losses, you hold pace to the end, and every discipline is present. That breadth is the foundation. Sharpen the edges and you move up.",
+      "Master of every discipline, no single weakness",
+      "When Lugh arrived at the gates of Tara, the doorkeeper asked what skill he brought. He named a craft. 'We already have one of those.' He named another. 'We have one.' This went on until Lugh asked: 'But do you have one man who masters all of them at once?' He was let in immediately. Your race profile is Lugh's answer: no single phase dominates your losses, you hold pace to the end and every discipline is present. That breadth is the foundation. Sharpen the edges and you move up.",
       ["Even pacing", "Durable to the finish", "Well-rounded profile"],
     );
   }
@@ -542,8 +542,8 @@ function buildArchetype({
   return pick(
     "cormac",
     "Cormac mac Airt",
-    "The balanced king — solid foundation, broad upside",
-    "Cormac mac Airt ruled Tara as the ideal high king — not because he was the greatest fighter or the fastest runner, but because he was fair, wise, and balanced across every duty of kingship. His court was respected for that wholeness. Your race has the same quality: no single discipline is driving the losses, and no single discipline is carrying it either. The foundation is solid. A balanced block that targets the top leaks while protecting your strengths is how you move up.",
+    "The balanced king: solid foundation, broad upside",
+    "Cormac mac Airt ruled Tara as the ideal high king, not because he was the greatest fighter or the fastest runner, but because he was fair, wise and balanced across every duty of kingship. His court was respected for that wholeness. Your race has the same quality: no single discipline is driving the losses, and no single discipline is carrying it either. The foundation is solid. A balanced block that targets the top leaks while protecting your strengths is how you move up.",
     ["Balanced losses", "No single limiter", "Broad upside"],
   );
 }

@@ -46,7 +46,7 @@ export function StravaConnectScreen({ goal, onSkip }: Props) {
         Connect with Strava
       </a>
       <button className="onboarding-strava__skip-btn" onClick={onSkip}>
-        {goal === "results" ? "Skip — I'll enter training details manually" : "Skip — enter details manually"}
+        {goal === "results" ? "Skip. I'll enter training details manually" : "Skip. Enter details manually"}
       </button>
     </div>
   );

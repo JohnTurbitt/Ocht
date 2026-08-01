@@ -21,7 +21,7 @@ export function ScoreGauge({ score, label, size = 160 }: ScoreGaugeProps) {
     <div
       role="img"
       className={`score-gauge score-gauge--octagon score-gauge--${cls}`}
-      aria-label={`${tierLabel} — ${clamped} / 100 — ${label}`}
+      aria-label={`${tierLabel}, ${clamped} / 100, ${label}`}
     >
       <svg width={size} height={size} viewBox="0 0 160 160" aria-hidden="true">
         <defs>

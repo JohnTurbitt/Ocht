@@ -482,7 +482,7 @@ export function SettingsModal({
                 ) : null}
                 {user.subscription === "PAST_DUE" ? (
                   <span className="settings-modal__billing-warning">
-                    Payment past due — please update your billing details.
+                    Payment past due. Please update your billing details.
                   </span>
                 ) : null}
               </p>

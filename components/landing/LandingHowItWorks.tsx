@@ -7,7 +7,7 @@ const steps = [
   {
     number: "02",
     title: "Ocht does the math",
-    body: "Pacing, roxzone tax, and an athlete archetype — calculated, not guessed.",
+    body: "Pacing, roxzone tax and an athlete archetype, calculated rather than guessed.",
   },
   {
     number: "03",

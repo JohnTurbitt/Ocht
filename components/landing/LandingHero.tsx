@@ -11,8 +11,8 @@ export function LandingHero() {
           your race was won.
         </h1>
         <p className="landing-hero__lead">
-          Enter your splits and station times — Ocht turns them into a
-          race-day breakdown of leaks, pacing, and where you actually lost
+          Enter your splits and station times. Ocht turns them into a
+          race-day breakdown of leaks, pacing and where you actually lost
           the most time.
         </p>
         <div className="landing-hero__actions">

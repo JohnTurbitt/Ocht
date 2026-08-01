@@ -22,7 +22,7 @@ export function RoxzoneCard({ analysis }: RoxzoneCardProps) {
         </div>
         <p className="roxzone-card__hint">
           Add your <strong>official finish time</strong> in the race file and Ocht
-          will isolate your roxzone — the dead time spent moving between runs and
+          will isolate your roxzone, the dead time spent moving between runs and
           stations, where hybrid races are quietly won and lost.
         </p>
       </div>
@@ -64,7 +64,7 @@ export function RoxzoneCard({ analysis }: RoxzoneCardProps) {
           ? `That is more time than your worst station (${worstStation.label}, ${formatTime(
               worstStation.gap,
             )} over benchmark). Sharper transitions are the cheapest time on the course.`
-          : "Decisive entries and exits — gear ready, no standing recovery — are some of the cheapest seconds you can find."}
+          : "Decisive entries and exits, with gear ready and no standing recovery, are some of the cheapest seconds you can find."}
       </p>
     </div>
   );

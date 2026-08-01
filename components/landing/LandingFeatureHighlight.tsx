@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const differentiators = [
-  "Roxzone tax — how much the transitions actually cost you",
-  "Athlete archetype — Runner, Powerhouse, Fader, and more",
-  "Ranked time leaks — the one thing to fix before your next race",
+  "Roxzone tax: how much the transitions actually cost you",
+  "Athlete archetype: Runner, Powerhouse, Fader and more",
+  "Ranked time leaks: the one thing to fix before your next race",
 ];
 
 export function LandingFeatureHighlight() {
@@ -42,7 +42,7 @@ export function LandingFeatureHighlight() {
           <span className="landing-feature__strong">Strong</span>
         </div>
         <div className="landing-feature__row">
-          <span>Station 4 — Sled push</span>
+          <span>Station 4: Sled push</span>
           <span className="landing-feature__leak">+0:41 leak</span>
         </div>
       </div>

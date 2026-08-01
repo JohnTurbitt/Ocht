@@ -590,7 +590,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="settings-plan-card__desc">
                   {user.subscription === "PAST_DUE"
-                    ? "Payment past due — please update your billing details."
+                    ? "Payment past due. Please update your billing details."
                     : isPremium
                       ? "Full access to all features and insights."
                       : "Upgrade to unlock Fitness Insights, Race Blueprint, and more."}
