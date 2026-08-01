@@ -87,19 +87,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 18px 20px;
+    background: var(--color-surface-raised, #14241d);
+    border: 1px solid var(--color-border, #284237);
+    border-radius: 12px;
   }
 
   &__brand {
-    font-size: 14px;
+    font-size: 19px;
     font-weight: 900;
     color: var(--color-text, #f4f7ef);
   }
 
   &__sep {
     color: var(--color-border, #284237);
-    font-size: 13px;
+    font-size: 15px;
   }
 
   &__benefits {

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { AuthUser } from "@/lib/apiClient";
+import { persistPremiumStepSkipped, readPremiumStepSkipped } from "@/lib/preferences";
 
 type OnboardingChecklistProps = {
   user: AuthUser;
@@ -18,6 +20,8 @@ type OnboardingStep = {
   actionLabel?: string;
   onAction?: () => void;
   disabled?: boolean;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
 };
 
 export function OnboardingChecklist({
@@ -29,6 +33,15 @@ export function OnboardingChecklist({
   onStartCheckout,
   onDismiss,
 }: OnboardingChecklistProps) {
+  const [premiumSkipped, setPremiumSkipped] = useState(() =>
+    readPremiumStepSkipped(user.id),
+  );
+
+  function skipPremiumStep() {
+    persistPremiumStepSkipped(user.id);
+    setPremiumSkipped(true);
+  }
+
   const steps: OnboardingStep[] = [
     {
       id: "verify-email",
@@ -50,10 +63,12 @@ export function OnboardingChecklist({
       id: "premium",
       title: "Unlock premium",
       detail: "Open full reports, custom formats, and premium analysis.",
-      complete: user.subscription === "ACTIVE",
+      complete: user.subscription === "ACTIVE" || premiumSkipped,
       actionLabel: billingLoading ? "Opening..." : "Upgrade",
       onAction: onStartCheckout,
       disabled: billingLoading,
+      secondaryActionLabel: "Later",
+      onSecondaryAction: skipPremiumStep,
     },
   ];
   const completedCount = steps.filter((step) => step.complete).length;
@@ -100,15 +115,28 @@ export function OnboardingChecklist({
               <h3>{step.title}</h3>
               <p>{step.detail}</p>
             </div>
-            {!step.complete && step.actionLabel && step.onAction ? (
-              <button
-                className="button-secondary"
-                type="button"
-                onClick={step.onAction}
-                disabled={step.disabled}
-              >
-                {step.actionLabel}
-              </button>
+            {!step.complete && (step.actionLabel || step.secondaryActionLabel) ? (
+              <div className="onboarding__step-actions">
+                {step.actionLabel && step.onAction ? (
+                  <button
+                    className="button-secondary"
+                    type="button"
+                    onClick={step.onAction}
+                    disabled={step.disabled}
+                  >
+                    {step.actionLabel}
+                  </button>
+                ) : null}
+                {step.secondaryActionLabel && step.onSecondaryAction ? (
+                  <button
+                    className="onboarding__step-later"
+                    type="button"
+                    onClick={step.onSecondaryAction}
+                  >
+                    {step.secondaryActionLabel}
+                  </button>
+                ) : null}
+              </div>
             ) : null}
             {step.complete ? (
               <span className="onboarding__done">Done</span>
