@@ -11,7 +11,10 @@
   --surface: #e3ebda;
   --surface-strong: #dae4ce;
   --disabled: #d7e0cb;
-  --lime: #c8ff2e;
+  /* Deep teal, not lime — lime as a raw accent/text/fill color washes out on
+     light backgrounds (~1.14:1 contrast, fails WCAG). Buttons are unaffected:
+     they use --action-bg, a separate token, still lime in both themes. */
+  --lime: #0b5e4c;
   --mid-green: #2f9e63;
   --teal: #0b5e4c;
   --red: #d84b3a;
