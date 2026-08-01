@@ -248,7 +248,7 @@ describe("roxzone (transition time)", () => {
 });
 
 describe("athlete archetype", () => {
-  it("classifies a runner when stations leak more than the runs", () => {
+  it("classifies Fionn mac Cumhaill when stations leak more than the runs", () => {
     const analysis = buildAnalysis(
       "Strong engine",
       "1:25:00",
@@ -257,11 +257,11 @@ describe("athlete archetype", () => {
       stationSplits,
     );
 
-    expect(analysis.archetype.id).toBe("runner");
+    expect(analysis.archetype.id).toBe("fionn");
     expect(analysis.archetype.scores.durability).toBeGreaterThanOrEqual(55);
   });
 
-  it("classifies a fader on heavy second-half run fade", () => {
+  it("classifies Setanta on wild, inconsistent pacing", () => {
     const fadingRuns = [
       "5:00",
       "5:00",
@@ -280,11 +280,11 @@ describe("athlete archetype", () => {
       stationSplits,
     );
 
-    expect(analysis.archetype.id).toBe("fader");
+    expect(analysis.archetype.id).toBe("setanta");
     expect(analysis.archetype.scores.durability).toBeLessThan(55);
   });
 
-  it("classifies a roxzone bleeder when transitions dominate", () => {
+  it("classifies The Morrígan when transitions dominate", () => {
     const analysis = buildAnalysis(
       "Slow transitions",
       "1:25:00",
@@ -297,7 +297,7 @@ describe("athlete archetype", () => {
     );
 
     expect(analysis.hasRoxzone).toBe(true);
-    expect(analysis.archetype.id).toBe("roxzone-bleeder");
+    expect(analysis.archetype.id).toBe("morrigan");
   });
 
   it("keeps every archetype score within 0-100", () => {
