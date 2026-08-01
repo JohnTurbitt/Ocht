@@ -293,8 +293,8 @@ export function AuthPanel({
           </div>
           <p className="auth-panel__lead">
             {mode === "signup"
-              ? "Save reports, track your targets, and unlock premium race tools."
-              : "Access saved reports, billing, and your default race settings."}
+              ? "Save reports, track your targets and unlock premium race tools."
+              : "Access saved reports, billing and your default race settings."}
           </p>
           <form
             className="auth-panel__form"

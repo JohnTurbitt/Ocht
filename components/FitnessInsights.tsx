@@ -196,7 +196,7 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
       <div className="fitness-insights fitness-insights--locked">
         <p className="eyebrow">Fitness insights</p>
         <h3>Unlock to see your fitness data <PremiumBadge /></h3>
-        <p>Your Strava profile is synced. Upgrade to premium to see lactate threshold, training load, and pace zones.</p>
+        <p>Your Strava profile is synced. Upgrade to premium to see lactate threshold, training load and pace zones.</p>
       </div>
     );
   }

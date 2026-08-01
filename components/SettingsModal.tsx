@@ -589,7 +589,7 @@ export function SettingsModal({
                 <div className="settings-modal__danger-zone">
                   <strong>Delete account</strong>
                   <p>
-                    Permanently deletes your account, all reports, and cancels
+                    Permanently deletes your account, all reports and cancels
                     your subscription. This cannot be undone.
                   </p>
                   {deleteConfirmOpen ? (

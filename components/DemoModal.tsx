@@ -49,7 +49,7 @@ export function DemoModal({ onClose, onLoadSample, onEnterOwn }: DemoModalProps)
           <article>
             <span>3</span>
             <strong>Read the report</strong>
-            <p>Start with target path, strengths, leaks, and next action.</p>
+            <p>Start with target path, strengths, leaks and next action.</p>
           </article>
         </div>
         <div className="demo-modal__example" aria-label="Example split input">

@@ -384,7 +384,7 @@ export function ReportHistory({
                 </h3>
                 <p>
                   Pick any two saved reports to see what changed in finish time,
-                  target pressure, run pace, and biggest leak.
+                  target pressure, run pace and biggest leak.
                 </p>
               </div>
 

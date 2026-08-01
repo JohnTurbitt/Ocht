@@ -195,7 +195,7 @@ export function SplitForm({
           <article>
             <span>3</span>
             <strong>Read cockpit</strong>
-            <p>Start with finish, time to find, biggest leak, and next action.</p>
+            <p>Start with finish, time to find, biggest leak and next action.</p>
           </article>
         </div>
       ) : null}

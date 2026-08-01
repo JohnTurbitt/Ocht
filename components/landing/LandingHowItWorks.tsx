@@ -2,7 +2,7 @@ const steps = [
   {
     number: "01",
     title: "Log your splits",
-    body: "Run times, station times, and your official finish if you've got it.",
+    body: "Run times, station times and your official finish if you've got it.",
   },
   {
     number: "02",

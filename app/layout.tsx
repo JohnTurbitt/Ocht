@@ -10,7 +10,7 @@ import "./globals.scss";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
 const appName = "Ocht";
 const appDescription =
-  "Trace hybrid race splits, find time leaks, and build a realistic next target.";
+  "Trace hybrid race splits, find time leaks and build a realistic next target.";
 const bodyFont = Inter({
   subsets: ["latin"],
   display: "swap",

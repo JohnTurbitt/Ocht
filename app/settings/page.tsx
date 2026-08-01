@@ -593,7 +593,7 @@ export default function SettingsPage() {
                     ? "Payment past due. Please update your billing details."
                     : isPremium
                       ? "Full access to all features and insights."
-                      : "Upgrade to unlock Fitness Insights, Race Blueprint, and more."}
+                      : "Upgrade to unlock Fitness Insights, Race Blueprint and more."}
                 </div>
               </div>
               {canUpgrade && (
@@ -685,7 +685,7 @@ export default function SettingsPage() {
                 <div className="settings-danger-card__head"><h3>Danger zone</h3></div>
                 <div className="settings-danger-card__body">
                   <strong>Delete account</strong>
-                  <p>Permanently deletes your account, all reports, and cancels your subscription. This cannot be undone.</p>
+                  <p>Permanently deletes your account, all reports and cancels your subscription. This cannot be undone.</p>
                   {deleteConfirmOpen ? (
                     <div className="settings-danger-confirm">
                       <p>Are you sure? We recommend downloading your data first.</p>

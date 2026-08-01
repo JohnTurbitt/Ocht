@@ -23,7 +23,7 @@ export default function TermsPage() {
       <p>
         Ocht uses deterministic calculations based on the splits and targets
         you enter. Results are estimates and should be interpreted alongside
-        your own coaching, recovery, health, and race context.
+        your own coaching, recovery, health and race context.
       </p>
 
       <h2>Accounts</h2>
@@ -36,14 +36,14 @@ export default function TermsPage() {
       <h2>Paid Features</h2>
       <p>
         Ocht premium unlocks full report sections, export actions, saved account
-        workflows, and related premium features shown in the product. Billing is
+        workflows and related premium features shown in the product. Billing is
         processed by Stripe.
       </p>
 
       <h2>Availability</h2>
       <p>
         Ocht may change as features are improved. We aim to keep the service
-        available, but downtime, maintenance, or third-party outages can happen.
+        available, but downtime, maintenance or third-party outages can happen.
       </p>
 
       <h2>Contact</h2>

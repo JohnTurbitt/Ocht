@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Refunds and Cancellation - Ocht",
-  description: "How Ocht subscriptions, cancellation, and refund requests work.",
+  description: "How Ocht subscriptions, cancellation and refund requests work.",
 };
 
 export default function RefundsPage() {

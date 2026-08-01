@@ -829,7 +829,7 @@ export function ReportPanel({
                 <h3>Add recent training to sharpen this</h3>
                 <p>
                   The race math still works without it. Add recent running volume,
-                  hard sessions, compromised runs, and rest days to get a more
+                  hard sessions, compromised runs and rest days to get a more
                   useful running recommendation.
                 </p>
               </div>
@@ -861,9 +861,9 @@ export function ReportPanel({
               and calculation breakdown.
             </p>
             <ul className="paywall__features">
-              <li>Target simulator, four-week plan, and full leak list</li>
+              <li>Target simulator, four-week plan and full leak list</li>
               <li>Detailed race flow map and calculation breakdown</li>
-              <li>Share images, print view, and coach summary</li>
+              <li>Share images, print view and coach summary</li>
             </ul>
           </div>
           <button
@@ -889,7 +889,7 @@ export function ReportPanel({
         <>
           <p className="helper-text" aria-live="polite">
             {exportMessage ||
-              "Export includes the full leak list, training plan, target, and station ranking."}
+              "Export includes the full leak list, training plan, target and station ranking."}
           </p>
 
           <ReportSection title="Target simulator" defaultOpen premium>

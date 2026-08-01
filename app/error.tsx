@@ -30,7 +30,7 @@ export default function Error({
       <p className="eyebrow">Ocht</p>
       <h1>Something went wrong</h1>
       <p>
-        That page hit an unexpected error. You can try again, or head back to
+        That page hit an unexpected error. You can try again or head back to
         the dashboard.
       </p>
       <div className="error-page__actions">

@@ -26,7 +26,7 @@ export function Hero({
         <h1>Find the time leaks between your reps and runs.</h1>
         <p className="hero__lead">
           Add the times from your race or training simulation and Ocht shows
-          where you lost time, what is already strong, and what target looks
+          where you lost time, what is already strong and what target looks
           realistic next.
         </p>
         <div className="hero__actions">

@@ -1582,8 +1582,8 @@ export default function Home() {
                   </span>
                   <h3>Your race file is empty</h3>
                   <p>
-                    Add a target, run splits, and station times to unlock the math
-                    engine, race flow, archetype, roxzone, readiness, and leaks.
+                    Add a target, run splits and station times to unlock the math
+                    engine, race flow, archetype, roxzone, readiness and leaks.
                   </p>
                   <button
                     className="btn btn--primary btn--cut"

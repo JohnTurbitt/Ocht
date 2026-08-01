@@ -62,7 +62,7 @@ export function OnboardingChecklist({
     {
       id: "premium",
       title: "Unlock premium",
-      detail: "Open full reports, custom formats, and premium analysis.",
+      detail: "Open full reports, custom formats and premium analysis.",
       complete: user.subscription === "ACTIVE" || premiumSkipped,
       actionLabel: billingLoading ? "Opening..." : "Upgrade",
       onAction: onStartCheckout,

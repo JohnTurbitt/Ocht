@@ -656,7 +656,7 @@ function raceStoryTone(analysis: Analysis) {
   }
 
   if (analysis.requiredGainPercent <= 3) {
-    return "The target is close. This is a precision race now: clean transitions, fewer station pauses, and no late pacing drift.";
+    return "The target is close. This is a precision race now: clean transitions, fewer station pauses and no late pacing drift.";
   }
 
   if (analysis.requiredGainPercent <= 8) {
