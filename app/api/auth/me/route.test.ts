@@ -44,7 +44,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/security", () => ({
-  guardBrowserMutation: vi.fn(() => null),
+  guardBrowserMutation: vi.fn(() => Promise.resolve(null)),
 }));
 
 function deleteRequest() {
@@ -64,7 +64,7 @@ const testUser = {
 };
 
 beforeEach(() => {
-  vi.mocked(guardBrowserMutation).mockReturnValue(null);
+  vi.mocked(guardBrowserMutation).mockResolvedValue(null);
   vi.mocked(requireCurrentUser).mockReset();
   vi.mocked(prisma.user.findUnique).mockReset();
   vi.mocked(prisma.user.delete).mockReset();
@@ -86,7 +86,7 @@ describe("DELETE /api/auth/me", () => {
       { errors: ["Too many requests."] },
       { status: 429 },
     );
-    vi.mocked(guardBrowserMutation).mockReturnValue(guardResponse);
+    vi.mocked(guardBrowserMutation).mockResolvedValue(guardResponse);
 
     const response = await DELETE(deleteRequest());
 

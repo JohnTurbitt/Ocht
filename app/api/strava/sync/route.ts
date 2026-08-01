@@ -5,7 +5,7 @@ import { guardBrowserMutation } from "@/lib/security";
 import { syncStravaProfile } from "@/lib/stravaSyncService";
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "strava-sync",
     limit: 1,
     windowMs: 60 * 60 * 1000,

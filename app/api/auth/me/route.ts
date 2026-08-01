@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "profile-update",
     limit: 20,
     windowMs: 15 * 60 * 1000,
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "account-delete",
     limit: 5,
     windowMs: 15 * 60 * 1000,

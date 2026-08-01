@@ -16,7 +16,7 @@ import {
 } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "auth-signup",
     limit: 8,
     windowMs: 15 * 60 * 1000,

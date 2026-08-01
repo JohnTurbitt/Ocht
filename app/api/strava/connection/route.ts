@@ -6,7 +6,7 @@ import { guardBrowserMutation } from "@/lib/security";
 import { getValidAccessToken } from "@/lib/stravaTokens";
 
 export async function DELETE(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "strava-disconnect",
     limit: 5,
     windowMs: 15 * 60 * 1000,

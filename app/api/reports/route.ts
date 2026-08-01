@@ -168,6 +168,7 @@ export async function GET(request: NextRequest) {
     const reports = await prisma.raceReport.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
+      take: 200,
     });
 
     return NextResponse.json({
@@ -199,7 +200,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "reports-create",
     limit: 30,
     windowMs: 15 * 60 * 1000,

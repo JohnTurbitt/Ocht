@@ -6,7 +6,7 @@ import { guardBrowserMutation } from "@/lib/security";
 import { sendVerificationEmailForUser } from "@/lib/emailVerification";
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "email-verification-resend",
     limit: 4,
     windowMs: 15 * 60 * 1000,

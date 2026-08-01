@@ -8,7 +8,7 @@ import { guardBrowserMutation } from "@/lib/security";
 vi.mock("@/lib/apiAuth", () => ({ requireCurrentUser: vi.fn() }));
 vi.mock("@/lib/stravaSyncService", () => ({ syncStravaProfile: vi.fn() }));
 vi.mock("@/lib/logging", () => ({ logServerError: vi.fn() }));
-vi.mock("@/lib/security", () => ({ guardBrowserMutation: vi.fn(() => null) }));
+vi.mock("@/lib/security", () => ({ guardBrowserMutation: vi.fn(() => Promise.resolve(null)) }));
 
 function req() {
   return new NextRequest("http://localhost/api/strava/sync", { method: "POST" });
@@ -17,7 +17,7 @@ function req() {
 beforeEach(() => {
   vi.mocked(apiAuth.requireCurrentUser).mockReset();
   vi.mocked(syncService.syncStravaProfile).mockReset();
-  vi.mocked(guardBrowserMutation).mockReturnValue(null);
+  vi.mocked(guardBrowserMutation).mockResolvedValue(null);
 });
 
 describe("POST /api/strava/sync", () => {
@@ -33,7 +33,7 @@ describe("POST /api/strava/sync", () => {
   });
 
   it("returns guard response when rate limited", async () => {
-    vi.mocked(guardBrowserMutation).mockReturnValue(
+    vi.mocked(guardBrowserMutation).mockResolvedValue(
       NextResponse.json({ errors: ["Too many requests."] }, { status: 429 }),
     );
     expect((await POST(req())).status).toBe(429);

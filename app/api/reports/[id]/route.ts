@@ -10,7 +10,7 @@ type RouteContext = {
 };
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "reports-delete",
     limit: 30,
     windowMs: 15 * 60 * 1000,

@@ -15,7 +15,7 @@ function truncate(value: unknown, max: number): string | undefined {
 }
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "errors-report",
     limit: 20,
     windowMs: 5 * 60 * 1000,
