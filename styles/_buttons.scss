@@ -107,7 +107,8 @@ button:focus-visible {
 .btn--primary:hover:not(:disabled):not([aria-disabled="true"]) {
   border-color: var(--button-hover);
   background: var(--button-hover);
-  box-shadow: var(--shadow-sm);
+  background-image: var(--action-bg-premium);
+  box-shadow: var(--shadow-sm), var(--action-glow);
 }
 
 .btn--secondary {
