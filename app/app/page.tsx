@@ -1324,7 +1324,7 @@ export default function Home() {
   return (
     <main>
       <header className="site-header">
-        <Link className="site-header__brand" href="/">
+        <Link className="site-header__brand" href="/" aria-label="Ocht home">
           <OchtShield className="site-header__shield" size={26} />
           <span className="site-header__wordmark">
             ocht<em>.</em>
