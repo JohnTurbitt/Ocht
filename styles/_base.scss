@@ -51,6 +51,15 @@
   --flow-lost: rgba(13, 20, 15, 0.12);
   --accent-glow: 0 0 0 transparent;
   --action-glow: 0 0 0 transparent;
+  /* Gradient-only overlays for the premium tier — always defined (none by
+     default) so specific rules can safely layer them via background-image
+     without ever touching --panel/--surface/--action-bg themselves. Those
+     three stay flat colors everywhere; they're consumed as <color> in far
+     too many places (color-mix(), border-color, SVG fill/stroke, box-shadow
+     color slots) to safely become gradients. */
+  --panel-premium-bg: none;
+  --surface-premium-bg: none;
+  --action-bg-premium: none;
 }
 
 [data-theme="dark"] {
@@ -99,22 +108,25 @@
   --flow-lost: rgba(244, 247, 239, 0.14);
   --accent-glow: 0 0 0 transparent;
   --action-glow: 0 0 0 transparent;
+  --panel-premium-bg: none;
+  --surface-premium-bg: none;
+  --action-bg-premium: none;
   color-scheme: dark;
 }
 
 [data-theme="dark"][data-tier="premium"] {
-  --panel: linear-gradient(155deg, #101c16 0%, #0a1310 60%, #0e1914 100%);
-  --surface: linear-gradient(155deg, #182922 0%, #101c16 60%, #14241d 100%);
-  --action-bg: linear-gradient(135deg, #d6ff5e, #a8e600);
+  --panel-premium-bg: linear-gradient(155deg, #101c16 0%, #0a1310 60%, #0e1914 100%);
+  --surface-premium-bg: linear-gradient(155deg, #182922 0%, #101c16 60%, #14241d 100%);
+  --action-bg-premium: linear-gradient(135deg, #d6ff5e, #a8e600);
   --accent-glow: 0 0 12px rgba(200, 255, 46, 0.55);
   --action-glow: 0 4px 14px rgba(200, 255, 46, 0.35);
   --score-fill-gradient: linear-gradient(180deg, #fbffe8, #c8ff2e);
 }
 
 [data-theme="light"][data-tier="premium"] {
-  --panel: linear-gradient(155deg, #ffffff 0%, #eef3e6 55%, #fafcf6 100%);
-  --surface: linear-gradient(155deg, #f4f8ee 0%, #e9eee1 60%, #e3ebda 100%);
-  --action-bg: linear-gradient(135deg, #d6ff5e, #a8e600);
+  --panel-premium-bg: linear-gradient(155deg, #ffffff 0%, #eef3e6 55%, #fafcf6 100%);
+  --surface-premium-bg: linear-gradient(155deg, #f4f8ee 0%, #e9eee1 60%, #e3ebda 100%);
+  --action-bg-premium: linear-gradient(135deg, #d6ff5e, #a8e600);
   --accent-glow: 0 0 12px rgba(11, 94, 76, 0.35);
   --action-glow: 0 4px 14px rgba(200, 255, 46, 0.35);
   --score-fill-gradient: linear-gradient(180deg, #14806a, #0b5e4c);
