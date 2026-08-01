@@ -3,8 +3,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AppLaunchSplash } from "@/components/AppLaunchSplash";
-import { AuthPanel } from "@/components/AuthPanel";
+import { AuthPanel, type AuthMode } from "@/components/AuthPanel";
 import { DemoModal } from "@/components/DemoModal";
+import { DevModeBadge } from "@/components/DevModeBadge";
 import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
@@ -165,6 +166,7 @@ export default function Home() {
   const [hasGeneratedReportEver, setHasGeneratedReportEver] = useState(false);
   const [avatarColor, setAvatarColor] = useState("#c8ff2e");
   const [avatarIcon, setAvatarIcon] = useState("initial");
+  const [authModeParam, setAuthModeParam] = useState<AuthMode | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollTopBottom, setScrollTopBottom] = useState(22);
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
@@ -452,7 +454,7 @@ export default function Home() {
     }
   }
 
-  async function pollAccountStatus(expectedPaidAccess?: boolean) {
+  async function pollAccountStatus(expectedPaidAccess?: boolean): Promise<boolean> {
     setBillingLoading(true);
 
     for (let attempt = 0; attempt < billingRefreshAttempts; attempt += 1) {
@@ -466,7 +468,7 @@ export default function Home() {
             expectedPaidAccess === undefined ||
             Boolean(syncedUser.subscription === "ACTIVE") === expectedPaidAccess
           ) {
-            return;
+            return true;
           }
         }
 
@@ -478,7 +480,7 @@ export default function Home() {
           expectedPaidAccess === undefined ||
           Boolean(currentUser?.subscription === "ACTIVE") === expectedPaidAccess
         ) {
-          return;
+          return true;
         }
       } catch {
         break;
@@ -489,7 +491,7 @@ export default function Home() {
       );
     }
 
-    setBillingLoading(false);
+    return false;
   }
 
   async function handleLogin(input: AuthFormInput) {
@@ -1015,6 +1017,24 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sampleParam = params.get("sample");
+    const authParam = params.get("auth");
+
+    if (sampleParam === "1") {
+      applyReportPreset(sampleReportPreset, "Sample race loaded");
+    }
+
+    if (authParam === "login" || authParam === "signup") {
+      setAuthModeParam(authParam);
+    }
+
+    if (sampleParam || authParam) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   function updateAvatarColor(color: string) {
     setAvatarColor(color);
     persistAvatarColor(color);
@@ -1069,9 +1089,23 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const checkoutStatus = new URLSearchParams(window.location.search).get(
-      "checkout",
-    );
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get("checkout");
+    const returnToParam = params.get("return_to");
+    // The server already validates return_to before embedding it in the Stripe
+    // redirect URL, but re-check here too in case someone hand-edits the address bar.
+    const returnTo =
+      returnToParam &&
+      returnToParam.startsWith("/") &&
+      !returnToParam.startsWith("//")
+        ? returnToParam
+        : null;
+
+    function goToReturnDestination() {
+      if (returnTo) {
+        window.location.href = returnTo;
+      }
+    }
 
     if (checkoutStatus === "success") {
       trackEvent("checkout_returned", {
@@ -1083,7 +1117,29 @@ export default function Home() {
         message: "Checking your paid access now.",
         tone: "success",
       });
-      void pollAccountStatus(true).finally(() => setBillingLoading(false));
+      void pollAccountStatus(true)
+        .then((confirmed) => {
+          if (confirmed) {
+            setToast({
+              id: Date.now(),
+              title: "Premium unlocked",
+              message: "Your paid access is active.",
+              tone: "success",
+            });
+          } else {
+            setToast({
+              id: Date.now(),
+              title: "Still confirming your subscription",
+              message:
+                "Stripe is taking a bit longer than usual. Refresh in a moment if this doesn't update on its own.",
+              tone: "error",
+            });
+          }
+        })
+        .finally(() => {
+          setBillingLoading(false);
+          goToReturnDestination();
+        });
       window.history.replaceState({}, "", window.location.pathname);
     }
 
@@ -1098,6 +1154,7 @@ export default function Home() {
         tone: "error",
       });
       window.history.replaceState({}, "", window.location.pathname);
+      goToReturnDestination();
     }
 
     if (checkoutStatus === "billing") {
@@ -1108,7 +1165,22 @@ export default function Home() {
         message: "Refreshing your account status.",
         tone: "success",
       });
-      void pollAccountStatus().finally(() => setBillingLoading(false));
+      void pollAccountStatus()
+        .then((confirmed) => {
+          if (!confirmed) {
+            setToast({
+              id: Date.now(),
+              title: "Still refreshing your account",
+              message:
+                "This is taking longer than usual. Refresh in a moment if this doesn't update on its own.",
+              tone: "error",
+            });
+          }
+        })
+        .finally(() => {
+          setBillingLoading(false);
+          goToReturnDestination();
+        });
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
@@ -1252,12 +1324,13 @@ export default function Home() {
   return (
     <main>
       <header className="site-header">
-        <Link className="site-header__brand" href="/" aria-label="Ocht home">
+        <Link className="site-header__brand" href="/">
           <OchtShield className="site-header__shield" size={26} />
           <span className="site-header__wordmark">
             ocht<em>.</em>
           </span>
         </Link>
+        {process.env.NODE_ENV !== "production" && <DevModeBadge />}
         <nav className="site-header__nav" aria-label="Race calendar">
           <UpcomingEventsMenu />
         </nav>
@@ -1272,6 +1345,7 @@ export default function Home() {
             onLogin={handleLogin}
             onSignup={handleSignup}
             onLogout={handleLogout}
+            initialMode={authModeParam}
           />
         </div>
       </header>

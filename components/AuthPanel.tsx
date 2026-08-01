@@ -23,9 +23,10 @@ type AuthPanelProps = {
   onLogin: (input: AuthFormInput) => Promise<void>;
   onSignup: (input: AuthFormInput) => Promise<void>;
   onLogout: () => Promise<void>;
+  initialMode?: AuthMode | null;
 };
 
-type AuthMode = "login" | "signup";
+export type AuthMode = "login" | "signup";
 
 export function AuthPanel({
   user,
@@ -37,8 +38,9 @@ export function AuthPanel({
   onLogin,
   onSignup,
   onLogout,
+  initialMode = null,
 }: AuthPanelProps) {
-  const [mode, setMode] = useState<AuthMode | null>(null);
+  const [mode, setMode] = useState<AuthMode | null>(initialMode);
   const [theme, setTheme] = useState<Theme>("light");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,6 +60,12 @@ export function AuthPanel({
     applyTheme(preferredTheme);
     onDistanceUnitChange(readPreferredDistanceUnit());
   }, [onDistanceUnitChange]);
+
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
 
   useEffect(() => {
     if (!accountOpen) {
