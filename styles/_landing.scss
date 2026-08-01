@@ -181,6 +181,7 @@
 
 .landing-feature__preview {
   background: var(--panel);
+  background-image: var(--panel-premium-bg);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 22px;
@@ -195,6 +196,7 @@
   right: 0;
   height: 2px;
   background: var(--lime);
+  box-shadow: var(--accent-glow);
   border-radius: 8px 8px 0 0;
 }
 

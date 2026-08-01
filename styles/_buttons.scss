@@ -99,7 +99,9 @@ button:focus-visible {
 .btn--primary {
   border-color: var(--action-bg);
   background: var(--action-bg);
+  background-image: var(--action-bg-premium);
   color: var(--action-text);
+  box-shadow: var(--action-glow);
 }
 
 .btn--primary:hover:not(:disabled):not([aria-disabled="true"]) {
