@@ -331,7 +331,9 @@
 }
 
 .events-menu__badge--tryka {
-  background: var(--lime);
+  /* --action-bg (not --lime) so this dark-text-on-bright-fill badge stays
+     legible in light mode too — --lime is now teal in light theme. */
+  background: var(--action-bg);
   color: #0a1711;
 }
 
@@ -594,7 +596,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--lime);
+  /* --action-bg (not --lime) so this dark-text-on-bright-fill badge stays
+     legible in light mode too — --lime is now teal in light theme. */
+  background: var(--action-bg);
   color: var(--badge-ink);
   font-size: 0.72rem;
   font-weight: 900;
@@ -834,6 +838,39 @@
   margin: 10px 0 0;
 }
 
+.onboarding__step-actions {
+  display: flex;
+  grid-column: 2;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-self: start;
+  margin: 10px 0 0;
+}
+
+.onboarding__step-actions button {
+  margin: 0;
+}
+
+.onboarding__step-later {
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  border: none;
+  background: none;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.onboarding__step-later:hover {
+  color: var(--ink);
+  background: none;
+}
+
 .onboarding__done {
   display: inline-flex;
   min-height: 34px;
@@ -891,7 +928,9 @@
   height: 24px;
   place-items: center;
   border-radius: 999px;
-  background: var(--lime);
+  /* --action-bg (not --lime) so this dark-text-on-bright-fill badge stays
+     legible in light mode too — --lime is now teal in light theme. */
+  background: var(--action-bg);
   color: #0a1711;
   font-size: 0.8rem;
 }
@@ -1217,4 +1256,21 @@
 .legal-form__error {
   background: var(--error-soft);
   color: var(--red) !important;
+}
+
+.dev-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #7a5a00;
+  background: #ffb020;
+  color: #1a1300;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  pointer-events: none;
 }
