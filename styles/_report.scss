@@ -3130,6 +3130,78 @@
 @keyframes pr-dot-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.5); opacity:.6; } }
 @media (prefers-reduced-motion:reduce) { .personal-records__pulse-dot { animation:none; } }
 
+/* -- Records tab: format sub-tabs + archetype achievements ------------------------------- */
+.records-tab { display: flex; flex-direction: column; gap: 20px; }
+
+.records-tab__format-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.records-tab__format {
+  width: auto;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.records-tab__format.is-active {
+  border-color: var(--lime);
+  background: color-mix(in srgb, var(--lime) 12%, var(--field));
+  color: var(--ink);
+}
+
+.archetype-achievements__count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.archetype-achievements__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.archetype-achievements__badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.archetype-achievements__badge--unlocked {
+  background: color-mix(in srgb, var(--lime) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--lime) 45%, var(--line));
+}
+
+.archetype-achievements__badge--locked {
+  background: var(--surface);
+  opacity: 0.55;
+}
+
+.archetype-achievements__label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.archetype-achievements__hint {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 /* -- Fitness Insights: Pace Zones + Wordmark Chip ---------------------------------------- */
 .fitness-insights__pace-zones { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
 .fitness-insights__zones-title { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 10px; }

@@ -9,6 +9,7 @@ import { DevModeBadge } from "@/components/DevModeBadge";
 import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
+import { ArchetypeAchievements } from "@/components/ArchetypeAchievements";
 import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import {
@@ -87,7 +88,8 @@ import {
 import { validateReportInput } from "@/lib/validation";
 import type { DistanceUnit } from "@/lib/units";
 
-type ActiveTab = "new" | "history" | "compare";
+type ActiveTab = "new" | "history" | "compare" | "records";
+type RecordsFormatTab = "hyrox" | "tryka" | "custom";
 
 const billingRefreshAttempts = 6;
 const billingRefreshDelayMs = 1600;
@@ -143,6 +145,8 @@ const initialEmptyReportPreset = buildEmptyPresetForCurrentFormat({
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("new");
+  const [recordsFormatTab, setRecordsFormatTab] =
+    useState<RecordsFormatTab>("hyrox");
   const [raceFormat, setRaceFormat] = useState<RaceFormat>(
     initialEmptyReportPreset.raceFormat,
   );
@@ -1011,7 +1015,7 @@ export default function Home() {
 
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab");
-    if (tabParam === "history" || tabParam === "compare") {
+    if (tabParam === "history" || tabParam === "compare" || tabParam === "records") {
       setActiveTab(tabParam);
       window.history.replaceState({}, "", window.location.pathname);
     }
@@ -1455,6 +1459,34 @@ export default function Home() {
             <span className="tab-bar__label">Compare</span>
           </button>
           <button
+            className={
+              activeTab === "records" ? "tab-bar__tab is-active" : "tab-bar__tab"
+            }
+            type="button"
+            onClick={() => {
+              selectTab("records");
+              trackEvent("records_tab_opened", {
+                signed_in: Boolean(user),
+                report_count: savedReports.length,
+              });
+            }}
+          >
+            <svg
+              className="tab-bar__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="7" />
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+            </svg>
+            <span className="tab-bar__label">Records</span>
+          </button>
+          <button
             className="tab-bar__tab tab-bar__tab--events"
             type="button"
             onClick={() => setEventsSheetOpen(true)}
@@ -1606,7 +1638,6 @@ export default function Home() {
         ) : activeTab === "history" ? (
           <>
             <ProgressDashboard reports={savedReports} />
-            <PersonalRecords reports={savedReports} />
             <ReportHistory
               reports={savedReports}
               storageLabel={
@@ -1617,6 +1648,56 @@ export default function Home() {
               onDeleteReport={deleteReport}
             />
           </>
+        ) : activeTab === "records" ? (
+          <div className="records-tab">
+            <ArchetypeAchievements reports={savedReports} />
+            <nav className="records-tab__format-nav" aria-label="Race format">
+              <button
+                type="button"
+                className={
+                  recordsFormatTab === "hyrox"
+                    ? "records-tab__format is-active"
+                    : "records-tab__format"
+                }
+                onClick={() => setRecordsFormatTab("hyrox")}
+              >
+                HYROX
+              </button>
+              <button
+                type="button"
+                className={
+                  recordsFormatTab === "tryka"
+                    ? "records-tab__format is-active"
+                    : "records-tab__format"
+                }
+                onClick={() => setRecordsFormatTab("tryka")}
+              >
+                TRYKA
+              </button>
+              <button
+                type="button"
+                className={
+                  recordsFormatTab === "custom"
+                    ? "records-tab__format is-active"
+                    : "records-tab__format"
+                }
+                onClick={() => setRecordsFormatTab("custom")}
+              >
+                Custom
+              </button>
+            </nav>
+            <PersonalRecords
+              reports={savedReports.filter((report) => {
+                const format = report.raceFormat ?? "hyrox";
+
+                if (recordsFormatTab === "tryka") {
+                  return format === "tryka800" || format === "tryka500";
+                }
+
+                return format === recordsFormatTab;
+              })}
+            />
+          </div>
         ) : (
           <ReportHistory
             reports={savedReports}

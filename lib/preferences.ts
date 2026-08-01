@@ -100,3 +100,45 @@ export function readAvatarIcon(): string {
 export function persistAvatarIcon(icon: string) {
   window.localStorage.setItem(avatarIconKey, icon);
 }
+
+function premiumStepSkippedKey(userId: string) {
+  return `ocht.premiumStepSkipped.${userId}`;
+}
+
+export function readPremiumStepSkipped(userId: string): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(premiumStepSkippedKey(userId)) === "true";
+}
+
+export function persistPremiumStepSkipped(userId: string) {
+  window.localStorage.setItem(premiumStepSkippedKey(userId), "true");
+}
+
+const unlockedArchetypesKey = "ocht.archetypesUnlocked";
+
+// Archetypes are a permanent collection, not a live view of current reports —
+// once unlocked they stay unlocked even if the report that earned them is
+// later deleted. Persisted separately from report storage for that reason.
+export function readUnlockedArchetypes(): string[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(unlockedArchetypesKey);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function persistUnlockedArchetypes(ids: string[]) {
+  window.localStorage.setItem(unlockedArchetypesKey, JSON.stringify(ids));
+}
