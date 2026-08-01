@@ -157,6 +157,10 @@
   min-width: 0;
 }
 
+.auth-panel--compact {
+  min-width: 0;
+}
+
 .auth-panel--signed-in strong {
   display: block;
   margin-top: 3px;
@@ -292,8 +296,10 @@
 }
 
 .account-settings__switch {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 4px;
+  width: 132px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 3px;
@@ -301,7 +307,7 @@
 }
 
 .account-settings__switch button {
-  width: auto;
+  width: 100%;
   min-height: 30px;
   margin: 0;
   border: 0;
@@ -447,6 +453,27 @@
 
 .auth-panel__account-menu::before {
   display: none;
+}
+
+.auth-panel__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-panel__menu-item {
+  flex: 1;
+}
+
+.auth-panel__actions .auth-panel__menu-item:last-child {
+  border-color: var(--action-bg);
+  background: var(--action-bg);
+  color: var(--action-text);
+}
+
+.auth-panel__actions .auth-panel__menu-item:last-child:hover:not(:disabled) {
+  border-color: var(--action-bg);
+  background: var(--action-bg);
+  filter: brightness(1.05);
 }
 
 .profile-form {

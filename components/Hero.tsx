@@ -71,7 +71,6 @@ export function Hero({
                 className="btn btn--ghost btn--sm"
                 type="button"
                 onClick={onDismissGuide}
-                aria-label="Hide beginner guide"
               >
                 Do not show again
               </button>

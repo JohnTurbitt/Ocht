@@ -94,7 +94,9 @@ function MetricRow({
           onClick={() => onToggle(id)}
           aria-label={isOpen ? "Close explanation" : "What does this mean?"}
         >
-          ?
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
         </button>
       </div>
       {isOpen && (

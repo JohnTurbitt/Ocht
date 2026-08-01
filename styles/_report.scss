@@ -2837,26 +2837,28 @@
 // Fitness Insights card
 .fitness-insights {
   margin: 24px 0;
-  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--line);
+  border-radius: 12px;
   padding: 20px;
-  background: var(--color-surface, rgba(255, 255, 255, 0.03));
+  background: var(--field);
 
   .eyebrow {
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    opacity: 0.5;
+    color: var(--muted);
     margin: 0 0 6px;
   }
 
   h3 {
     margin: 0 0 16px;
     font-size: 16px;
+    color: var(--ink);
   }
 
   p {
     font-size: 13px;
-    opacity: 0.7;
+    color: var(--muted);
     line-height: 1.5;
     margin: 0;
   }
@@ -2871,7 +2873,8 @@
 
 .fitness-insights__synced-at {
   font-size: 11px;
-  opacity: 0.4;
+  color: var(--muted);
+  opacity: 0.7;
   margin: -8px 0 16px;
 }
 
@@ -2882,7 +2885,7 @@
 }
 
 .fitness-insights__row {
-  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid var(--line);
   padding: 12px 0;
 
   &:first-child {
@@ -2900,36 +2903,51 @@
 .fitness-insights__row-label {
   flex: 1;
   font-size: 13px;
-  opacity: 0.7;
+  color: var(--muted);
 }
 
 .fitness-insights__row-value {
   font-size: 13px;
   font-weight: 600;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .fitness-insights__hint-toggle {
   width: 20px;
+  min-width: 20px;
   height: 20px;
+  min-height: 0;
+  margin-top: 0;
+  padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--line);
   background: transparent;
-  color: inherit;
+  color: var(--muted);
   font-size: 11px;
+  line-height: 1;
   cursor: pointer;
-  opacity: 0.5;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 
-  &:hover,
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    border-color: var(--muted);
+  }
+
   &--open {
-    opacity: 1;
-    border-color: #c8ff2e;
-    color: #c8ff2e;
+    border-color: var(--action-bg);
+    color: var(--action-bg);
+  }
+
+  &--open svg {
+    transform: rotate(180deg);
   }
 }
 
@@ -2937,7 +2955,7 @@
   margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.55;
-  opacity: 0.65;
+  color: var(--muted);
   padding-left: 0;
 }
 
@@ -3211,7 +3229,7 @@
 .fitness-insights__zone-bar { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; min-width:40px; }
 .fitness-insights__zone-pace { font-size:.6rem; font-weight:700; }
 .fitness-insights__zone-name { font-size:.6rem; color:var(--muted); width:58px; text-align:right; flex-shrink:0; }
-.strava-wordmark-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; background:var(--surface); border:1px solid var(--line); border-radius:6px; font-size:.65rem; font-weight:700; }
+.strava-wordmark-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--surface); border:1px solid var(--line); border-radius:8px; font-size:.85rem; font-weight:700; }
 .strava-wordmark-chip__ocht { color:var(--lime); }
 .strava-wordmark-chip__sep { color:var(--muted); }
 .strava-wordmark-chip__strava { color:#FC4C02; letter-spacing:.04em; }

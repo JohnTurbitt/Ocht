@@ -18,7 +18,7 @@ export function StravaConnectScreen({ goal, onSkip }: Props) {
       <div className="onboarding-strava__lockup">
         <span className="onboarding-strava__brand">Ocht</span>
         <span className="onboarding-strava__sep">✕</span>
-        <svg width="80" height="20" viewBox="0 0 200 50" fill="none">
+        <svg width="104" height="26" viewBox="0 0 200 50" fill="none">
           <path d="M20 25L12 9L4 25h7.5l1-2.2 1 2.2H20z" fill="#FC5200" />
           <path d="M27 25l-6-13-6 13h7l1-2.2 1 2.2h3z" fill="#FC5200" opacity="0.55" />
           <text x="36" y="36" fontFamily="system-ui" fontWeight="800" fontSize="30" fill="#FC5200">Strava</text>

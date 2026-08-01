@@ -43,7 +43,7 @@ export default function PrivacyPage() {
         clicks; Ocht does not intentionally send passwords, payment details,
         full race split payloads, or account emails in analytics events.
         Analytics only run after you accept the cookie banner, and you can
-        change that choice at any time from the "Cookie preferences" link in
+        change that choice at any time from the &quot;Cookie preferences&quot; link in
         the footer.
       </p>
 
