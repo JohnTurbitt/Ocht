@@ -1,0 +1,84 @@
+// Landing page (logged-out marketing surface at "/"). The hero band is an
+// intentionally fixed dark canvas regardless of app theme — same precedent
+// as the fixed palette in _share.scss — so the photo always sits on a
+// consistent dark ground. Every other section below it uses the normal
+// themed tokens from _base.scss.
+
+.landing-page {
+  background: var(--paper);
+}
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: 1fr 42%;
+  min-height: 420px;
+  background: #08100d;
+  color: #f4f7ef;
+  overflow: hidden;
+}
+
+.landing-hero__text {
+  padding: 64px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.landing-hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c8ff2e;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.landing-hero__text h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+
+.landing-hero__lead {
+  font-size: 1rem;
+  color: rgba(244, 247, 239, 0.75);
+  max-width: 32rem;
+  margin: 0 0 28px;
+}
+
+.landing-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.landing-hero__photo {
+  position: relative;
+  background-image:
+    linear-gradient(90deg, #08100d 0%, rgba(8, 16, 13, 0) 30%),
+    url("/landing/hero.jpg");
+  background-size: cover;
+  background-position: 50% 22%;
+}
+
+@media (max-width: 760px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .landing-hero__text {
+    padding: 40px 24px;
+  }
+
+  .landing-hero__photo {
+    height: 220px;
+    background-image:
+      linear-gradient(180deg, rgba(8, 16, 13, 0) 40%, #08100d 100%),
+      url("/landing/hero.jpg");
+  }
+}
