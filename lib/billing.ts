@@ -41,6 +41,23 @@ export function subscriptionStatusFromStripe(
   return "FREE";
 }
 
+// Only allow same-origin relative paths back into the app after checkout or the
+// billing portal. Rejects anything that could redirect off-site (protocol-relative
+// "//host", absolute URLs, or a bare "/" prefix bypass via backslashes).
+export function sanitizeReturnPath(value: unknown, fallback: string): string {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("://") ||
+    value.includes("\\")
+  ) {
+    return fallback;
+  }
+
+  return value;
+}
+
 export function subscriptionStatusFromStripeSubscriptions(
   subscriptions: Stripe.Subscription[],
 ): SubscriptionStatus {

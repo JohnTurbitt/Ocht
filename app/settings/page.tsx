@@ -10,6 +10,7 @@ import {
   ProfileFormInput,
   deleteAccount,
   getCurrentUser,
+  logOut,
   openBillingPortal,
   resendEmailVerification,
   startCheckout,
@@ -85,6 +86,7 @@ export default function SettingsPage() {
   const [stravaDisconnecting, setStravaDisconnecting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Boot: fetch user, redirect if unauthenticated, load prefs + reports
   useEffect(() => {
@@ -236,7 +238,7 @@ export default function SettingsPage() {
   async function handleStartCheckout() {
     setBillingLoading(true);
     try {
-      window.location.href = await startCheckout();
+      window.location.href = await startCheckout("/settings?section=billing");
     } finally {
       setBillingLoading(false);
     }
@@ -245,7 +247,7 @@ export default function SettingsPage() {
   async function handleManageBilling() {
     setBillingLoading(true);
     try {
-      window.location.href = await openBillingPortal();
+      window.location.href = await openBillingPortal("/settings?section=billing");
     } finally {
       setBillingLoading(false);
     }
@@ -271,6 +273,16 @@ export default function SettingsPage() {
       router.replace("/");
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logOut();
+      router.replace("/");
+    } finally {
+      setLoggingOut(false);
     }
   }
 
@@ -342,6 +354,21 @@ export default function SettingsPage() {
               </button>
             ))}
           </nav>
+          <button
+            type="button"
+            className="settings-sidebar__logout"
+            onClick={() => void handleLogout()}
+            disabled={loggingOut}
+          >
+            {loggingOut ? (
+              <span className="button-loading">
+                <OctagonSpinner size={16} />
+                Signing out...
+              </span>
+            ) : (
+              "Log out"
+            )}
+          </button>
         </aside>
 
         {/* Main content */}

@@ -190,8 +190,12 @@ export async function deleteAccount() {
   await readApiResponse<{ ok: true }>(response);
 }
 
-export async function startCheckout() {
-  const response = await fetch("/api/billing/checkout", { method: "POST" });
+export async function startCheckout(returnTo?: string) {
+  const response = await fetch("/api/billing/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnTo }),
+  });
   const body = await readApiResponse<{ url: string | null }>(response);
 
   if (!body.url) {
@@ -201,8 +205,12 @@ export async function startCheckout() {
   return body.url;
 }
 
-export async function openBillingPortal() {
-  const response = await fetch("/api/billing/portal", { method: "POST" });
+export async function openBillingPortal(returnTo?: string) {
+  const response = await fetch("/api/billing/portal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnTo }),
+  });
   const body = await readApiResponse<{ url: string | null }>(response);
 
   if (!body.url) {
