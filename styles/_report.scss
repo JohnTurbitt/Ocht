@@ -2594,6 +2594,13 @@
   color: var(--ink);
 }
 
+[data-tier="premium"] .archetype-score__head strong {
+  background: var(--score-fill-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .archetype-score__track {
   height: 6px;
   border-radius: 3px;
