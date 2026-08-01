@@ -112,7 +112,10 @@
 }
 
 .loader-shield-body {
-  fill: var(--lime);
+  /* Always brand lime, not var(--lime) — this is the Ocht logo mark, exempt
+     from the light-mode text-contrast fix (WCAG excludes logotypes from
+     contrast requirements; it's a brand mark, not accent text). */
+  fill: #c8ff2e;
 }
 
 .loader-shield-glyph {

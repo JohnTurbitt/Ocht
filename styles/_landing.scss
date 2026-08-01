@@ -289,7 +289,10 @@
 }
 
 .landing-header__wordmark em {
-  color: var(--lime);
+  /* Always brand lime, not var(--lime) — logo accent, exempt from the
+     light-mode text-contrast fix (see styles/_loader.scss for the same
+     reasoning on the shield mark). */
+  color: #c8ff2e;
   font-style: normal;
 }
 
