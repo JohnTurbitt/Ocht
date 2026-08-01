@@ -54,7 +54,6 @@ import {
   RaceFormat,
   createCustomStation,
   getRaceFormatStations,
-  raceFormatLabels,
 } from "@/lib/raceFormats";
 import {
   CustomTemplate,
@@ -333,7 +332,7 @@ export default function Home() {
     });
   }
 
-  function applyReportPreset(preset: ReportPreset, toastTitle: string) {
+  function applyReportPreset(preset: ReportPreset) {
     const nextPreset = cloneReportPreset(preset);
 
     setRaceFormat(nextPreset.raceFormat);
@@ -354,12 +353,6 @@ export default function Home() {
     setValidationErrors([]);
     setFieldErrors({});
     setActiveTab("new");
-    setToast({
-      id: Date.now(),
-      title: toastTitle,
-      message: "The live preview has been updated.",
-      tone: "success",
-    });
   }
 
   function applyRaceFormat(nextRaceFormat: RaceFormat) {
@@ -370,10 +363,7 @@ export default function Home() {
       custom: defaultCustomReportPreset,
     };
 
-    applyReportPreset(
-      formatPresetByFormat[nextRaceFormat],
-      `${raceFormatLabels[nextRaceFormat]} loaded`,
-    );
+    applyReportPreset(formatPresetByFormat[nextRaceFormat]);
     trackEvent("race_format_selected", {
       race_format: nextRaceFormat,
       signed_in: Boolean(user),
@@ -420,12 +410,6 @@ export default function Home() {
 
     setCustomTemplates(nextTemplates);
     saveCustomTemplates(nextTemplates);
-    setToast({
-      id: Date.now(),
-      title: "Template saved",
-      message: "Your custom race setup is saved on this device.",
-      tone: "success",
-    });
     trackEvent("custom_template_saved", {
       station_count: customStations.length,
       run_count: runs.length,
@@ -439,12 +423,6 @@ export default function Home() {
 
     setCustomTemplates(nextTemplates);
     saveCustomTemplates(nextTemplates);
-    setToast({
-      id: Date.now(),
-      title: "Template deleted",
-      message: "The custom race template has been removed.",
-      tone: "success",
-    });
     trackEvent("custom_template_deleted");
   }
 
@@ -730,7 +708,7 @@ export default function Home() {
 
   function loadSampleFromDemo() {
     dismissBeginnerGuide("beginner_demo_sample_loaded");
-    applyReportPreset(sampleReportPreset, "Sample race loaded");
+    applyReportPreset(sampleReportPreset);
   }
 
   async function handleSaveProfile(input: ProfileFormInput) {
@@ -740,12 +718,6 @@ export default function Home() {
       setUser(updatedUser);
       setLevel(updatedUser.defaultLevel);
       setTargetTime(updatedUser.defaultTargetTime);
-      setToast({
-        id: Date.now(),
-        title: "Profile saved",
-        message: "Your report defaults have been updated.",
-        tone: "success",
-      });
       trackEvent("profile_saved");
     } catch (error) {
       setToast({
@@ -822,7 +794,6 @@ export default function Home() {
       topLeakLabel: generatedAnalysis.topLeaks[0]?.label ?? "",
     };
     let nextReports = [savedReport, ...savedReports].slice(0, 12);
-    let toastMessage = "Your report has been saved on this device.";
 
     if (user) {
       try {
@@ -841,7 +812,6 @@ export default function Home() {
         });
 
         nextReports = [remoteReport, ...savedReports];
-        toastMessage = "Your report has been saved to your Ocht account.";
       } catch (error) {
         await minimumHold;
         setGeneratingReport(false);
@@ -886,12 +856,6 @@ export default function Home() {
     }
     setValidationErrors([]);
     setFieldErrors({});
-    setToast({
-      id: Date.now(),
-      title: "Report generated",
-      message: toastMessage,
-      tone: "success",
-    });
     setSavedReports(nextReports);
     setActiveTab("new");
     if (!hasGeneratedReportEver) {
@@ -1027,7 +991,7 @@ export default function Home() {
     const authParam = params.get("auth");
 
     if (sampleParam === "1") {
-      applyReportPreset(sampleReportPreset, "Sample race loaded");
+      applyReportPreset(sampleReportPreset);
     }
 
     if (authParam === "login" || authParam === "signup") {
@@ -1359,7 +1323,7 @@ export default function Home() {
         showHints={showHints}
         onAnalyse={handleCreateOnboardingReport}
         onLoadSample={() =>
-          applyReportPreset(sampleReportPreset, "Sample race loaded")
+          applyReportPreset(sampleReportPreset)
         }
         onShowDemo={() => {
           setDemoOpen(true);
@@ -1540,7 +1504,7 @@ export default function Home() {
               onCustomStationLabelChange={updateCustomStationLabel}
               onSaveCustomTemplate={saveCurrentCustomTemplate}
               onLoadCustomTemplate={(template) =>
-                applyReportPreset(template, "Custom template loaded")
+                applyReportPreset(template)
               }
               onDeleteCustomTemplate={deleteCustomTemplate}
               onGoalChange={setGoal}
@@ -1551,10 +1515,10 @@ export default function Home() {
               onStationChange={updateStation}
               onTrainingContextChange={updateTrainingContext}
               onLoadSample={() =>
-                applyReportPreset(sampleReportPreset, "Sample race loaded")
+                applyReportPreset(sampleReportPreset)
               }
               onResetDefaults={() =>
-                applyReportPreset(buildUserDefaultPreset(user), "Defaults restored")
+                applyReportPreset(buildUserDefaultPreset(user))
               }
               onClearForm={() => {
                 setTrainingContext(emptyTrainingContext);
@@ -1565,7 +1529,6 @@ export default function Home() {
                     runCount: runs.length,
                     stationDefinitions: activeStationDefinitions,
                   }),
-                  "Form cleared",
                 );
               }}
               onSubmit={handleSubmit}
@@ -1626,7 +1589,7 @@ export default function Home() {
                     className="btn btn--primary btn--cut"
                     type="button"
                     onClick={() =>
-                      applyReportPreset(sampleReportPreset, "Sample race loaded")
+                      applyReportPreset(sampleReportPreset)
                     }
                   >
                     Load sample race
