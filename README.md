@@ -228,6 +228,30 @@ Open `http://127.0.0.1:3002`.
 
 For preview handoff steps, see [TESTING.md](./TESTING.md).
 
+## Local Dev Seed Accounts
+
+`prisma/seed-dev.ts` seeds four fake accounts into the local dev database with
+race report history already filled in, so there's data to browse without
+building it up by hand. None of them have a Strava connection — sign up with
+your own account separately to test that flow for real.
+
+```bash
+npx prisma migrate deploy   # first time only, against a fresh dev database
+npx tsx prisma/seed-dev.ts  # safe to re-run; wipes and recreates these 4 accounts
+```
+
+| Email | Level | Race format | Reports |
+|---|---|---|---|
+| `alex.starter@ocht.dev` | Starter | TRYKA 500 | 6, improving trend |
+| `jordan.competitive@ocht.dev` | Competitive | HYROX | 6, improving trend |
+| `sam.elite@ocht.dev` | Elite | HYROX | 6, improving trend |
+| `riley.tryka800@ocht.dev` | Competitive | TRYKA 800 | 6, improving trend |
+
+Password for all four: `OchtDevPass123!`
+
+All seed accounts are on `ACTIVE` subscription so premium report sections
+render without needing a real Stripe checkout locally.
+
 ## Scripts
 
 ```bash
