@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 
-export const sessionCookieName = "ocht_session";
+export { sessionCookieName } from "./sessionCookieName";
 export const sessionMaxAgeSeconds = 60 * 60 * 24 * 30;
 
 export function createSessionToken() {
