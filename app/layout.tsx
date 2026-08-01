@@ -4,6 +4,7 @@ import { ConsentedAnalytics } from "@/components/ConsentedAnalytics";
 import { CookieBanner } from "@/components/CookieBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OnboardingGate } from "@/components/OnboardingGate";
+import { PremiumTierGate } from "@/components/PremiumTierGate";
 import "./globals.scss";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
@@ -106,6 +107,7 @@ export default function RootLayout({
       >
         {children}
         <OnboardingGate />
+        <PremiumTierGate />
         <SiteFooter />
         <CookieBanner />
         <ConsentedAnalytics />
