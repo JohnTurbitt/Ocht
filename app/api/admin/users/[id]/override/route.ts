@@ -9,6 +9,16 @@ type RouteContext = {
 };
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  // Admin gating runs before the rate-limit/origin guard so a non-admin always
+  // gets the same bare 404 regardless of headers or request volume — matching
+  // the GET routes and keeping this endpoint indistinguishable from a
+  // nonexistent one to anyone who isn't already a verified admin.
+  const admin = await requireAdmin(request);
+
+  if (!admin) {
+    return NextResponse.json({}, { status: 404 });
+  }
+
   const guardResponse = await guardBrowserMutation(request, {
     key: "admin-override",
     limit: 30,
@@ -17,12 +27,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (guardResponse) {
     return guardResponse;
-  }
-
-  const admin = await requireAdmin(request);
-
-  if (!admin) {
-    return NextResponse.json({}, { status: 404 });
   }
 
   const { id } = await context.params;

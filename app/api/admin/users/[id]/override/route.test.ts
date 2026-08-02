@@ -59,23 +59,25 @@ beforeEach(() => {
 });
 
 describe("POST /api/admin/users/[id]/override", () => {
-  it("returns 404 when the caller is not an admin", async () => {
+  it("returns 404 when the caller is not an admin, without even checking the rate limit", async () => {
     vi.mocked(requireAdmin).mockResolvedValue(null);
 
     const response = await POST(overrideRequest({}), context);
 
     expect(response.status).toBe(404);
+    expect(guardBrowserMutation).not.toHaveBeenCalled();
     expect(applyAdminOverride).not.toHaveBeenCalled();
   });
 
-  it("returns the guard response when rate limited", async () => {
+  it("returns the guard response when an admin is rate limited", async () => {
+    vi.mocked(requireAdmin).mockResolvedValue({ id: "admin_1" });
     const guardResponse = NextResponse.json({ errors: ["Too many requests."] }, { status: 429 });
     vi.mocked(guardBrowserMutation).mockResolvedValue(guardResponse);
 
     const response = await POST(overrideRequest({}), context);
 
     expect(response).toBe(guardResponse);
-    expect(requireAdmin).not.toHaveBeenCalled();
+    expect(loadAdminUserDetail).not.toHaveBeenCalled();
   });
 
   it("returns 404 when the target user does not exist", async () => {
