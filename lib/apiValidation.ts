@@ -124,3 +124,41 @@ export function validateMePatchPayload(payload: unknown): {
     },
   };
 }
+
+export type AdminOverrideAction = "GRANT_COMP" | "DISABLE" | "CLEAR_OVERRIDE";
+
+export type AdminOverridePayload = {
+  action: AdminOverrideAction;
+  reason: string;
+};
+
+const validAdminActions: AdminOverrideAction[] = ["GRANT_COMP", "DISABLE", "CLEAR_OVERRIDE"];
+
+export function validateAdminOverridePayload(payload: unknown): {
+  valid: boolean;
+  errors: string[];
+  value?: AdminOverridePayload;
+} {
+  const record = typeof payload === "object" && payload ? payload : {};
+  const action = readString((record as Record<string, unknown>).action);
+  const reason = readString((record as Record<string, unknown>).reason);
+  const errors: string[] = [];
+
+  if (!validAdminActions.includes(action as AdminOverrideAction)) {
+    errors.push("Choose a valid override action.");
+  }
+
+  if (!reason) {
+    errors.push("A reason is required.");
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return {
+    valid: true,
+    errors,
+    value: { action: action as AdminOverrideAction, reason },
+  };
+}
