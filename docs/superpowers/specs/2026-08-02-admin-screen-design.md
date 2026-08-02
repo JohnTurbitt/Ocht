@@ -90,7 +90,7 @@ The full attack surface: a valid session cookie belonging to a user row with `is
 
 ## Admin UI (`/admin`)
 
-Single page: search box → result list → detail panel for the selected user. Detail panel shows account info, Strava status, report activity, current override state (with the raw Stripe status alongside it, so it's never ambiguous which one is "real"), three action buttons (Grant comp access / Disable access / Clear override) each requiring a reason before submitting, and the action history list below.
+Sidebar-split layout, chosen from three mockups reviewed during brainstorming (email-client/Stripe-dashboard style): a narrow (~260px) left column holds the search input and the result list, always visible; the right column holds the full detail panel for whichever result is selected, with no navigation away from search to see it. Detail panel shows account info, Strava status, report activity, current override state (with the raw Stripe status alongside it, so it's never ambiguous which one is "real"), three action buttons (Grant comp access / Disable access / Clear override) each requiring a reason before submitting, and the action history list below.
 
 ## Out of scope for v1
 
