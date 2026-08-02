@@ -2,6 +2,23 @@ import Stripe from "stripe";
 
 export type SubscriptionStatus = "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
 
+export type SubscriptionOverride = "COMP" | "DISABLED";
+
+export function effectiveSubscription(user: {
+  subscription: SubscriptionStatus;
+  subscriptionOverride: SubscriptionOverride | null;
+}): SubscriptionStatus {
+  if (user.subscriptionOverride === "COMP") {
+    return "ACTIVE";
+  }
+
+  if (user.subscriptionOverride === "DISABLED") {
+    return "FREE";
+  }
+
+  return user.subscription;
+}
+
 export function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
