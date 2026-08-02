@@ -57,7 +57,7 @@ model User {
 model AdminAction {
   id           String          @id @default(cuid())
   adminId      String
-  admin        User            @relation("AdminActor", fields: [adminId], references: [id], onDelete: Cascade)
+  admin        User            @relation("AdminActor", fields: [adminId], references: [id], onDelete: Restrict)
   targetUserId String
   targetUser   User            @relation("AdminTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
   action       AdminActionType
