@@ -13,3 +13,4 @@ video/out
 .vercel
 .env*
 .worktrees/
+branding/
