@@ -1259,10 +1259,16 @@
 }
 
 .dev-mode-badge {
+  // Fixed and out of the header's flex flow on purpose: as an inline flex
+  // item it could push the header to wrap onto two lines on narrow
+  // viewports, growing it past the height `.report-jump-nav`'s sticky
+  // `top: 72px` assumes and hiding the jump nav underneath the header.
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 300;
   display: inline-flex;
   align-items: center;
-  flex: 0 0 auto;
-  margin-left: 10px;
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid #7a5a00;
