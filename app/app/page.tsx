@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AppLaunchSplash } from "@/components/AppLaunchSplash";
+import { AthleteArchetypeCard } from "@/components/AthleteArchetypeCard";
 import { AuthPanel, type AuthMode } from "@/components/AuthPanel";
 import { DemoModal } from "@/components/DemoModal";
 import { DevModeBadge } from "@/components/DevModeBadge";
@@ -10,6 +11,7 @@ import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
 import { OchtShield } from "@/components/OchtShield";
 import { ArchetypeAchievements } from "@/components/ArchetypeAchievements";
+import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import {
@@ -32,6 +34,9 @@ import {
   Station,
   StationKey,
   buildAnalysis,
+  formatTime,
+  parseTime,
+  stations,
   tierFor,
 } from "@/lib/analysis";
 import { calculateRaceReadiness } from "@/lib/readiness";
@@ -54,6 +59,7 @@ import {
   RaceFormat,
   createCustomStation,
   getRaceFormatStations,
+  raceFormatLabels,
 } from "@/lib/raceFormats";
 import {
   CustomTemplate,
@@ -146,6 +152,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("new");
   const [recordsFormatTab, setRecordsFormatTab] =
     useState<RecordsFormatTab>("hyrox");
+  const [selectedPbReport, setSelectedPbReport] = useState<SavedReport | null>(
+    null,
+  );
   const [raceFormat, setRaceFormat] = useState<RaceFormat>(
     initialEmptyReportPreset.raceFormat,
   );
@@ -238,6 +247,39 @@ export default function Home() {
     } catch {
       return undefined;
     }
+  }, [savedReports]);
+
+  const formatPBs = useMemo(() => {
+    const byFormat = new Map<string, SavedReport[]>();
+    for (const r of savedReports) {
+      const key = r.raceFormat ?? "hyrox";
+      const group = byFormat.get(key) ?? [];
+      group.push(r);
+      byFormat.set(key, group);
+    }
+    return [...byFormat.entries()].map(([format, reports]) => {
+      const byTime = [...reports].sort((a, b) => a.finishSeconds - b.finishSeconds);
+      const top3 = byTime.slice(0, 3).map((report, idx) => {
+        const runSecs = report.runs.map(parseTime).filter((n) => n > 0);
+        const bestRunSec = runSecs.length ? Math.min(...runSecs) : null;
+
+        const stationDefs = report.stationDefinitions ?? stations;
+        const stationEntries = Object.entries(report.stationSplits)
+          .map(([key, val]) => ({ key, sec: parseTime(val) }))
+          .filter((e) => e.sec > 0);
+        const bestStationEntry = stationEntries.length
+          ? stationEntries.reduce((a, b) => (a.sec < b.sec ? a : b))
+          : null;
+        const bestStationLabel = bestStationEntry
+          ? (stationDefs.find((s) => s.key === bestStationEntry.key)?.label ?? bestStationEntry.key)
+          : null;
+        const bestStationTime = bestStationEntry?.sec ?? null;
+
+        return { report, rank: (idx + 1) as 1 | 2 | 3, bestRunSec, bestStationLabel, bestStationTime };
+      });
+
+      return { format, top3, count: reports.length };
+    });
   }, [savedReports]);
 
   function updateRun(index: number, value: string) {
@@ -1318,20 +1360,22 @@ export default function Home() {
         </div>
       </header>
 
-      <Hero
-        showBeginnerGuide={!beginnerGuideDismissed}
-        showHints={showHints}
-        onAnalyse={handleCreateOnboardingReport}
-        onLoadSample={() =>
-          applyReportPreset(sampleReportPreset)
-        }
-        onShowDemo={() => {
-          setDemoOpen(true);
-          trackEvent("beginner_demo_opened");
-        }}
-        onDismissGuide={() => dismissBeginnerGuide()}
-        onShowHintsChange={setShowHints}
-      />
+      {activeTab === "new" ? (
+        <Hero
+          showBeginnerGuide={!beginnerGuideDismissed}
+          showHints={showHints}
+          onAnalyse={handleCreateOnboardingReport}
+          onLoadSample={() =>
+            applyReportPreset(sampleReportPreset)
+          }
+          onShowDemo={() => {
+            setDemoOpen(true);
+            trackEvent("beginner_demo_opened");
+          }}
+          onDismissGuide={() => dismissBeginnerGuide()}
+          onShowHintsChange={setShowHints}
+        />
+      ) : null}
 
       {user && !onboardingDismissed ? (
         <OnboardingChecklist
@@ -1613,6 +1657,50 @@ export default function Home() {
           </>
         ) : activeTab === "records" ? (
           <div className="records-tab">
+            {formatPBs.length > 0 && (
+              <div className="settings-pb-hero">
+                {formatPBs.map(({ format, top3, count }) => (
+                  <div key={format}>
+                    <div className="settings-pb-hero__format-label">
+                      {raceFormatLabels[format as RaceFormat] ?? format}
+                    </div>
+                    <div className="settings-pb-hero__podium">
+                      {top3.map(({ report, rank, bestRunSec, bestStationLabel, bestStationTime }) => (
+                        <button
+                          key={rank}
+                          type="button"
+                          className={`settings-pb-hero__entry settings-pb-hero__entry--rank${rank}`}
+                          onClick={() => setSelectedPbReport(report)}
+                          aria-label={`View archetype for ${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} place result`}
+                        >
+                          <PBTrophyBadge rank={rank} size={80} />
+                          <p className="settings-pb-hero__time">{formatTime(report.finishSeconds)}</p>
+                          <p className="settings-pb-hero__meta">
+                            {new Date(report.createdAt).toLocaleDateString(undefined, {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                          {(bestRunSec !== null || bestStationLabel !== null) && (
+                            <p className="settings-pb-hero__meta">
+                              {bestRunSec !== null && <>Run {formatTime(bestRunSec)}</>}
+                              {bestRunSec !== null && bestStationLabel !== null && <> · </>}
+                              {bestStationLabel !== null && bestStationTime !== null && (
+                                <>{bestStationLabel} {formatTime(bestStationTime)}</>
+                              )}
+                            </p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="settings-pb-hero__footer">
+                      <span className="settings-pb-hero__count">{count} {count === 1 ? "race" : "races"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <ArchetypeAchievements reports={savedReports} />
             <nav className="records-tab__format-nav" aria-label="Race format">
               <button
@@ -1729,6 +1817,46 @@ export default function Home() {
           onEnterOwn={() => dismissBeginnerGuide("beginner_demo_enter_own")}
         />
       ) : null}
+      {selectedPbReport && (() => {
+        const analysis = buildAnalysis(
+          selectedPbReport.goal,
+          selectedPbReport.targetTime,
+          selectedPbReport.level,
+          selectedPbReport.runs,
+          selectedPbReport.stationSplits,
+          selectedPbReport.stationDefinitions ?? stations,
+          selectedPbReport.raceFormat ?? "hyrox",
+          selectedPbReport.officialFinishTime ?? "",
+        );
+        return (
+          <div
+            className="pb-archetype-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Athlete archetype"
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedPbReport(null); }}
+          >
+            <div className="pb-archetype-modal__panel">
+              <div className="pb-archetype-modal__header">
+                <p className="pb-archetype-modal__date">
+                  {new Date(selectedPbReport.createdAt).toLocaleDateString(undefined, {
+                    day: "numeric", month: "long", year: "numeric",
+                  })} · {formatTime(selectedPbReport.finishSeconds)}
+                </p>
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={() => setSelectedPbReport(null)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <AthleteArchetypeCard analysis={analysis} />
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
