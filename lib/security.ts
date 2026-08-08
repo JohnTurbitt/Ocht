@@ -24,10 +24,23 @@ function getClientIp(request: NextRequest) {
 
 function sameOrigin(request: NextRequest, origin: string) {
   try {
-    const requestUrl = request.nextUrl;
+    const hostHeader = request.headers.get("host");
+
+    if (!hostHeader) {
+      return false;
+    }
+
+    // Compare against the incoming Host header rather than request.nextUrl —
+    // under `next start --hostname <host>`, nextUrl.origin doesn't reliably
+    // reflect the actual Host the browser connected to (observed: it can
+    // resolve to a different loopback alias than the one requested), which
+    // made this check reject same-origin requests. Host is what the browser
+    // told the server it connected to, which is exactly what an Origin check
+    // is meant to validate against.
+    const requestUrl = new URL(`${request.nextUrl.protocol}//${hostHeader}`);
     const originUrl = new URL(origin);
 
-    if (originUrl.origin === requestUrl.origin) {
+    if (originUrl.protocol === requestUrl.protocol && originUrl.host === requestUrl.host) {
       return true;
     }
 
