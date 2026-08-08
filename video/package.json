@@ -4,7 +4,13 @@
   "private": true,
   "scripts": {
     "render": "remotion render src/index.ts OchtDemo out/ocht-demo.mp4",
-    "still": "remotion still src/index.ts OchtDemo out/still.png"
+    "still": "remotion still src/index.ts OchtDemo out/still.png",
+    "render:ig": "remotion render src/index.ts InstagramReveal out/ocht-instagram-reveal.mp4",
+    "still:ig": "remotion still src/index.ts InstagramReveal out/ig-still.png",
+    "render:ig-vertical": "remotion render src/index.ts InstagramSneakPeekVertical out/ocht-sneak-peek-vertical.mp4",
+    "render:ig-square": "remotion render src/index.ts InstagramSneakPeekSquare out/ocht-sneak-peek-square.mp4",
+    "still:ig-vertical": "remotion still src/index.ts InstagramSneakPeekVertical out/sneak-peek-vertical-still.png",
+    "still:ig-square": "remotion still src/index.ts InstagramSneakPeekSquare out/sneak-peek-square-still.png"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
