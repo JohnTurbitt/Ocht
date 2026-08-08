@@ -330,6 +330,18 @@ function FlowBarShape({
           +{formatTime(segment.leakSeconds)}
         </text>
       ) : null}
+      {!segment.topLeakRank && barWidth > 20 ? (
+        <text
+          className="race-flow-svg__affordance"
+          x={barX + barWidth - 10}
+          y={barY + barHeight / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          aria-hidden="true"
+        >
+          &rsaquo;
+        </text>
+      ) : null}
     </g>
   );
 }
