@@ -474,18 +474,6 @@ export function ReportPanel({
               <path d="M7 9l5-5 5 5" />
             </svg>
           </button>
-          <button
-            className="report__print"
-            type="button"
-            onClick={() => {
-              trackEvent("report_exported", {
-                format: "print",
-              });
-              window.print();
-            }}
-          >
-            Print report
-          </button>
         </div>
       </div>
       <p className="report__date">

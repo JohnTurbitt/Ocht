@@ -218,18 +218,6 @@
   gap: 18px;
 }
 
-.report__print {
-  border-color: var(--action-bg);
-  background: var(--action-bg);
-  color: var(--action-text);
-}
-
-.report__print:disabled {
-  border-color: var(--line);
-  background: var(--surface-strong);
-  color: var(--muted);
-  cursor: not-allowed;
-}
 
 .report__date {
   margin: 14px 0 0;
@@ -1722,6 +1710,14 @@
   font-family: var(--font-mono), var(--font-body), monospace;
   font-size: 0.62rem;
   font-weight: 700;
+}
+
+.race-flow-svg__affordance {
+  fill: var(--panel);
+  opacity: 0.6;
+  font-size: 0.95rem;
+  font-weight: 900;
+  pointer-events: none;
 }
 
 .race-flow-svg__target {
