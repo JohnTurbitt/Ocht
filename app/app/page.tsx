@@ -705,21 +705,30 @@ export default function Home() {
 
   function selectTab(tab: ActiveTab) {
     const doc = document as Document & {
-      startViewTransition?: (callback: () => void) => void;
+      startViewTransition?: (callback: () => void) => { ready: Promise<void> };
     };
 
-    if (doc.startViewTransition) {
-      doc.startViewTransition(() => setActiveTab(tab));
-    } else {
-      setActiveTab(tab);
-    }
-
-    window.requestAnimationFrame(() => {
+    // Switching to a shorter tab (e.g. from a deep-scrolled report down to
+    // Compare) collapses the page height immediately, which clamps scrollY
+    // to some arbitrary mid-content value before a `smooth` scroll even
+    // starts - the animation then has to slowly catch up from there,
+    // visibly landing partway down the new tab instead of at its top. An
+    // instant scroll timed to the view transition's `ready` step (once the
+    // new DOM/layout is settled but before it's painted) avoids that race
+    // entirely; the transition's own cross-fade supplies the smoothness.
+    function scrollToWorkspaceTop() {
       document.querySelector<HTMLElement>(".workspace")?.scrollIntoView({
-        behavior: "smooth",
         block: "start",
       });
-    });
+    }
+
+    if (doc.startViewTransition) {
+      const transition = doc.startViewTransition(() => setActiveTab(tab));
+      transition.ready.then(scrollToWorkspaceTop, scrollToWorkspaceTop);
+    } else {
+      setActiveTab(tab);
+      window.requestAnimationFrame(scrollToWorkspaceTop);
+    }
   }
 
   function handleCreateOnboardingReport() {
