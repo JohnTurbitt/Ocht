@@ -3,8 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Level, formatTime, levelLabels, parseTime, stations, buildAnalysis } from "@/lib/analysis";
-import { AthleteArchetypeCard } from "@/components/AthleteArchetypeCard";
+import { Level, levelLabels } from "@/lib/analysis";
 import {
   AuthUser,
   ProfileFormInput,
@@ -16,8 +15,6 @@ import {
   startCheckout,
   updateProfile,
 } from "@/lib/apiClient";
-import { SavedReport, loadSavedReports } from "@/lib/reportStorage";
-import { raceFormatLabels, type RaceFormat } from "@/lib/raceFormats";
 import { AVATAR_ICONS, AvatarMark } from "@/components/AvatarMark";
 import {
   Theme,
@@ -34,7 +31,6 @@ import {
 } from "@/lib/preferences";
 import type { DistanceUnit } from "@/lib/units";
 import { OctagonSpinner } from "@/components/OctagonSpinner";
-import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PremiumBadge } from "@/components/PremiumBadge";
 
 type Section = "profile" | "appearance" | "billing" | "privacy";
@@ -66,10 +62,6 @@ export default function SettingsPage() {
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>("km");
   const [avatarColor, setAvatarColor] = useState<string>(avatarColors[0]);
   const [avatarIcon, setAvatarIcon] = useState<string>("initial");
-
-  // Reports
-  const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
-  const [selectedReport, setSelectedReport] = useState<SavedReport | null>(null);
 
   // Profile form
   const [profileName, setProfileName] = useState("");
@@ -106,15 +98,6 @@ export default function SettingsPage() {
         setProfileName(currentUser.name ?? "");
         setProfileLevel(currentUser.defaultLevel);
         setProfileTargetTime(currentUser.defaultTargetTime);
-
-        // Load saved reports (remote if signed in, local otherwise)
-        try {
-          const { loadRemoteReports } = await import("@/lib/apiClient");
-          const reports = await loadRemoteReports();
-          if (!cancelled) setSavedReports(reports);
-        } catch {
-          if (!cancelled) setSavedReports(loadSavedReports());
-        }
       } catch {
         if (!cancelled) router.replace("/");
       } finally {
@@ -149,40 +132,6 @@ export default function SettingsPage() {
       })
       .catch(() => {});
   }, [activeSection, stravaConnected]);
-
-  // PB computation
-  const formatPBs = (() => {
-    const byFormat = new Map<string, SavedReport[]>();
-    for (const r of savedReports) {
-      const key = r.raceFormat ?? "hyrox";
-      const group = byFormat.get(key) ?? [];
-      group.push(r);
-      byFormat.set(key, group);
-    }
-    return [...byFormat.entries()].map(([format, reports]) => {
-      const byTime = [...reports].sort((a, b) => a.finishSeconds - b.finishSeconds);
-      const top3 = byTime.slice(0, 3).map((report, idx) => {
-        const runSecs = report.runs.map(parseTime).filter((n) => n > 0);
-        const bestRunSec = runSecs.length ? Math.min(...runSecs) : null;
-
-        const stationDefs = report.stationDefinitions ?? stations;
-        const stationEntries = Object.entries(report.stationSplits)
-          .map(([key, val]) => ({ key, sec: parseTime(val) }))
-          .filter((e) => e.sec > 0);
-        const bestStationEntry = stationEntries.length
-          ? stationEntries.reduce((a, b) => (a.sec < b.sec ? a : b))
-          : null;
-        const bestStationLabel = bestStationEntry
-          ? (stationDefs.find((s) => s.key === bestStationEntry.key)?.label ?? bestStationEntry.key)
-          : null;
-        const bestStationTime = bestStationEntry?.sec ?? null;
-
-        return { report, rank: (idx + 1) as 1 | 2 | 3, bestRunSec, bestStationLabel, bestStationTime };
-      });
-
-      return { format, top3, count: reports.length };
-    });
-  })();
 
   const isPremium = user?.subscription === "ACTIVE";
   const canManageBilling =
@@ -377,51 +326,6 @@ export default function SettingsPage() {
           {/* ── Profile ── */}
           {activeSection === "profile" && (
             <>
-              {formatPBs.length > 0 && (
-                <div className="settings-pb-hero">
-                  {formatPBs.map(({ format, top3, count }) => (
-                    <div key={format}>
-                      <div className="settings-pb-hero__format-label">
-                        {raceFormatLabels[format as RaceFormat] ?? format}
-                      </div>
-                      <div className="settings-pb-hero__podium">
-                        {top3.map(({ report, rank, bestRunSec, bestStationLabel, bestStationTime }) => (
-                          <button
-                            key={rank}
-                            type="button"
-                            className={`settings-pb-hero__entry settings-pb-hero__entry--rank${rank}`}
-                            onClick={() => setSelectedReport(report)}
-                            aria-label={`View archetype for ${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} place result`}
-                          >
-                            <PBTrophyBadge rank={rank} size={80} />
-                            <p className="settings-pb-hero__time">{formatTime(report.finishSeconds)}</p>
-                            <p className="settings-pb-hero__meta">
-                              {new Date(report.createdAt).toLocaleDateString(undefined, {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
-                            {(bestRunSec !== null || bestStationLabel !== null) && (
-                              <p className="settings-pb-hero__meta">
-                                {bestRunSec !== null && <>Run {formatTime(bestRunSec)}</>}
-                                {bestRunSec !== null && bestStationLabel !== null && <> · </>}
-                                {bestStationLabel !== null && bestStationTime !== null && (
-                                  <>{bestStationLabel} {formatTime(bestStationTime)}</>
-                                )}
-                              </p>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="settings-pb-hero__footer">
-                        <span className="settings-pb-hero__count">{count} {count === 1 ? "race" : "races"}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               <div className="settings-card">
                 <div className="settings-card__head"><h3>Profile</h3></div>
                 <div className="settings-card__body">
@@ -732,47 +636,6 @@ export default function SettingsPage() {
 
         </main>
       </div>
-
-      {selectedReport && (() => {
-        const analysis = buildAnalysis(
-          selectedReport.goal,
-          selectedReport.targetTime,
-          selectedReport.level,
-          selectedReport.runs,
-          selectedReport.stationSplits,
-          selectedReport.stationDefinitions ?? stations,
-          selectedReport.raceFormat ?? "hyrox",
-          selectedReport.officialFinishTime ?? "",
-        );
-        return (
-          <div
-            className="pb-archetype-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Athlete archetype"
-            onClick={(e) => { if (e.target === e.currentTarget) setSelectedReport(null); }}
-          >
-            <div className="pb-archetype-modal__panel">
-              <div className="pb-archetype-modal__header">
-                <p className="pb-archetype-modal__date">
-                  {new Date(selectedReport.createdAt).toLocaleDateString(undefined, {
-                    day: "numeric", month: "long", year: "numeric",
-                  })} · {formatTime(selectedReport.finishSeconds)}
-                </p>
-                <button
-                  type="button"
-                  className="modal-close"
-                  onClick={() => setSelectedReport(null)}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-              <AthleteArchetypeCard analysis={analysis} />
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }
