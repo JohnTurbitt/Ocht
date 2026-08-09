@@ -1082,10 +1082,6 @@
   &:hover { background: #FC5200; color: #fff; }
 }
 
-.strava-chevron {
-  vertical-align: middle;
-  flex-shrink: 0;
-}
 
 .leak-card {
   display: flex;
@@ -3225,10 +3221,8 @@
 .fitness-insights__zone-bar { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; min-width:40px; }
 .fitness-insights__zone-pace { font-size:.6rem; font-weight:700; }
 .fitness-insights__zone-name { font-size:.6rem; color:var(--muted); width:58px; text-align:right; flex-shrink:0; }
-.strava-wordmark-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--surface); border:1px solid var(--line); border-radius:8px; font-size:.85rem; font-weight:700; }
-.strava-wordmark-chip__ocht { color:var(--lime); }
-.strava-wordmark-chip__sep { color:var(--muted); }
-.strava-wordmark-chip__strava { color:#FC4C02; letter-spacing:.04em; }
+/* Official Strava lockup asset — do not recolor, resize disproportionately, or alter. */
+.strava-wordmark-chip { display:block; height:16px; width:auto; }
 
 /* ── Race Blueprint: Mission Briefing ───────────────────────────────── */
 .race-blueprint--mission { display:flex; flex-direction:column; gap:14px; }

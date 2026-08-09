@@ -517,27 +517,19 @@
   }
 }
 
-/* ── Strava connect button (official branding) ── */
-.settings-connect-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+/* ── Strava connect button (official asset, per Strava brand guidelines —
+   do not recolor, resize disproportionately, or alter) ── */
+.strava-connect-btn {
+  display: block;
   width: 100%;
-  min-height: 48px;
-  padding: 0 20px;
+  max-width: 237px;
   margin-top: 16px;
-  border: none;
-  border-radius: 8px;
-  background: #FC4C02;
-  color: #fff;
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s ease;
 
-  &:hover { background: #e04400; }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 }
 
 /* ── Email row / badge (kept from _auth.scss usage) ── */

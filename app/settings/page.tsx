@@ -549,11 +549,8 @@ export default function SettingsPage() {
                   {stravaConnected === false && (
                     <div className="settings-data-row">
                       <p>Connect Strava to auto-fill your training data and get personalised predictions.</p>
-                      <a href="/api/strava/connect" className="settings-connect-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                          <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
-                        </svg>
-                        Connect with Strava
+                      <a href="/api/strava/connect" className="strava-connect-btn">
+                        <img src="/brand/strava/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
                       </a>
                     </div>
                   )}

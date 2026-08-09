@@ -174,18 +174,10 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     return (
       <div className="fitness-insights fitness-insights--connect">
         <p className="eyebrow">Fitness insights</p>
-        <h3>
-          <svg className="strava-chevron" width="16" height="16" viewBox="0 0 24 24" fill="#FC4C02" aria-hidden="true">
-            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
-          </svg>
-          Connect Strava to unlock <PremiumBadge />
-        </h3>
+        <h3>Connect Strava to unlock <PremiumBadge /></h3>
         <p>Lactate threshold, training load, aerobic efficiency and pace zones, calculated from your Strava history.</p>
-        <a href="/api/strava/connect" className="settings-connect-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
-          </svg>
-          Connect with Strava
+        <a href="/api/strava/connect" className="strava-connect-btn">
+          <img src="/brand/strava/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
         </a>
       </div>
     );
@@ -224,11 +216,11 @@ export function FitnessInsights({ fullReportUnlocked }: Props) {
     <div className="fitness-insights">
       <div className="fitness-insights__header">
         <p className="eyebrow">Fitness insights</p>
-        <span className="strava-wordmark-chip" role="img" aria-label="Powered by Ocht and Strava">
-          <span className="strava-wordmark-chip__ocht" aria-hidden="true">ocht.</span>
-          <span className="strava-wordmark-chip__sep" aria-hidden="true">x</span>
-          <span className="strava-wordmark-chip__strava" aria-hidden="true">STRAVA</span>
-        </span>
+        <img
+          className="strava-wordmark-chip"
+          src="/brand/strava/api_logo_pwrdBy_strava_horiz_white.svg"
+          alt="Powered by Strava"
+        />
       </div>
       <h3>Your training data</h3>
       {parsedZones !== null && <PaceZonesBars zones={parsedZones} />}
