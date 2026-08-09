@@ -288,7 +288,7 @@ export function AuthPanel({
               onClick={() => setMode(null)}
               aria-label="Close account form"
             >
-              ×
+              x
             </button>
           </div>
           <p className="auth-panel__lead">
