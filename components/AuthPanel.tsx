@@ -22,7 +22,6 @@ type AuthPanelProps = {
   avatarIcon: string;
   onLogin: (input: AuthFormInput) => Promise<void>;
   onSignup: (input: AuthFormInput) => Promise<void>;
-  onLogout: () => Promise<void>;
   initialMode?: AuthMode | null;
 };
 
@@ -37,7 +36,6 @@ export function AuthPanel({
   avatarIcon,
   onLogin,
   onSignup,
-  onLogout,
   initialMode = null,
 }: AuthPanelProps) {
   const [mode, setMode] = useState<AuthMode | null>(initialMode);
