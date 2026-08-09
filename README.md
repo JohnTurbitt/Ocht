@@ -198,7 +198,9 @@ Implemented app-side safeguards:
 - user-scoped report reads and deletes
 - server-side report recalculation before persistence
 - browser origin checks on state-changing API routes
-- basic in-memory rate limits for auth, reports, checkout, and billing portal
+- Postgres-backed rate limits for auth, reports, checkout, and billing portal
+  (atomic upsert against `RateLimitCounter`, so limits hold across serverless
+  instances/invocations instead of resetting per-instance)
 - response security headers from `next.config.ts`
 
 Before taking broad public traffic:
@@ -207,11 +209,8 @@ Before taking broad public traffic:
 2. Rotate any key that was pasted into chat, logs, screenshots, or public tools.
 3. Use a managed production database with SSL, backups, and a strong password.
 4. Configure Stripe live webhooks and monitor failed webhook deliveries.
-5. Consider hosted rate limiting such as Upstash, Redis, Vercel Firewall, or
-   Cloudflare before scaling beyond a small beta. In-memory rate limits reset
-   when serverless instances restart and do not coordinate across instances.
-6. Review the legal pages with appropriate professional advice.
-7. Check the public URL in a social share preview tool so the Open Graph title,
+5. Review the legal pages with appropriate professional advice.
+6. Check the public URL in a social share preview tool so the Open Graph title,
    description, and image render as expected.
 
 ## Admin
