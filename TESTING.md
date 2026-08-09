@@ -2,12 +2,20 @@
 
 ## Local Setup
 
-From the project folder:
+Ocht's database is **Neon Postgres** (cloud) in both dev and prod — there's
+no local Docker container. From the project folder:
 
 ```powershell
 cd c:\Users\johnt\Documents\ocht
 npm install
-docker start ocht-postgres
+```
+
+Copy `.env.example` to `.env` and set `DATABASE_URL` to your Neon connection
+string (see the README's [Environment Variables](./README.md#environment-variables)
+section). Save `.env` as plain UTF-8 without a BOM — a BOM breaks the Prisma
+CLI's env reader even though `next dev` still works.
+
+```powershell
 npm run prisma:generate
 npm run prisma:migrate
 npm run dev
@@ -19,23 +27,9 @@ Open:
 http://127.0.0.1:3002
 ```
 
-If the database container does not exist yet:
-
-```powershell
-docker run --name ocht-postgres `
-  -e POSTGRES_USER=postgres `
-  -e POSTGRES_PASSWORD=postgres `
-  -e POSTGRES_DB=ocht `
-  -p 5433:5432 `
-  -d postgres:16
-```
-
-The local `.env` should include:
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5433/ocht?schema=public"
-AUTH_SECRET="replace-with-a-long-random-secret"
-```
+To browse with realistic data instead of a blank account, seed the four dev
+accounts described in the README's
+[Local Dev Seed Accounts](./README.md#local-dev-seed-accounts) section.
 
 ## What To Try
 
@@ -48,6 +42,9 @@ AUTH_SECRET="replace-with-a-long-random-secret"
 7. Log back in and confirm the account report history returns.
 8. Load a saved report and confirm the splits populate the report form.
 9. Delete a saved account report and confirm it disappears.
+10. Grant yourself admin (`npx tsx prisma/set-admin.ts you@example.com`), open
+    `/admin`, search for a user, and confirm the detail view and override
+    action work.
 
 ## Verification Commands
 

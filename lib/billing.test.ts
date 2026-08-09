@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  effectiveSubscription,
   subscriptionStatusFromStripe,
   subscriptionStatusFromStripeSubscriptions,
 } from "./billing";
@@ -42,5 +43,33 @@ describe("subscriptionStatusFromStripeSubscriptions", () => {
 
   it("falls back to free when no billable subscription exists", () => {
     expect(subscriptionStatusFromStripeSubscriptions([])).toBe("FREE");
+  });
+});
+
+describe("effectiveSubscription", () => {
+  it("grants active access when the override is COMP, regardless of Stripe status", () => {
+    expect(
+      effectiveSubscription({ subscription: "FREE", subscriptionOverride: "COMP" }),
+    ).toBe("ACTIVE");
+    expect(
+      effectiveSubscription({ subscription: "CANCELED", subscriptionOverride: "COMP" }),
+    ).toBe("ACTIVE");
+  });
+
+  it("forces free access when the override is DISABLED, regardless of Stripe status", () => {
+    expect(
+      effectiveSubscription({ subscription: "ACTIVE", subscriptionOverride: "DISABLED" }),
+    ).toBe("FREE");
+    expect(
+      effectiveSubscription({ subscription: "PAST_DUE", subscriptionOverride: "DISABLED" }),
+    ).toBe("FREE");
+  });
+
+  it("passes through the Stripe-driven status when there is no override", () => {
+    for (const status of ["FREE", "ACTIVE", "PAST_DUE", "CANCELED"] as const) {
+      expect(
+        effectiveSubscription({ subscription: status, subscriptionOverride: null }),
+      ).toBe(status);
+    }
   });
 });

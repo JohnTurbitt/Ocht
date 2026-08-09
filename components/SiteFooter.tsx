@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { resetCookieConsent } from "@/lib/cookieConsent";
 
 export function SiteFooter() {
   return (
@@ -16,6 +19,13 @@ export function SiteFooter() {
         <a href="mailto:support@ocht.app?subject=Ocht%20beta%20feedback">
           Feedback
         </a>
+        <button
+          type="button"
+          className="site-footer__link"
+          onClick={() => resetCookieConsent()}
+        >
+          Cookie preferences
+        </button>
       </nav>
     </footer>
   );

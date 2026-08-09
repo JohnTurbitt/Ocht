@@ -11,6 +11,7 @@ export type PublicUser = {
   subscription: SubscriptionStatus;
   defaultLevel: Level;
   defaultTargetTime: string;
+  onboardingCompletedAt: string | null;
   createdAt: Date | string;
 };
 
@@ -34,6 +35,7 @@ export function toPublicUser(user: {
   subscription: SubscriptionStatus;
   defaultLevel: AthleteLevel;
   defaultTargetTime: string;
+  onboardingCompletedAt?: Date | string | null;
   createdAt: Date | string;
 }): PublicUser {
   return {
@@ -44,6 +46,9 @@ export function toPublicUser(user: {
     subscription: user.subscription,
     defaultLevel: levelByAthleteLevel[user.defaultLevel],
     defaultTargetTime: user.defaultTargetTime,
+    onboardingCompletedAt: user.onboardingCompletedAt instanceof Date
+      ? user.onboardingCompletedAt.toISOString()
+      : (user.onboardingCompletedAt ?? null),
     createdAt:
       user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
   };

@@ -1,6 +1,7 @@
 import { Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 import { SavedReport } from "./reportStorage";
+import { TrainingContext } from "./trainingContext";
 
 export type AuthUser = {
   id: string;
@@ -34,6 +35,7 @@ export type ReportRequestInput = {
   runs: string[];
   stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
 };
 
 async function readApiResponse<T>(response: Response): Promise<T> {
@@ -182,8 +184,18 @@ export async function deleteRemoteReport(reportId: string) {
   await readApiResponse<{ ok: true }>(response);
 }
 
-export async function startCheckout() {
-  const response = await fetch("/api/billing/checkout", { method: "POST" });
+export async function deleteAccount() {
+  const response = await fetch("/api/auth/me", { method: "DELETE" });
+
+  await readApiResponse<{ ok: true }>(response);
+}
+
+export async function startCheckout(returnTo?: string) {
+  const response = await fetch("/api/billing/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnTo }),
+  });
   const body = await readApiResponse<{ url: string | null }>(response);
 
   if (!body.url) {
@@ -193,8 +205,12 @@ export async function startCheckout() {
   return body.url;
 }
 
-export async function openBillingPortal() {
-  const response = await fetch("/api/billing/portal", { method: "POST" });
+export async function openBillingPortal(returnTo?: string) {
+  const response = await fetch("/api/billing/portal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnTo }),
+  });
   const body = await readApiResponse<{ url: string | null }>(response);
 
   if (!body.url) {

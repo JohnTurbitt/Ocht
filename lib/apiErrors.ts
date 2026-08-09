@@ -52,7 +52,7 @@ export function signupError(error: unknown) {
     message.includes("Connection terminated")
   ) {
     return apiError(
-      ["Account database is not reachable. Check DATABASE_URL in Vercel and Neon."],
+      ["Account service is unavailable. Try again in a moment."],
       { status: 503 },
     );
   }
@@ -63,7 +63,7 @@ export function signupError(error: unknown) {
     message.includes("table")
   ) {
     return apiError(
-      ["Account database is not migrated yet. Run Prisma migrations for the production database."],
+      ["Account service is unavailable. Try again in a moment."],
       { status: 503 },
     );
   }
@@ -87,14 +87,14 @@ export function checkoutError(error: unknown) {
 
   if (message.includes("STRIPE_PRICE_ID")) {
     return apiError(
-      ["Payment plan is not configured yet. Check STRIPE_PRICE_ID or contact support."],
+      ["Payment plan is not configured yet. Contact support if you need paid access."],
       { status: 503 },
     );
   }
 
   if (stripeCode === "resource_missing" && stripeParam.includes("price")) {
     return apiError(
-      ["That Stripe price does not exist. Check STRIPE_PRICE_ID and try again."],
+      ["Checkout could not be started. Contact support if this keeps happening."],
       { status: 502 },
     );
   }

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Contact - Ocht",
-  description: "Contact Ocht for support, billing, and account requests.",
+  description: "Contact Ocht for support, billing and account requests.",
 };
 
 export default function ContactPage() {
@@ -15,7 +15,7 @@ export default function ContactPage() {
       <p className="eyebrow">Contact</p>
       <h1>Contact Ocht</h1>
       <p>
-        For account, billing, privacy, or product support, email{" "}
+        For account, billing, privacy or product support, email{" "}
         <a href="mailto:support@ocht.app">support@ocht.app</a>.
       </p>
 
@@ -25,13 +25,13 @@ export default function ContactPage() {
         <a href="mailto:support@ocht.app?subject=Ocht%20beta%20feedback">
           this feedback email
         </a>
-        . Include what race format you tested, whether the report felt useful,
+        . Include what race format you tested, whether the report felt useful
         and any calculation that looked wrong.
       </p>
 
       <h2>Useful Details To Include</h2>
       <p>
-        Include the email on your Ocht account, what you were trying to do,
+        Include the email on your Ocht account, what you were trying to do
         and any relevant checkout or billing context. Do not send card details.
       </p>
 

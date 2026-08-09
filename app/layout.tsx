@@ -1,18 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next";
+import { DM_Mono, Inter, Saira_Condensed } from "next/font/google";
+import { ConsentedAnalytics } from "@/components/ConsentedAnalytics";
+import { CookieBanner } from "@/components/CookieBanner";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OnboardingGate } from "@/components/OnboardingGate";
+import { PremiumTierGate } from "@/components/PremiumTierGate";
 import "./globals.scss";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3002";
 const appName = "Ocht";
 const appDescription =
-  "Trace hybrid race splits, find time leaks, and build a realistic next target.";
+  "Trace hybrid race splits, find time leaks and build a realistic next target.";
+const bodyFont = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+});
+const displayFont = Saira_Condensed({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-display",
+  weight: ["600", "700", "800", "900"],
+});
+const monoFont = DM_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+  weight: ["400", "500"],
+});
 const themeScript = `
 (function () {
   try {
     var theme = localStorage.getItem("ocht.theme") || localStorage.getItem("reprun.theme");
     if (theme !== "light" && theme !== "dark") {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      theme = "dark";
     }
     document.documentElement.dataset.theme = theme;
   } catch (_) {}
@@ -81,10 +102,15 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>
+      <body
+        className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}
+      >
         {children}
+        <OnboardingGate />
+        <PremiumTierGate />
         <SiteFooter />
-        <Analytics />
+        <CookieBanner />
+        <ConsentedAnalytics />
       </body>
     </html>
   );

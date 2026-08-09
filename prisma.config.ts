@@ -11,7 +11,13 @@ function readDatabaseUrlFromEnvFile() {
     return undefined;
   }
 
-  const match = readFileSync(envPath, "utf8").match(/^DATABASE_URL=(.+)$/m);
+  // Strip a UTF-8 BOM and tolerate leading whitespace / `export ` so a
+  // Windows-saved .env (BOM + CRLF) still resolves the same URL Next.js uses.
+  const raw = readFileSync(envPath, "utf8");
+  const contents = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
+  const match = contents.match(
+    /^\s*(?:export\s+)?DATABASE_URL\s*=\s*(.+)$/m,
+  );
 
   return match?.[1]?.trim().replace(/^["']|["']$/g, "");
 }

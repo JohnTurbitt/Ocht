@@ -1,5 +1,6 @@
 import { Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
+import { TrainingContext } from "./trainingContext";
 
 export type SavedReport = {
   id: string;
@@ -7,10 +8,12 @@ export type SavedReport = {
   raceFormat?: RaceFormat;
   goal: string;
   targetTime: string;
+  officialFinishTime?: string;
   level: Level;
   runs: string[];
   stationDefinitions?: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
   finishSeconds: number;
   predictedTargetSeconds: number;
   topLeakLabel: string;

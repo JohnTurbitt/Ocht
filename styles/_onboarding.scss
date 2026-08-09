@@ -1,0 +1,174 @@
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.onboarding-modal {
+  background: var(--color-surface, #0e1914);
+  border: 1px solid var(--color-border, #284237);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &__title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--color-text, #f4f7ef);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: var(--color-text-muted, #9fb39a);
+  }
+}
+
+.onboarding-goal-list {
+  display: grid;
+  gap: 8px;
+}
+
+.onboarding-goal-item {
+  background: var(--color-surface-raised, #14241d);
+  border: 1px solid var(--color-border, #284237);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent, #c8ff2e);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    color: var(--color-accent, #c8ff2e);
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text, #f4f7ef);
+  }
+
+  &__desc {
+    font-size: 11px;
+    color: var(--color-text-muted, #9fb39a);
+    margin-top: 2px;
+  }
+
+  &__arrow {
+    margin-left: auto;
+    color: var(--color-accent, #c8ff2e);
+    font-size: 16px;
+  }
+}
+
+.onboarding-strava {
+  &__lockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 18px 20px;
+    background: var(--color-surface-raised, #14241d);
+    border: 1px solid var(--color-border, #284237);
+    border-radius: 12px;
+  }
+
+  // Official Strava lockup asset — do not recolor, resize disproportionately, or alter.
+  &__mark {
+    display: block;
+    height: 20px;
+    width: auto;
+  }
+
+  &__brand {
+    font-size: 19px;
+    font-weight: 900;
+    color: var(--color-text, #f4f7ef);
+  }
+
+  &__sep {
+    color: var(--color-border, #284237);
+    font-size: 15px;
+  }
+
+  &__benefits {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  &__benefit {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent, #c8ff2e);
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  &__benefit-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text, #f4f7ef);
+  }
+
+  &__benefit-desc {
+    font-size: 11px;
+    color: var(--color-text-muted, #9fb39a);
+    margin-top: 2px;
+  }
+
+  // Official Strava button asset, per brand guidelines — do not recolor,
+  // resize disproportionately, or alter.
+  &__connect-btn {
+    display: block;
+    width: 100%;
+    max-width: 237px;
+    margin: 0 auto 8px;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  &__skip-btn {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--color-border, #284237);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 11px;
+    color: var(--color-text-muted, #9fb39a);
+    cursor: pointer;
+  }
+}

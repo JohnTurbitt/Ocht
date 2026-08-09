@@ -10,7 +10,7 @@ import { createSessionToken, hashSessionToken } from "@/lib/session";
 const resetTokenMaxAgeMs = 30 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "password-reset-request",
     limit: 5,
     windowMs: 15 * 60 * 1000,

@@ -52,12 +52,34 @@ export type RaceSegment = {
   status: "strong" | "steady" | "leak";
 };
 
+export type ArchetypeScores = {
+  engine: number;
+  strength: number;
+  durability: number;
+  consistency: number;
+};
+
+export type AthleteArchetype = {
+  id: string;
+  label: string;
+  tagline: string;
+  description: string;
+  scores: ArchetypeScores;
+  traits: string[];
+};
+
 export type Analysis = {
   raceFormat: RaceFormat;
   stationDefinitions: Station[];
   level: Level;
   levelLabel: string;
   finishSeconds: number;
+  officialFinishSeconds: number;
+  roxzoneSeconds: number;
+  roxzonePercent: number;
+  roxzonePerTransitionSeconds: number;
+  hasRoxzone: boolean;
+  archetype: AthleteArchetype;
   targetSeconds: number;
   targetGapSeconds: number;
   totalRunSeconds: number;
@@ -376,6 +398,156 @@ function getSegmentStatus(intensity: number): RaceSegment["status"] {
   return "strong";
 }
 
+function clampScore(value: number) {
+  return Math.round(clamp(value, 0, 100));
+}
+
+type ArchetypeInputs = {
+  runFadeSeconds: number;
+  runVolatilitySeconds: number;
+  averageStationGap: number;
+  stationLeakTotal: number;
+  runLeakTotal: number;
+  hasRoxzone: boolean;
+  roxzonePercent: number;
+  hasData: boolean;
+};
+
+function buildArchetype({
+  runFadeSeconds,
+  runVolatilitySeconds,
+  averageStationGap,
+  stationLeakTotal,
+  runLeakTotal,
+  hasRoxzone,
+  roxzonePercent,
+  hasData,
+}: ArchetypeInputs): AthleteArchetype {
+  const scores: ArchetypeScores = {
+    engine: clampScore(100 - runVolatilitySeconds * 2.4 - runFadeSeconds * 2),
+    strength: clampScore(100 - averageStationGap * 1.15),
+    durability: clampScore(100 - runFadeSeconds * 3.6),
+    consistency: clampScore(100 - runVolatilitySeconds * 3),
+  };
+
+  if (!hasData) {
+    return {
+      id: "unscored",
+      label: "Profile pending",
+      tagline: "Add your splits",
+      description:
+        "Enter your run and station splits and Ocht will profile the kind of hybrid athlete your race data describes.",
+      scores,
+      traits: [],
+    };
+  }
+
+  const pick = (
+    id: string,
+    label: string,
+    tagline: string,
+    description: string,
+    traits: string[],
+  ): AthleteArchetype => ({ id, label, tagline, description, scores, traits });
+
+  // The Morrígan — transition chaos bleeds the clock
+  if (hasRoxzone && roxzonePercent >= 0.08) {
+    return pick(
+      "morrigan",
+      "The Morrígan",
+      "The race is lost in the in-between",
+      "The Morrígan was the goddess of the threshold: the space between life and death, the moment before battle breaks and after it ends. Your moving splits are competitive, but the in-between moments, the dead time around the stations, are where the race slips away. That is exactly where the Morrígan lives. Fast, decisive transitions are the cheapest time you can find.",
+      ["Strong moving splits", "Transition-heavy losses", "High-value quick wins"],
+    );
+  }
+
+  // Setanta — wild, uneven rhythm across splits
+  if (scores.consistency < 50) {
+    return pick(
+      "setanta",
+      "Setanta",
+      "Raw power, no rhythm yet",
+      "Setanta was the boy's name of Cú Chulainn, before he'd earned it. He had extraordinary strength from the start, but it came without control. He accidentally killed Culann's guard dog in a moment of unthinking force and had to take its place as penance. Your splits show the same profile: a real engine that surges and dips wildly, where the surges cost more than they gain. The power is already there. Pacing discipline is the craft that shapes it.",
+      ["High power output", "Inconsistent pacing", "Needs rhythm and control"],
+    );
+  }
+
+  // Cú Chulainn — severe fade, burns too hot early
+  if (scores.durability < 42) {
+    return pick(
+      "cu-chulainn",
+      "Cú Chulainn",
+      "All-out from the start. The back half pays for it.",
+      "Cú Chulainn's defining power was the ríastrad, the battle warp-spasm, where he became an unstoppable force of nature. But the ríastrad consumed everything he had. Witnesses said he was unrecognisable afterwards, spent completely. Your race follows that arc: you go deep into the red early and the back half costs you heavily for it. The aggression is an asset. Channelling it into a pace that holds is where the time is.",
+      ["Explosive early pace", "Severe second-half fade", "Pacing the key lever"],
+    );
+  }
+
+  // Brigid — moderate fade paired with station weakness
+  if (scores.durability < 60 && scores.strength < 62) {
+    return pick(
+      "brigid",
+      "Brigid",
+      "Two fires need stoking",
+      "Brigid was goddess of the forge and of healing, two entirely separate crafts, each with its own fire that needed tending. Let one go cold and the work suffered. Your race shows the same two flames: the runs fade in the second half, and the strength stations add to the cost on top of that. Neither alone is decisive, but together they matter. Two training targets, tended in parallel.",
+      ["Moderate second-half fade", "Station-limited", "Dual-focus training needed"],
+    );
+  }
+
+  // Oisín — moderate fade but stations hold up
+  if (scores.durability < 60) {
+    return pick(
+      "oisin",
+      "Oisín",
+      "Strong through the middle. The back half catches up.",
+      "Oisín was the greatest runner of the Fianna, celebrated for his speed and grace. He spent what felt like a few years in Tír na nÓg, the Land of Eternal Youth, but it was three hundred years in Ireland. When he returned and touched the ground, every one of those years hit him at once. Your race has that shape: strong, fluid running early, then the back half arrives all at once. Your stations hold up. Sustained aerobic work will keep the running with them.",
+      ["Stations hold up", "Run endurance fades late", "Second-half pace drops"],
+    );
+  }
+
+  // Fionn mac Cumhaill — strong engine, stations the limiter
+  if (stationLeakTotal > runLeakTotal * 1.4) {
+    return pick(
+      "fionn",
+      "Fionn mac Cumhaill",
+      "The run engine leads. The stations are the gap.",
+      "Entry to the Fianna required a warrior to run at full pace through a dense forest without breaking a single twig underfoot or disturbing their braided hair. Fionn led this band of elite warrior-runners, and his ability across the ground was their standard. Your race shows the same quality: the runs carry you. The strength stations are where time is left behind. Strength-endurance work and station technique under fatigue are where your next gains live.",
+      ["Strong run engine", "Station-limited", "Targets workout stations"],
+    );
+  }
+
+  // The Dagda — strong stations, running is the limiter
+  if (runLeakTotal > stationLeakTotal * 1.4) {
+    return pick(
+      "dagda",
+      "The Dagda",
+      "Immovable at the stations. The runs cost you.",
+      "The Dagda was the father of the gods: enormous, immovable and endlessly powerful. He carried a club so heavy it had to be dragged on a cart, and his cauldron never ran empty. He was not built for grace or speed. He was built to endure and to outlast. Your stations show that same quality. The runs are where time slips away. Aerobic running volume and pacing discipline are your biggest opportunity.",
+      ["Strong stations", "Run-limited", "Needs aerobic running base"],
+    );
+  }
+
+  // Lugh — even, durable, master of all skills
+  if (scores.consistency >= 78 && scores.durability >= 72) {
+    return pick(
+      "lugh",
+      "Lugh",
+      "Master of every discipline, no single weakness",
+      "When Lugh arrived at the gates of Tara, the doorkeeper asked what skill he brought. He named a craft. 'We already have one of those.' He named another. 'We have one.' This went on until Lugh asked: 'But do you have one man who masters all of them at once?' He was let in immediately. Your race profile is Lugh's answer: no single phase dominates your losses, you hold pace to the end and every discipline is present. That breadth is the foundation. Sharpen the edges and you move up.",
+      ["Even pacing", "Durable to the finish", "Well-rounded profile"],
+    );
+  }
+
+  // Cormac mac Airt — balanced, no single dominant limiter
+  return pick(
+    "cormac",
+    "Cormac mac Airt",
+    "The balanced king: solid foundation, broad upside",
+    "Cormac mac Airt ruled Tara as the ideal high king, not because he was the greatest fighter or the fastest runner, but because he was fair, wise and balanced across every duty of kingship. His court was respected for that wholeness. Your race has the same quality: no single discipline is driving the losses, and no single discipline is carrying it either. The foundation is solid. A balanced block that targets the top leaks while protecting your strengths is how you move up.",
+    ["Balanced losses", "No single limiter", "Broad upside"],
+  );
+}
+
 export function buildAnalysis(
   goal: string,
   targetTime: string,
@@ -384,6 +556,7 @@ export function buildAnalysis(
   stationSplits: Record<StationKey, string>,
   stationDefinitions: Station[] = stations,
   raceFormat: RaceFormat = "hyrox",
+  officialFinishTime: string = "",
 ): Analysis {
   const runSeconds = runs.map(parseTime);
   const totalRunSeconds = runSeconds.reduce((total, split) => total + split, 0);
@@ -556,12 +729,43 @@ export function buildAnalysis(
     return [runSegment, stationSegment];
   });
 
+  const officialFinishSeconds = parseTime(officialFinishTime);
+  const hasRoxzone = officialFinishSeconds > finishSeconds && finishSeconds > 0;
+  const roxzoneSeconds = hasRoxzone ? officialFinishSeconds - finishSeconds : 0;
+  const roxzoneDenominator =
+    officialFinishSeconds > 0 ? officialFinishSeconds : finishSeconds;
+  const roxzonePercent =
+    roxzoneDenominator > 0 ? roxzoneSeconds / roxzoneDenominator : 0;
+  const roxzonePerTransitionSeconds = roxzoneSeconds / stationCount;
+
+  const stationLeakTotal = orderedStationResults.reduce(
+    (total, station) => total + station.gap,
+    0,
+  );
+  const runLeakTotal = runFadeSeconds * 4 + runVolatilitySeconds * 3.2;
+  const archetype = buildArchetype({
+    runFadeSeconds,
+    runVolatilitySeconds,
+    averageStationGap: stationLeakTotal / stationCount,
+    stationLeakTotal,
+    runLeakTotal,
+    hasRoxzone,
+    roxzonePercent,
+    hasData: finishSeconds > 0,
+  });
+
   return {
     raceFormat,
     stationDefinitions,
     level,
     levelLabel: levelLabels[level],
     finishSeconds,
+    officialFinishSeconds,
+    roxzoneSeconds,
+    roxzonePercent,
+    roxzonePerTransitionSeconds,
+    hasRoxzone,
+    archetype,
     targetSeconds,
     targetGapSeconds,
     totalRunSeconds,
@@ -593,4 +797,10 @@ export function buildAnalysis(
     trainingPlan,
     report: `The model projects ${formatTime(finishSeconds)} from these splits. ${targetLine} The biggest recoverable leak is ${primaryLeak?.label.toLowerCase() ?? "not clear yet"}, worth about ${formatTime(primaryLeak?.recoverableSeconds ?? 0)} if trained well. Based on the top three leaks, a realistic next step is ${formatTime(predictedTargetSeconds)} without needing random extra volume.`,
   };
+}
+
+export function tierFor(score: number): { cls: string; label: string } {
+  if (score >= 70) return { cls: "high", label: "Elite" };
+  if (score >= 45) return { cls: "mid", label: "Pro" };
+  return { cls: "low", label: "Finisher" };
 }

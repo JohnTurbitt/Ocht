@@ -2,6 +2,23 @@ import Stripe from "stripe";
 
 export type SubscriptionStatus = "FREE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
 
+export type SubscriptionOverride = "COMP" | "DISABLED";
+
+export function effectiveSubscription(user: {
+  subscription: SubscriptionStatus;
+  subscriptionOverride: SubscriptionOverride | null;
+}): SubscriptionStatus {
+  if (user.subscriptionOverride === "COMP") {
+    return "ACTIVE";
+  }
+
+  if (user.subscriptionOverride === "DISABLED") {
+    return "FREE";
+  }
+
+  return user.subscription;
+}
+
 export function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -39,6 +56,23 @@ export function subscriptionStatusFromStripe(
   }
 
   return "FREE";
+}
+
+// Only allow same-origin relative paths back into the app after checkout or the
+// billing portal. Rejects anything that could redirect off-site (protocol-relative
+// "//host", absolute URLs, or a bare "/" prefix bypass via backslashes).
+export function sanitizeReturnPath(value: unknown, fallback: string): string {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("://") ||
+    value.includes("\\")
+  ) {
+    return fallback;
+  }
+
+  return value;
 }
 
 export function subscriptionStatusFromStripeSubscriptions(

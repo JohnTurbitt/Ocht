@@ -1,17 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "./prisma";
 
 type RateLimitOptions = {
   key: string;
   limit: number;
   windowMs: number;
 };
-
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
-};
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
 
 function getClientIp(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for");
@@ -29,10 +24,23 @@ function getClientIp(request: NextRequest) {
 
 function sameOrigin(request: NextRequest, origin: string) {
   try {
-    const requestUrl = request.nextUrl;
+    const hostHeader = request.headers.get("host");
+
+    if (!hostHeader) {
+      return false;
+    }
+
+    // Compare against the incoming Host header rather than request.nextUrl —
+    // under `next start --hostname <host>`, nextUrl.origin doesn't reliably
+    // reflect the actual Host the browser connected to (observed: it can
+    // resolve to a different loopback alias than the one requested), which
+    // made this check reject same-origin requests. Host is what the browser
+    // told the server it connected to, which is exactly what an Origin check
+    // is meant to validate against.
+    const requestUrl = new URL(`${request.nextUrl.protocol}//${hostHeader}`);
     const originUrl = new URL(origin);
 
-    if (originUrl.origin === requestUrl.origin) {
+    if (originUrl.protocol === requestUrl.protocol && originUrl.host === requestUrl.host) {
       return true;
     }
 
@@ -72,26 +80,55 @@ export function enforceSameOrigin(request: NextRequest) {
   );
 }
 
-export function rateLimit(
+// Opportunistically sweep expired counters so the table doesn't grow forever.
+// Fire-and-forget with low probability: cheap, and never on the hot path.
+function maybeCleanupExpiredCounters(now: Date) {
+  if (Math.random() >= 0.01) {
+    return;
+  }
+
+  const staleThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  void prisma.rateLimitCounter
+    .deleteMany({ where: { resetAt: { lt: staleThreshold } } })
+    .catch(() => {});
+}
+
+export async function rateLimit(
   request: NextRequest,
   { key, limit, windowMs }: RateLimitOptions,
 ) {
-  const now = Date.now();
+  const now = new Date();
   const storeKey = `${key}:${getClientIp(request)}`;
-  const current = rateLimitStore.get(storeKey);
+  const nextResetAt = new Date(now.getTime() + windowMs);
 
-  if (!current || current.resetAt <= now) {
-    rateLimitStore.set(storeKey, {
-      count: 1,
-      resetAt: now + windowMs,
-    });
-    return null;
-  }
+  // Atomic upsert-and-increment in a single statement: if the stored window has
+  // expired, reset the counter to 1 with a fresh expiry; otherwise increment in
+  // place. Postgres backs this instead of an in-process Map so the limit holds
+  // across multiple server instances / serverless invocations, not just one.
+  const rows = await prisma.$queryRaw<{ count: number; resetAt: Date }[]>`
+    INSERT INTO "RateLimitCounter" (id, key, count, "resetAt")
+    VALUES (${randomUUID()}, ${storeKey}, 1, ${nextResetAt})
+    ON CONFLICT (key) DO UPDATE SET
+      count = CASE
+        WHEN "RateLimitCounter"."resetAt" <= ${now} THEN 1
+        ELSE "RateLimitCounter".count + 1
+      END,
+      "resetAt" = CASE
+        WHEN "RateLimitCounter"."resetAt" <= ${now} THEN ${nextResetAt}
+        ELSE "RateLimitCounter"."resetAt"
+      END
+    RETURNING count, "resetAt";
+  `;
 
-  if (current.count >= limit) {
+  maybeCleanupExpiredCounters(now);
+
+  const current = rows[0];
+
+  if (current.count > limit) {
     const retryAfterSeconds = Math.max(
       1,
-      Math.ceil((current.resetAt - now) / 1000),
+      Math.ceil((current.resetAt.getTime() - now.getTime()) / 1000),
     );
 
     return NextResponse.json(
@@ -105,15 +142,18 @@ export function rateLimit(
     );
   }
 
-  current.count += 1;
-  rateLimitStore.set(storeKey, current);
-
   return null;
 }
 
-export function guardBrowserMutation(
+export async function guardBrowserMutation(
   request: NextRequest,
   options: RateLimitOptions,
 ) {
-  return enforceSameOrigin(request) ?? rateLimit(request, options);
+  const originResponse = enforceSameOrigin(request);
+
+  if (originResponse) {
+    return originResponse;
+  }
+
+  return rateLimit(request, options);
 }

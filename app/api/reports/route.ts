@@ -15,6 +15,11 @@ import {
   toSavedReport,
 } from "@/lib/reportPersistence";
 import { guardBrowserMutation } from "@/lib/security";
+import {
+  TrainingContext,
+  hasTrainingContext,
+  sanitizeTrainingContext,
+} from "@/lib/trainingContext";
 import { validateReportInput } from "@/lib/validation";
 
 const levels: Level[] = ["starter", "competitive", "elite"];
@@ -35,6 +40,7 @@ type ReportPayload = {
   runs: string[];
   stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
 };
 
 function parseStationDefinitions(value: unknown): Station[] {
@@ -76,6 +82,9 @@ function parseReportPayload(payload: unknown): {
   const stationValue = (record as Record<string, unknown>).stationSplits;
   const stationDefinitionsValue = (record as Record<string, unknown>)
     .stationDefinitions;
+  const trainingContext = sanitizeTrainingContext(
+    (record as Record<string, unknown>).trainingContext,
+  );
   const errors: string[] = [];
   const stationDefinitions =
     raceFormat === "custom"
@@ -140,6 +149,10 @@ function parseReportPayload(payload: unknown): {
       runs,
       stationDefinitions,
       stationSplits,
+      trainingContext:
+        trainingContext && hasTrainingContext(trainingContext)
+          ? trainingContext
+          : undefined,
     },
   };
 }
@@ -155,8 +168,7 @@ export async function GET(request: NextRequest) {
     const reports = await prisma.raceReport.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      // This endpoint powers history lists, not full archival exports.
-      take: 50,
+      take: 200,
     });
 
     return NextResponse.json({
@@ -169,6 +181,7 @@ export async function GET(request: NextRequest) {
           athleteLevel: report.athleteLevel,
           runSplits: report.runSplits,
           stationSplits: report.stationSplits as Record<StationKey, string>,
+          trainingContext: report.trainingContext,
           finishSeconds: report.finishSeconds,
           predictedTargetSeconds: report.predictedTargetSeconds,
           topLeakLabel: report.topLeakLabel,
@@ -187,7 +200,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "reports-create",
     limit: 30,
     windowMs: 15 * 60 * 1000,
@@ -230,6 +243,7 @@ export async function POST(request: NextRequest) {
         athleteLevel: reportData.athleteLevel,
         runSplits: reportData.runSplits,
         stationSplits: reportData.stationSplits,
+        trainingContext: reportData.trainingContext,
         finishSeconds: reportData.finishSeconds,
         predictedTargetSeconds: reportData.predictedTargetSeconds,
         topLeakLabel: reportData.topLeakLabel,

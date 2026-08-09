@@ -43,23 +43,6 @@
     left: 0;
     width: min(520px, calc(100vw - 28px));
   }
-
-  .site-header__logo {
-    width: min(190px, 58vw);
-  }
-
-  .settings-menu {
-    width: auto;
-  }
-
-  .settings-menu__trigger {
-    width: 44px;
-  }
-
-  .settings-menu__panel {
-    position: absolute;
-    margin-top: 8px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -67,10 +50,6 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 12px;
-  }
-
-  .site-header__logo {
-    width: min(178px, 62vw);
   }
 
   .site-header__actions {
@@ -86,33 +65,13 @@
     justify-self: end;
   }
 
+  /* Events moves to the bottom nav on mobile */
   .site-header__nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    width: 100%;
+    display: none;
   }
 
   .auth-panel {
     min-width: 0;
-  }
-
-  .settings-menu {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    width: auto;
-  }
-
-  .settings-menu__trigger {
-    width: 44px;
-  }
-
-  .settings-menu__panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(280px, calc(100vw - 28px));
-    margin-top: 0;
   }
 
   .intro,
@@ -144,7 +103,7 @@
   }
 
   .race-cockpit__hero strong {
-    font-size: clamp(2.75rem, 17vw, 4.6rem);
+    font-size: clamp(2.35rem, 13vw, 4.2rem);
   }
 
   .race-cockpit__stats {
@@ -152,14 +111,7 @@
   }
 
   .report-jump-nav {
-    margin-right: -4px;
-    margin-left: -4px;
-    border-radius: 12px;
-    box-shadow: 0 -10px 28px rgba(22, 28, 18, 0.14);
-  }
-
-  .report-jump-nav--floating {
-    width: calc(100vw - 20px);
+    top: 64px;
   }
 
   .target-plan__header {
@@ -174,8 +126,19 @@
     grid-template-columns: 1fr;
   }
 
+  .training-context-input__header {
+    display: grid;
+  }
+
+  .training-context-grid,
+  .running-diagnosis__metrics,
+  .running-diagnosis__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .benchmark-context,
   .history-compare,
+  .history-progression__metrics,
   .readiness-card,
   .readiness-card__grid,
   .positive-grid {
@@ -245,16 +208,44 @@
   }
 
   .form-heading {
-    display: grid;
+    display: block;
   }
 
-  .preset-actions,
-  .preset-actions button {
-    width: 100%;
+  .scroll-fade-wrap {
+    margin-inline: -14px;
+    padding-block: 8px;
+    background: var(--surface);
+    --fade-bg: var(--surface);
   }
 
   .preset-actions {
-    display: grid;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 8px;
+    padding-inline: 14px;
+    justify-content: flex-start;
+
+    &::-webkit-scrollbar { display: none; }
+
+    button {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .format-picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-inline: 14px;
+
+    &::-webkit-scrollbar { display: none; }
+
+    .format-card {
+      flex-shrink: 0;
+    }
   }
 
   .start-guide {
@@ -327,6 +318,7 @@
 
   .auth-panel__actions {
     display: grid;
+    gap: 8px;
   }
 
   .profile-form {
@@ -362,6 +354,10 @@
   }
 
   .history-compare__panel {
+    grid-template-columns: 1fr;
+  }
+
+  .history-progression__metrics {
     grid-template-columns: 1fr;
   }
 
@@ -549,6 +545,12 @@
   }
 
   .training-plan {
+    grid-template-columns: 1fr;
+  }
+
+  .training-context-grid,
+  .running-diagnosis__metrics,
+  .running-diagnosis__grid {
     grid-template-columns: 1fr;
   }
 

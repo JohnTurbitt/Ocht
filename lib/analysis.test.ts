@@ -193,3 +193,127 @@ describe("buildAnalysis", () => {
     );
   });
 });
+
+describe("roxzone (transition time)", () => {
+  it("isolates roxzone from an official finish time", () => {
+    const analysis = buildAnalysis(
+      "Find the dead time",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+      undefined,
+      "hyrox",
+      "1:30:00",
+    );
+
+    expect(analysis.finishSeconds).toBe(5105);
+    expect(analysis.officialFinishSeconds).toBe(5400);
+    expect(analysis.hasRoxzone).toBe(true);
+    expect(analysis.roxzoneSeconds).toBe(295);
+    expect(analysis.roxzonePercent).toBeCloseTo(295 / 5400, 4);
+    expect(analysis.roxzonePerTransitionSeconds).toBeCloseTo(295 / 8, 3);
+  });
+
+  it("reports no roxzone without an official finish time", () => {
+    const analysis = buildAnalysis(
+      "No chip time",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+    );
+
+    expect(analysis.hasRoxzone).toBe(false);
+    expect(analysis.roxzoneSeconds).toBe(0);
+    expect(analysis.roxzonePercent).toBe(0);
+  });
+
+  it("ignores an official finish at or under the moving time", () => {
+    const analysis = buildAnalysis(
+      "Bad chip time",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+      undefined,
+      "hyrox",
+      "1:20:00",
+    );
+
+    expect(analysis.officialFinishSeconds).toBe(4800);
+    expect(analysis.hasRoxzone).toBe(false);
+    expect(analysis.roxzoneSeconds).toBe(0);
+  });
+});
+
+describe("athlete archetype", () => {
+  it("classifies Fionn mac Cumhaill when stations leak more than the runs", () => {
+    const analysis = buildAnalysis(
+      "Strong engine",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+    );
+
+    expect(analysis.archetype.id).toBe("fionn");
+    expect(analysis.archetype.scores.durability).toBeGreaterThanOrEqual(55);
+  });
+
+  it("classifies Setanta on wild, inconsistent pacing", () => {
+    const fadingRuns = [
+      "5:00",
+      "5:00",
+      "5:00",
+      "5:00",
+      "6:30",
+      "6:30",
+      "6:30",
+      "6:30",
+    ];
+    const analysis = buildAnalysis(
+      "Late-race fade",
+      "1:25:00",
+      "competitive",
+      fadingRuns,
+      stationSplits,
+    );
+
+    expect(analysis.archetype.id).toBe("setanta");
+    expect(analysis.archetype.scores.durability).toBeLessThan(55);
+  });
+
+  it("classifies The Morrígan when transitions dominate", () => {
+    const analysis = buildAnalysis(
+      "Slow transitions",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+      undefined,
+      "hyrox",
+      "1:32:30",
+    );
+
+    expect(analysis.hasRoxzone).toBe(true);
+    expect(analysis.archetype.id).toBe("morrigan");
+  });
+
+  it("keeps every archetype score within 0-100", () => {
+    const analysis = buildAnalysis(
+      "Score bounds",
+      "1:25:00",
+      "competitive",
+      steadyRuns,
+      stationSplits,
+    );
+
+    (["engine", "strength", "durability", "consistency"] as const).forEach(
+      (key) => {
+        expect(analysis.archetype.scores[key]).toBeGreaterThanOrEqual(0);
+        expect(analysis.archetype.scores[key]).toBeLessThanOrEqual(100);
+      },
+    );
+  });
+});

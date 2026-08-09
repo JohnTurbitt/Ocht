@@ -5,7 +5,7 @@ import { guardBrowserMutation } from "@/lib/security";
 import { hashSessionToken } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "email-verify",
     limit: 12,
     windowMs: 15 * 60 * 1000,

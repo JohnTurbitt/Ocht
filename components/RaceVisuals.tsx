@@ -7,6 +7,7 @@ import {
   type CSSProperties,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   Bar,
   BarChart,
@@ -26,6 +27,11 @@ import {
 type RaceVisualProps = {
   analysis: Analysis;
   distanceUnit?: DistanceUnit;
+};
+
+type RaceFlowMapProps = RaceVisualProps & {
+  openSegmentId?: string;
+  openSignal?: number;
 };
 
 type PremiumReportPosterProps = RaceVisualProps & {
@@ -83,14 +89,14 @@ function statusLabel(status: RaceSegment["status"]) {
 
 function statusColor(status: RaceSegment["status"]) {
   if (status === "leak") {
-    return "var(--red)";
+    return "var(--flow-leak)";
   }
 
   if (status === "steady") {
-    return "var(--mid-green)";
+    return "var(--flow-steady)";
   }
 
-  return "var(--lime)";
+  return "var(--flow-strong)";
 }
 
 function shortenLabel(label: string) {
@@ -153,12 +159,12 @@ function SegmentInsightPanel({ segment, onClose }: SegmentInsightPanelProps) {
       aria-labelledby="race-flow-dialog-title"
     >
       <button
-        className="segment-insight__close"
+        className="segment-insight__close modal-close"
         type="button"
         onClick={onClose}
         aria-label="Close segment details"
       >
-        Close
+        ×
       </button>
 
       <header className="segment-insight__header">
@@ -263,8 +269,16 @@ function FlowBarShape({
         height={barHeight}
         rx={8}
         fill={statusColor(segment.status)}
-        stroke={isSelected ? "var(--ink)" : "rgba(11, 18, 15, 0.22)"}
+        stroke={isSelected ? "var(--ink)" : "var(--stroke-muted)"}
         strokeWidth={isSelected ? 3 : 1}
+      />
+      <rect
+        className={`race-flow-svg__cap race-flow-svg__cap--${segment.type}`}
+        x={barX}
+        y={barY}
+        width={4}
+        height={barHeight}
+        rx={2}
       />
       {lostWidth > 2 ? (
         <rect
@@ -274,6 +288,15 @@ function FlowBarShape({
           width={lostWidth}
           height={barHeight}
           rx={8}
+        />
+      ) : null}
+      {segment.leakSeconds > 0 && lostWidth > 2 ? (
+        <line
+          className="race-flow-svg__target"
+          x1={barX + barWidth - lostWidth}
+          y1={barY - 3}
+          x2={barX + barWidth - lostWidth}
+          y2={barY + barHeight + 3}
         />
       ) : null}
       {segment.topLeakRank ? (
@@ -297,6 +320,28 @@ function FlowBarShape({
       >
         {segment.displayTime}
       </text>
+      {segment.leakSeconds >= 1 ? (
+        <text
+          className="race-flow-svg__delta"
+          x={labelX}
+          y={labelY + 13}
+          textAnchor="start"
+        >
+          +{formatTime(segment.leakSeconds)}
+        </text>
+      ) : null}
+      {!segment.topLeakRank && barWidth > 20 ? (
+        <text
+          className="race-flow-svg__affordance"
+          x={barX + barWidth - 10}
+          y={barY + barHeight / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          aria-hidden="true"
+        >
+          &rsaquo;
+        </text>
+      ) : null}
     </g>
   );
 }
@@ -304,7 +349,9 @@ function FlowBarShape({
 export function RaceFlowMap({
   analysis,
   distanceUnit = "km",
-}: RaceVisualProps) {
+  openSegmentId = "",
+  openSignal = 0,
+}: RaceFlowMapProps) {
   const [compactChart, setCompactChart] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSegmentId, setModalSegmentId] = useState("");
@@ -400,6 +447,24 @@ export function RaceFlowMap({
     };
   }, [modalOpen]);
 
+  useEffect(() => {
+    if (!openSegmentId) {
+      return;
+    }
+
+    const segment = cumulativeSegments.find(
+      (currentSegment) => currentSegment.id === openSegmentId,
+    );
+
+    if (!segment) {
+      return;
+    }
+
+    setSelectedSegmentId(segment.id);
+    setModalSegmentId(segment.id);
+    setModalOpen(true);
+  }, [cumulativeSegments, openSegmentId, openSignal]);
+
   function selectSegment(segmentId: string) {
     setSelectedSegmentId(segmentId);
     setModalSegmentId(segmentId);
@@ -431,8 +496,8 @@ export function RaceFlowMap({
                 patternUnits="userSpaceOnUse"
                 patternTransform="rotate(45)"
               >
-                <rect width="8" height="8" fill="rgba(11, 18, 15, 0.12)" />
-                <rect width="3" height="8" fill="rgba(255, 255, 255, 0.36)" />
+                <rect width="8" height="8" fill="transparent" />
+                <rect width="2" height="8" fill="var(--flow-lost)" />
               </pattern>
             </defs>
             <CartesianGrid stroke="var(--line)" horizontal={false} />
@@ -469,7 +534,7 @@ export function RaceFlowMap({
           </BarChart>
         </ResponsiveContainer>
       </div>
-      {modalOpen && modalSegment ? (
+      {modalOpen && modalSegment ? createPortal(
         <div
           className="race-flow-modal"
           role="presentation"
@@ -483,7 +548,8 @@ export function RaceFlowMap({
             segment={modalSegment}
             onClose={() => setModalOpen(false)}
           />
-        </div>
+        </div>,
+        document.body,
       ) : null}
       <div className="race-visual__legend">
         <span className="race-visual__legend-item race-visual__legend-item--strong">
@@ -500,6 +566,15 @@ export function RaceFlowMap({
         </span>
         <span className="race-visual__legend-item race-visual__legend-item--pin">
           Leak marker
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--targetline">
+          Target
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--run">
+          Run
+        </span>
+        <span className="race-visual__legend-item race-visual__legend-item--station">
+          Station
         </span>
       </div>
     </div>
@@ -593,7 +668,7 @@ function raceStoryTone(analysis: Analysis) {
   }
 
   if (analysis.requiredGainPercent <= 3) {
-    return "The target is close. This is a precision race now: clean transitions, fewer station pauses, and no late pacing drift.";
+    return "The target is close. This is a precision race now: clean transitions, fewer station pauses and no late pacing drift.";
   }
 
   if (analysis.requiredGainPercent <= 8) {

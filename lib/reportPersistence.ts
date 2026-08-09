@@ -1,6 +1,7 @@
 import { Analysis, Level, Station, StationKey } from "./analysis";
 import { RaceFormat } from "./raceFormats";
 import { SavedReport } from "./reportStorage";
+import { TrainingContext, sanitizeTrainingContext } from "./trainingContext";
 
 export type PersistableReportInput = {
   raceFormat: RaceFormat;
@@ -10,6 +11,7 @@ export type PersistableReportInput = {
   runs: string[];
   stationDefinitions: Station[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
   analysis: Analysis;
 };
 
@@ -20,6 +22,7 @@ export type PersistableRaceReport = {
   athleteLevel: "STARTER" | "COMPETITIVE" | "ELITE";
   runSplits: string[];
   stationSplits: Record<StationKey, string>;
+  trainingContext?: TrainingContext;
   finishSeconds: number;
   predictedTargetSeconds: number;
   topLeakLabel: string;
@@ -28,11 +31,12 @@ export type PersistableRaceReport = {
 
 export type PersistedReportSummary = Omit<
   PersistableRaceReport,
-  "analysisSnapshot" | "raceFormat"
+  "analysisSnapshot" | "raceFormat" | "trainingContext"
 > & {
   id: string;
   createdAt: Date | string;
   raceFormat?: RaceFormat;
+  trainingContext?: unknown;
   analysisSnapshot?: unknown;
 };
 
@@ -57,6 +61,7 @@ export function toPersistableRaceReport({
   level,
   runs,
   stationSplits,
+  trainingContext,
   analysis,
 }: PersistableReportInput): PersistableRaceReport {
   return {
@@ -66,6 +71,7 @@ export function toPersistableRaceReport({
     athleteLevel: athleteLevelByLevel[level],
     runSplits: runs,
     stationSplits,
+    trainingContext,
     finishSeconds: analysis.finishSeconds,
     predictedTargetSeconds: analysis.predictedTargetSeconds,
     topLeakLabel: analysis.topLeaks[0]?.label ?? "",
@@ -112,6 +118,7 @@ export function toSavedReport(report: PersistedReportSummary): SavedReport {
         ? readStationDefinitionsFromSnapshot(report.analysisSnapshot)
         : undefined,
     stationSplits: report.stationSplits,
+    trainingContext: sanitizeTrainingContext(report.trainingContext),
     finishSeconds: report.finishSeconds,
     predictedTargetSeconds: report.predictedTargetSeconds,
     topLeakLabel: report.topLeakLabel,

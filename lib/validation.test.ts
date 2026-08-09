@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { initialRuns, initialStations } from "./analysis";
-import { isValidTime, normalizeTimeInput, validateReportInput } from "./validation";
+import {
+  isValidTime,
+  maskTimeInput,
+  normalizeTimeInput,
+  validateReportInput,
+} from "./validation";
 
 describe("normalizeTimeInput", () => {
   it("normalizes compact time entry into minute and race formats", () => {
@@ -8,6 +13,33 @@ describe("normalizeTimeInput", () => {
     expect(normalizeTimeInput("45")).toBe("0:45");
     expect(normalizeTimeInput("12500", "race")).toBe("1:25:00");
     expect(normalizeTimeInput("1:25:00", "race")).toBe("1:25:00");
+  });
+});
+
+describe("maskTimeInput", () => {
+  it("builds mm:ss right-to-left as digits are typed", () => {
+    expect(maskTimeInput("")).toBe("");
+    expect(maskTimeInput("5")).toBe("0:05");
+    expect(maskTimeInput("53")).toBe("0:53");
+    expect(maskTimeInput("530")).toBe("5:30");
+    expect(maskTimeInput("1230")).toBe("12:30");
+  });
+
+  it("builds h:mm:ss for the race format", () => {
+    expect(maskTimeInput("125", "race")).toBe("1:25");
+    expect(maskTimeInput("12500", "race")).toBe("1:25:00");
+    expect(maskTimeInput("112500", "race")).toBe("11:25:00");
+  });
+
+  it("is idempotent on an already-formatted value and strips stray chars", () => {
+    expect(maskTimeInput("5:30")).toBe("5:30");
+    expect(maskTimeInput("1:25:00", "race")).toBe("1:25:00");
+    expect(maskTimeInput("5:3")).toBe("0:53");
+  });
+
+  it("keeps only the most recent digits past the cap", () => {
+    expect(maskTimeInput("123456")).toBe("34:56");
+    expect(maskTimeInput("11234567", "race")).toBe("23:45:67");
   });
 });
 

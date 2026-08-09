@@ -42,6 +42,11 @@ Backend foundation:
 - beta feedback links for tester review
 - security headers, origin checks, and API rate limits for launch hardening
 - Open Graph and Twitter share metadata
+- password reset and email verification flows
+- account data export (GDPR-style self-service export)
+- Strava connection, profile sync, and auto-filled training context
+- admin dashboard for searching users and viewing account/report detail
+- admin subscription override (grant comp access / disable an account), audited via `AdminAction`
 
 Planned additions:
 
@@ -193,7 +198,9 @@ Implemented app-side safeguards:
 - user-scoped report reads and deletes
 - server-side report recalculation before persistence
 - browser origin checks on state-changing API routes
-- basic in-memory rate limits for auth, reports, checkout, and billing portal
+- Postgres-backed rate limits for auth, reports, checkout, and billing portal
+  (atomic upsert against `RateLimitCounter`, so limits hold across serverless
+  instances/invocations instead of resetting per-instance)
 - response security headers from `next.config.ts`
 
 Before taking broad public traffic:
@@ -202,13 +209,40 @@ Before taking broad public traffic:
 2. Rotate any key that was pasted into chat, logs, screenshots, or public tools.
 3. Use a managed production database with SSL, backups, and a strong password.
 4. Configure Stripe live webhooks and monitor failed webhook deliveries.
-5. Consider hosted rate limiting such as Upstash, Redis, Vercel Firewall, or
-   Cloudflare before scaling beyond a small beta. In-memory rate limits reset
-   when serverless instances restart and do not coordinate across instances.
-6. Add password reset and email verification before a larger paid launch.
-7. Review the legal pages with appropriate professional advice.
-8. Check the public URL in a social share preview tool so the Open Graph title,
+5. Review the legal pages with appropriate professional advice.
+6. Check the public URL in a social share preview tool so the Open Graph title,
    description, and image render as expected.
+
+## Admin
+
+There is no in-app way to grant admin access, by design. Grant or revoke it
+with the one-off script, against whichever database your active `.env` points
+at:
+
+```bash
+npx tsx prisma/set-admin.ts you@example.com          # grant
+npx tsx prisma/set-admin.ts you@example.com --revoke  # revoke
+```
+
+Admins get an `/admin` dashboard to search users and drill into an account's
+report and billing detail, plus a subscription override action (grant comp
+access, disable an account, or clear an existing override). Every override is
+recorded in the `AdminAction` table (admin, target user, action, reason,
+timestamp) for audit history. Admins with existing audit history cannot be
+deleted, to keep that history intact.
+
+All `/api/admin/*` routes 404 (not 403) for non-admins, so the endpoints are
+indistinguishable from nonexistent ones to anyone who isn't already a verified
+admin. Admin gating is checked before rate limiting, so that 404 behavior is
+consistent regardless of request volume.
+
+## Strava
+
+Users can connect a Strava account (`/api/strava/connect` → OAuth callback at
+`/api/strava/callback`) to auto-fill training context on new reports instead
+of entering it by hand. Tokens are stored encrypted (`STRAVA_TOKEN_ENCRYPTION_KEY`);
+`/api/strava/sync` refreshes the connection, `/api/strava/status` and
+`/api/strava/profile` back the in-app connection UI.
 
 ## Getting Started
 
@@ -217,6 +251,9 @@ Install dependencies:
 ```bash
 npm install
 ```
+
+Copy `.env.example` to `.env` and fill in a real `DATABASE_URL` (see
+[Environment Variables](#environment-variables)).
 
 Run the local dev server:
 
@@ -228,26 +265,91 @@ Open `http://127.0.0.1:3002`.
 
 For preview handoff steps, see [TESTING.md](./TESTING.md).
 
-## Scripts
+## Local Dev Seed Accounts
+
+`prisma/seed-dev.ts` seeds four fake accounts into the local dev database with
+race report history already filled in, so there's data to browse without
+building it up by hand. None of them have a Strava connection — sign up with
+your own account separately to test that flow for real.
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run test
-npm run prisma:generate
-npm run prisma:migrate
+npx prisma migrate deploy   # first time only, against a fresh dev database
+npx tsx prisma/seed-dev.ts  # safe to re-run; wipes and recreates these 4 accounts
 ```
+
+| Email | Level | Race format | Reports |
+|---|---|---|---|
+| `alex.starter@ocht.dev` | Starter | TRYKA 500 | 6, improving trend |
+| `jordan.competitive@ocht.dev` | Competitive | HYROX | 6, improving trend |
+| `sam.elite@ocht.dev` | Elite | HYROX | 6, improving trend |
+| `riley.tryka800@ocht.dev` | Competitive | TRYKA 800 | 6, improving trend |
+
+Password for all four: `OchtDevPass123!`
+
+All seed accounts are on `ACTIVE` subscription so premium report sections
+render without needing a real Stripe checkout locally.
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the dev server on `127.0.0.1:3002` |
+| `npm run build` | Production build (runs `prisma generate` first via `prebuild`) |
+| `npm run start` | Serve the production build |
+| `npm test` | Run the vitest suite once |
+| `npm run test:watch` | Run vitest in watch mode |
+| `npm run lint` | Run eslint |
+| `npm run prisma:generate` | Regenerate the Prisma client |
+| `npm run prisma:migrate` | Create/apply a dev migration |
+| `npm run prisma:studio` | Open Prisma Studio against the active `DATABASE_URL` |
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in real values. `.env.example` is a
+committed template only — nothing reads it directly.
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | Postgres connection string (Ocht runs on Neon in dev and prod) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public site origin; used to build checkout/portal/OAuth return URLs |
+| `NEXT_PUBLIC_ANALYTICS_ENABLED` | No | `true` to enable Vercel Analytics (default `false`) |
+| `BETA_SIGNUP_CODE` | No | Gate code for beta signups, if set |
+| `STRIPE_SECRET_KEY` | Yes (for billing) | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Yes (for billing) | Stripe webhook signing secret |
+| `STRIPE_PRICE_ID` | Yes (for billing) | Server-side recurring price id |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes (for billing) | Stripe publishable key |
+| `NEXT_PUBLIC_STRIPE_PRICE_ID` | Yes (for billing) | Client-side recurring price id |
+| `NEXT_PUBLIC_PREMIUM_SELF_SERVE_ENABLED` | No | `true` to show the real checkout/upgrade buttons (default `false` shows a "beta testers only" note instead — grant access manually via `/admin` until live Stripe keys are ready) |
+| `RESEND_API_KEY` | Yes (for email) | Resend API key for verification/reset emails |
+| `EMAIL_FROM` | Yes (for email) | From address, e.g. `Ocht <support@ocht.app>` |
+| `STRAVA_CLIENT_ID` | Yes (for Strava) | Strava OAuth app client id |
+| `STRAVA_CLIENT_SECRET` | Yes (for Strava) | Strava OAuth app client secret |
+| `STRAVA_TOKEN_ENCRYPTION_KEY` | Yes (for Strava) | 32-byte key to encrypt stored tokens: `openssl rand -base64 32` |
+
+`.env` must be saved as plain UTF-8 (no BOM). Prisma 7 doesn't auto-load
+`.env`, so `prisma.config.ts` hand-rolls the reader; a BOM at the start of the
+file breaks its regex and the Prisma CLI silently falls back to the
+`postgres:postgres@localhost` placeholder, while `next dev` (which strips the
+BOM) keeps working. If a Prisma CLI command fails auth but the app doesn't,
+check `.env`'s encoding first.
 
 ## Product Direction
 
-The first paid feature should be a full race analytics report:
-
-- split diagnosis
-- biggest time leaks
-- realistic next target
-- station ranking
-- four-week training priorities
-- unlockable full report via Stripe
+The first paid feature is the full race analytics report — split diagnosis,
+biggest time leaks, realistic next target, station ranking, and four-week
+training priorities, unlocked via Stripe. That's shipped; see
+[Upcoming Premium Features](#upcoming-premium-features) for what's next.
 
 The app is intentionally web-first. Once the workflow is proven, it can become a PWA or be wrapped with Capacitor for app stores.
+
+## Demo Video
+
+`video/` is a separate Remotion project (its own `package.json`) for
+rendering the Ocht demo video/stills. It isn't part of the Next.js app build.
+
+```bash
+cd video
+npm install
+npm run still   # renders out/still.png
+npm run render  # renders out/ocht-demo.mp4
+```

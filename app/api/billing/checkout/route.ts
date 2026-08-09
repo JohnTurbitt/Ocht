@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getCheckoutPriceId,
   getStripe,
+  sanitizeReturnPath,
   subscriptionStatusFromStripeSubscriptions,
 } from "@/lib/billing";
 import { checkoutError } from "@/lib/apiErrors";
@@ -11,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { guardBrowserMutation } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
-  const guardResponse = guardBrowserMutation(request, {
+  const guardResponse = await guardBrowserMutation(request, {
     key: "billing-checkout",
     limit: 8,
     windowMs: 15 * 60 * 1000,
@@ -31,6 +32,16 @@ export async function POST(request: NextRequest) {
     const stripe = getStripe();
     const priceId = getCheckoutPriceId();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+    const body = await request.json().catch(() => null);
+    const returnTo = sanitizeReturnPath(
+      (body as Record<string, unknown> | null)?.returnTo,
+      "/",
+    );
+    // Checkout always lands back on "/" first — that's the page that knows how to
+    // poll and confirm the new subscription status. It then forwards on to returnTo
+    // once the sync finishes, so a checkout started from Settings ends on Settings.
+    const returnParam =
+      returnTo !== "/" ? `&return_to=${encodeURIComponent(returnTo)}` : "";
     const databaseUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
@@ -97,8 +108,8 @@ export async function POST(request: NextRequest) {
       customer: customerId,
       client_reference_id: databaseUser.id,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/?checkout=success`,
-      cancel_url: `${appUrl}/?checkout=cancelled`,
+      success_url: `${appUrl}/?checkout=success${returnParam}`,
+      cancel_url: `${appUrl}/?checkout=cancelled${returnParam}`,
       metadata: { userId: databaseUser.id },
       subscription_data: {
         metadata: { userId: databaseUser.id },

@@ -3,6 +3,14 @@ node_modules
 dist
 .env
 .env.local
+.env.*.local
 *.log
 dev-server*.log
 tsconfig.tsbuildinfo
+video/node_modules
+video/out
+.superpowers/
+.vercel
+.env*
+.worktrees/
+branding/

@@ -1,103 +1,70 @@
-import { Analysis, clamp, formatTime, parseTime } from "@/lib/analysis";
-import {
-  DistanceUnit,
-  distanceUnitLabels,
-  getTotalRunDistance,
-} from "@/lib/units";
-import { Hint } from "./Hint";
+﻿"use client";
 
-type TargetSimulatorProps = {
-  analysis: Analysis;
-  distanceUnit: DistanceUnit;
-  runGainPerKm: string;
-  stationGain: string;
-  transitionGain: string;
-  showHints: boolean;
-  onRunGainPerKmChange: (value: string) => void;
-  onStationGainChange: (value: string) => void;
-  onTransitionGainChange: (value: string) => void;
+import { useState } from "react";
+import { formatTime } from "@/lib/analysis";
+
+type StationSlider = {
+  key: string;
+  label: string;
+  prSeconds: number;
+  currentSeconds: number;
 };
 
-export function TargetSimulator({
-  analysis,
-  distanceUnit,
-  runGainPerKm,
-  stationGain,
-  transitionGain,
-  showHints,
-  onRunGainPerKmChange,
-  onStationGainChange,
-  onTransitionGainChange,
-}: TargetSimulatorProps) {
-  const runCount =
-    analysis.raceSegments.filter((segment) => segment.type === "run").length ||
-    1;
-  const totalRunDistance = getTotalRunDistance(
-    runCount,
-    analysis.raceFormat,
-    distanceUnit,
-  );
-  const simulatedRunGain =
-    clamp(Number(runGainPerKm) || 0, 0, 90) * totalRunDistance;
-  const simulatedStationGain = clamp(parseTime(stationGain), 0, 900);
-  const simulatedTransitionGain = clamp(parseTime(transitionGain), 0, 300);
-  const simulatedSavings =
-    simulatedRunGain + simulatedStationGain + simulatedTransitionGain;
-  const simulatedFinish = Math.max(analysis.finishSeconds - simulatedSavings, 0);
-  const simulatedTargetGap = Math.max(
-    simulatedFinish - analysis.targetSeconds,
-    0,
+type TargetSimulatorProps = {
+  stations: StationSlider[];
+};
+
+export function TargetSimulator({ stations }: TargetSimulatorProps) {
+  const [targets, setTargets] = useState<Record<string, number>>(
+    Object.fromEntries(stations.map((s) => [s.key, s.prSeconds]))
   );
 
+  function handleSlider(key: string, value: number) {
+    setTargets((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function resetToPRs() {
+    setTargets(Object.fromEntries(stations.map((s) => [s.key, s.prSeconds])));
+  }
+
+  const total = Object.values(targets).reduce((sum, v) => sum + v, 0);
+
   return (
-    <div className="simulator">
-      <div className="simulator__inputs">
-        <label className="field">
-          <span>
-            Run <Hint enabled={showHints} hint="gain" term="gain" /> per{" "}
-            {distanceUnitLabels[distanceUnit]}
-          </span>
-          <input
-            value={runGainPerKm}
-            onChange={(event) => onRunGainPerKmChange(event.target.value)}
-            inputMode="numeric"
-            placeholder="8"
-          />
-        </label>
-        <label className="field">
-          <span>
-            Station <Hint enabled={showHints} hint="gain" term="gain" />
-          </span>
-          <input
-            value={stationGain}
-            onChange={(event) => onStationGainChange(event.target.value)}
-            inputMode="numeric"
-            placeholder="2:30"
-          />
-        </label>
-        <label className="field">
-          <span>
-            <Hint enabled={showHints} hint="transition" term="Transition" />{" "}
-            <Hint enabled={showHints} hint="gain" term="gain" />
-          </span>
-          <input
-            value={transitionGain}
-            onChange={(event) => onTransitionGainChange(event.target.value)}
-            inputMode="numeric"
-            placeholder="0:45"
-          />
-        </label>
+    <div className="simulator simulator--sliders">
+      <div className="simulator__total">
+        <span className="simulator__total-label">Target stations total</span>
+        <strong className="simulator__total-time">{formatTime(total)}</strong>
       </div>
-      <div className="simulator__result">
-        <span>Projected finish</span>
-        <strong>{formatTime(simulatedFinish)}</strong>
-        <p>
-          {formatTime(simulatedSavings)} saved.{" "}
-          {simulatedTargetGap > 0
-            ? `${formatTime(simulatedTargetGap)} still to find.`
-            : "This beats the entered target."}
-        </p>
+      <div className="simulator__station-list">
+        {stations.map((station) => {
+          const val = targets[station.key] ?? station.prSeconds;
+          const overPR = val > station.prSeconds;
+          const minVal = Math.max(0, station.prSeconds - 120);
+          const maxVal = station.prSeconds + 120;
+          return (
+            <div key={station.key} className={`simulator__station-row${overPR ? " simulator__station-row--over-pr" : ""}`}>
+              <div className="simulator__station-head">
+                <span className="simulator__station-name">{station.label}</span>
+                <div className="simulator__station-times">
+                  <span className="simulator__station-target">{formatTime(val)}</span>
+                  <span className="simulator__station-pr">PR {formatTime(station.prSeconds)}</span>
+                </div>
+              </div>
+              <input
+                type="range"
+                className={`simulator__slider${overPR ? " simulator__slider--over-pr" : ""}`}
+                min={minVal} max={maxVal} step={1} value={val}
+                onChange={(e) => handleSlider(station.key, Number(e.target.value))}
+                aria-label={`Target time for ${station.label}`}
+                aria-valuetext={formatTime(val)}
+              />
+            </div>
+          );
+        })}
       </div>
+      <button type="button" className="simulator__reset" onClick={resetToPRs}>
+        Reset to PRs
+      </button>
     </div>
   );
 }
