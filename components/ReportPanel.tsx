@@ -5,6 +5,7 @@ import { Analysis, formatTime, tierFor } from "@/lib/analysis";
 import { trackEvent } from "@/lib/analytics";
 import { SavedReport } from "@/lib/reportStorage";
 import { buildPRMap } from "@/lib/prUtils";
+import { PREMIUM_SELF_SERVE_ENABLED } from "@/lib/featureFlags";
 import { calculateRaceReadiness, readinessLabel } from "@/lib/readiness";
 import {
   TrainingContext,
@@ -849,24 +850,33 @@ export function ReportPanel({
               <li>Share images, print view and coach summary</li>
             </ul>
           </div>
-          <button
-            className="btn btn--primary btn--cut"
-            type="button"
-            onClick={onStartCheckout}
-            disabled={!canStartCheckout || billingLoading}
-            data-analytics-source="paywall"
-          >
-            {billingLoading ? (
-              <span className="button-loading">
-                <OctagonSpinner size={18} />
-                Opening checkout...
-              </span>
-            ) : canStartCheckout ? (
-              "Unlock full report"
-            ) : (
-              "Sign in to unlock"
-            )}
-          </button>
+          {PREMIUM_SELF_SERVE_ENABLED ? (
+            <button
+              className="btn btn--primary btn--cut"
+              type="button"
+              onClick={onStartCheckout}
+              disabled={!canStartCheckout || billingLoading}
+              data-analytics-source="paywall"
+            >
+              {billingLoading ? (
+                <span className="button-loading">
+                  <OctagonSpinner size={18} />
+                  Opening checkout...
+                </span>
+              ) : canStartCheckout ? (
+                "Unlock full report"
+              ) : (
+                "Sign in to unlock"
+              )}
+            </button>
+          ) : (
+            <p className="paywall__beta-note">
+              <PremiumBadge label="Beta testers only" /> Beta testers only —
+              email{" "}
+              <a href="mailto:support@ocht.app">support@ocht.app</a> for early
+              access.
+            </p>
+          )}
         </div>
       ) : (
         <>

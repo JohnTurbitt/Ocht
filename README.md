@@ -319,6 +319,7 @@ committed template only — nothing reads it directly.
 | `STRIPE_PRICE_ID` | Yes (for billing) | Server-side recurring price id |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes (for billing) | Stripe publishable key |
 | `NEXT_PUBLIC_STRIPE_PRICE_ID` | Yes (for billing) | Client-side recurring price id |
+| `NEXT_PUBLIC_PREMIUM_SELF_SERVE_ENABLED` | No | `true` to show the real checkout/upgrade buttons (default `false` shows a "beta testers only" note instead — grant access manually via `/admin` until live Stripe keys are ready) |
 | `RESEND_API_KEY` | Yes (for email) | Resend API key for verification/reset emails |
 | `EMAIL_FROM` | Yes (for email) | From address, e.g. `Ocht <support@ocht.app>` |
 | `STRAVA_CLIENT_ID` | Yes (for Strava) | Strava OAuth app client id |

@@ -1238,6 +1238,19 @@
   cursor: not-allowed;
 }
 
+.paywall__beta-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  font-size: 0.82rem !important;
+  color: var(--muted) !important;
+
+  a {
+    color: var(--lime);
+  }
+}
+
 .report-actions {
   display: flex;
   flex-wrap: wrap;

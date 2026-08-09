@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AuthUser } from "@/lib/apiClient";
+import { PREMIUM_SELF_SERVE_ENABLED } from "@/lib/featureFlags";
 import { persistPremiumStepSkipped, readPremiumStepSkipped } from "@/lib/preferences";
 
 type OnboardingChecklistProps = {
@@ -59,17 +60,27 @@ export function OnboardingChecklist({
       actionLabel: "Create report",
       onAction: onCreateReport,
     },
-    {
-      id: "premium",
-      title: "Unlock premium",
-      detail: "Open full reports, custom formats and premium analysis.",
-      complete: user.subscription === "ACTIVE" || premiumSkipped,
-      actionLabel: billingLoading ? "Opening..." : "Upgrade",
-      onAction: onStartCheckout,
-      disabled: billingLoading,
-      secondaryActionLabel: "Later",
-      onSecondaryAction: skipPremiumStep,
-    },
+    PREMIUM_SELF_SERVE_ENABLED
+      ? {
+          id: "premium",
+          title: "Unlock premium",
+          detail: "Open full reports, custom formats and premium analysis.",
+          complete: user.subscription === "ACTIVE" || premiumSkipped,
+          actionLabel: billingLoading ? "Opening..." : "Upgrade",
+          onAction: onStartCheckout,
+          disabled: billingLoading,
+          secondaryActionLabel: "Later",
+          onSecondaryAction: skipPremiumStep,
+        }
+      : {
+          id: "premium",
+          title: "Unlock premium",
+          detail:
+            "Premium is beta testers only right now — email support@ocht.app for early access.",
+          complete: user.subscription === "ACTIVE" || premiumSkipped,
+          secondaryActionLabel: "Later",
+          onSecondaryAction: skipPremiumStep,
+        },
   ];
   const completedCount = steps.filter((step) => step.complete).length;
 

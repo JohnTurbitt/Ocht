@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Level, levelLabels } from "@/lib/analysis";
+import { PREMIUM_SELF_SERVE_ENABLED } from "@/lib/featureFlags";
 import {
   AuthUser,
   ProfileFormInput,
@@ -500,7 +501,7 @@ export default function SettingsPage() {
                       : "Upgrade to unlock Fitness Insights, Race Blueprint and more."}
                 </div>
               </div>
-              {canUpgrade && (
+              {canUpgrade && PREMIUM_SELF_SERVE_ENABLED && (
                 <button
                   className="button-secondary auth-panel__upgrade"
                   type="button"
@@ -516,6 +517,13 @@ export default function SettingsPage() {
                     "Upgrade to premium"
                   )}
                 </button>
+              )}
+              {canUpgrade && !PREMIUM_SELF_SERVE_ENABLED && (
+                <p className="settings-beta-note">
+                  Beta testers only — email{" "}
+                  <a href="mailto:support@ocht.app">support@ocht.app</a> for
+                  early access.
+                </p>
               )}
               {canManageBilling && (
                 <button
