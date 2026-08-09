@@ -15,8 +15,6 @@ import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import {
-  persistAvatarColor,
-  persistAvatarIcon,
   readAvatarColor,
   readAvatarIcon,
 } from "@/lib/preferences";
@@ -69,20 +67,15 @@ import {
 import {
   AuthFormInput,
   AuthUser,
-  deleteAccount,
   deleteRemoteReport,
   getCurrentUser,
   loadRemoteReports,
   logIn,
-  logOut,
-  openBillingPortal,
-  ProfileFormInput,
   resendEmailVerification,
   saveRemoteReport,
   signUp,
   startCheckout,
   syncBillingStatus,
-  updateProfile,
 } from "@/lib/apiClient";
 import { trackEvent } from "@/lib/analytics";
 import {
@@ -574,55 +567,6 @@ export default function Home() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await logOut();
-      setUser(null);
-      setSavedReports(loadSavedReports());
-      setToast({
-        id: Date.now(),
-        title: "Signed out",
-        message: "Ocht is showing reports saved on this device.",
-        tone: "success",
-      });
-      trackEvent("logout_completed");
-    } catch (error) {
-      setToast({
-        id: Date.now(),
-        title: "Logout failed",
-        message:
-          error instanceof Error ? error.message : "Ocht could not log out.",
-        tone: "error",
-      });
-    }
-  }
-
-  async function handleDeleteAccount() {
-    try {
-      await deleteAccount();
-      setUser(null);
-      setSavedReports(loadSavedReports());
-      setToast({
-        id: Date.now(),
-        title: "Account deleted",
-        message: "Your Ocht account and saved reports have been removed.",
-        tone: "success",
-      });
-      trackEvent("account_deleted");
-    } catch (error) {
-      setToast({
-        id: Date.now(),
-        title: "Account not deleted",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Ocht could not delete your account.",
-        tone: "error",
-      });
-      throw error;
-    }
-  }
-
   async function handleStartCheckout() {
     if (!user) {
       setToast({
@@ -653,27 +597,6 @@ export default function Home() {
       });
       setBillingLoading(false);
       trackEvent("checkout_start_failed");
-    }
-  }
-
-  async function handleManageBilling() {
-    setBillingLoading(true);
-    trackEvent("billing_portal_started");
-
-    try {
-      window.location.href = await openBillingPortal();
-    } catch (error) {
-      setToast({
-        id: Date.now(),
-        title: "Billing not opened",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Ocht could not open billing settings.",
-        tone: "error",
-      });
-      setBillingLoading(false);
-      trackEvent("billing_portal_failed");
     }
   }
 
@@ -760,28 +683,6 @@ export default function Home() {
   function loadSampleFromDemo() {
     dismissBeginnerGuide("beginner_demo_sample_loaded");
     applyReportPreset(sampleReportPreset);
-  }
-
-  async function handleSaveProfile(input: ProfileFormInput) {
-    try {
-      const updatedUser = await updateProfile(input);
-
-      setUser(updatedUser);
-      setLevel(updatedUser.defaultLevel);
-      setTargetTime(updatedUser.defaultTargetTime);
-      trackEvent("profile_saved");
-    } catch (error) {
-      setToast({
-        id: Date.now(),
-        title: "Profile not saved",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Ocht could not save your profile.",
-        tone: "error",
-      });
-      throw error;
-    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1052,17 +953,12 @@ export default function Home() {
     if (sampleParam || authParam) {
       window.history.replaceState({}, "", window.location.pathname);
     }
+    // Intentionally mount-only: reads the URL's initial ?sample=/?auth=
+    // params once and strips them via replaceState. applyReportPreset is
+    // unmemoized (a new reference every render), so adding it here would
+    // just make this effect fire on every render instead of once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function updateAvatarColor(color: string) {
-    setAvatarColor(color);
-    persistAvatarColor(color);
-  }
-
-  function updateAvatarIcon(icon: string) {
-    setAvatarIcon(icon);
-    persistAvatarIcon(icon);
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -1363,7 +1259,6 @@ export default function Home() {
             avatarIcon={avatarIcon}
             onLogin={handleLogin}
             onSignup={handleSignup}
-            onLogout={handleLogout}
             initialMode={authModeParam}
           />
         </div>
