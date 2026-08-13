@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy - Ocht",
   description: "How Ocht handles account, billing and race report data.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

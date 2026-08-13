@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service - Ocht",
   description: "Terms for using Ocht race analytics and paid reports.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

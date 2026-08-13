@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Calculation Method - Ocht",
   description:
     "How Ocht calculates race splits, time leaks, target gaps and training priorities.",
+  alternates: { canonical: "/calculations" },
 };
 
 export default function CalculationsPage() {
