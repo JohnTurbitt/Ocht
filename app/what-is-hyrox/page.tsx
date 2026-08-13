@@ -7,6 +7,7 @@ import { FormatQuickFacts } from "@/components/hybrid-racing/FormatQuickFacts";
 import { FormatStationGrid } from "@/components/hybrid-racing/FormatStationGrid";
 import { getRaceFormatOption } from "@/lib/raceFormats";
 import { getTotalRunDistance } from "@/lib/units";
+import { hyroxStationDescriptions } from "@/lib/formatStationCopy";
 
 const format = getRaceFormatOption("hyrox");
 const totalRunKm = getTotalRunDistance(8, "hyrox", "km");
@@ -38,17 +39,6 @@ export const metadata: Metadata = {
     description: pageDescription,
     images: ["/hybrid-racing/hyrox-hero.jpg"],
   },
-};
-
-const stationDescriptions: Record<string, string> = {
-  ski: "1,000m on the SkiErg to open the race — the first check on pacing discipline.",
-  sledPush: "50m sled push at heavy load. Short, brutal, over quickly.",
-  sledPull: "50m sled pull, hand over hand on a rope.",
-  burpees: "80m of burpee broad jumps — the station most people dread.",
-  row: "1,000m on the rowing ergometer.",
-  farmers: "200m farmers carry with two loaded kettlebells.",
-  lunges: "100m of walking lunges carrying a sandbag.",
-  wallBalls: "The final station — repeated wall ball shots before the finish line.",
 };
 
 const articleJsonLd = {
@@ -97,7 +87,7 @@ export default function WhatIsHyroxPage() {
       <FormatQuickFacts
         facts={[
           { value: `${totalRunKm}km`, label: "Total running" },
-          { value: "8", label: "Stations" },
+          { value: `${format.stations.length}`, label: "Stations" },
           { value: "Fixed", label: "Station order" },
         ]}
       />
@@ -124,10 +114,10 @@ export default function WhatIsHyroxPage() {
       </section>
 
       <FormatStationGrid
-        heading="The 8 HYROX stations"
+        heading={`The ${format.stations.length} HYROX stations`}
         stations={format.stations.map((station) => ({
           label: station.label,
-          description: stationDescriptions[station.key] ?? station.guidance,
+          description: hyroxStationDescriptions[station.key] ?? station.guidance,
         }))}
       />
 
