@@ -313,7 +313,6 @@ committed template only — nothing reads it directly.
 | `DATABASE_URL` | Yes | Postgres connection string (Ocht runs on Neon in dev and prod) |
 | `NEXT_PUBLIC_APP_URL` | Yes | Public site origin; used to build checkout/portal/OAuth return URLs |
 | `NEXT_PUBLIC_ANALYTICS_ENABLED` | No | `true` to enable Vercel Analytics (default `false`) |
-| `BETA_SIGNUP_CODE` | No | Gate code for beta signups, if set |
 | `STRIPE_SECRET_KEY` | Yes (for billing) | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Yes (for billing) | Stripe webhook signing secret |
 | `STRIPE_PRICE_ID` | Yes (for billing) | Server-side recurring price id |
