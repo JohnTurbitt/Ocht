@@ -5,9 +5,25 @@ import { LandingHowItWorks } from "@/components/landing/LandingHowItWorks";
 import { LandingFeatureHighlight } from "@/components/landing/LandingFeatureHighlight";
 import { LandingFooterCta } from "@/components/landing/LandingFooterCta";
 
+const softwareApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Ocht",
+  applicationCategory: "SportsApplication",
+  operatingSystem: "Web",
+  description:
+    "Trace hybrid race splits, find time leaks and build a realistic next target.",
+};
+
 export default function LandingPage() {
   return (
     <main className="landing-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationJsonLd),
+        }}
+      />
       <header className="landing-header">
         <Link className="landing-header__brand" href="/">
           <OchtShield className="landing-header__shield" size={22} />
