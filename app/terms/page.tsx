@@ -52,10 +52,6 @@ export default function TermsPage() {
         For terms questions, email{" "}
         <a href="mailto:support@ocht.app">support@ocht.app</a>.
       </p>
-      <p className="legal-page__note">
-        Last updated: May 4, 2026. Replace this page with lawyer-reviewed copy
-        before broad public launch.
-      </p>
     </main>
   );
 }
