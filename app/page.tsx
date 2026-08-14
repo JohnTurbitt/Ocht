@@ -31,7 +31,9 @@ export default function LandingPage() {
             ocht<em>.</em>
           </span>
         </Link>
-        <nav className="landing-header__actions" aria-label="Account">
+        <nav className="landing-header__actions" aria-label="Site">
+          <Link href="/what-is-hyrox">What is HYROX?</Link>
+          <Link href="/what-is-tryka">What is TRYKA?</Link>
           <Link href="/app?auth=login">Log in</Link>
           <Link className="btn btn--primary btn--sm" href="/app?auth=signup">
             Sign up free
