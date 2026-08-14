@@ -1181,6 +1181,9 @@
 }
 
 .site-footer__link {
+  width: auto;
+  min-height: 0;
+  margin-top: 0;
   border: none;
   background: none;
   padding: 0;
@@ -1192,6 +1195,7 @@
 }
 
 .site-footer__link:hover {
+  background: none;
   text-decoration: underline;
 }
 
