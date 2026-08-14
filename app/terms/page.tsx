@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service - Ocht",
   description: "Terms for using Ocht race analytics and paid reports.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
@@ -50,10 +51,6 @@ export default function TermsPage() {
       <p>
         For terms questions, email{" "}
         <a href="mailto:support@ocht.app">support@ocht.app</a>.
-      </p>
-      <p className="legal-page__note">
-        Last updated: May 4, 2026. Replace this page with lawyer-reviewed copy
-        before broad public launch.
       </p>
     </main>
   );

@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     description: appDescription,
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Ocht hybrid race split analyzer preview",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ocht - Hybrid Race Split Analyzer",
     description: appDescription,
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
 };
 

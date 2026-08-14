@@ -1,0 +1,201 @@
+// styles/_hybrid-racing.scss
+// Shared layout for the HYROX/TRYKA SEO explainer pages. Mirrors the
+// landing-page hero pattern (fixed dark hero band, themed sections below)
+// so these pages feel like the same site, not a bolted-on blog.
+
+.format-page {
+  background: var(--paper);
+}
+
+.format-hero {
+  display: grid;
+  grid-template-columns: 1fr 42%;
+  min-height: 380px;
+  background: #08100d;
+  color: #f4f7ef;
+  overflow: hidden;
+}
+
+.format-hero__text {
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.format-hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.format-hero__text h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.05;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+
+.format-hero__dek {
+  font-size: 1rem;
+  color: rgba(244, 247, 239, 0.75);
+  max-width: 32rem;
+  margin: 0 0 28px;
+}
+
+.format-hero__photo {
+  position: relative;
+  background-image:
+    linear-gradient(90deg, #08100d 0%, rgba(8, 16, 13, 0) 45%),
+    var(--format-hero-photo);
+  background-size: cover;
+  background-position: 50% 30%;
+}
+
+.format-quick-facts {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 28px 48px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.format-quick-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.format-quick-facts__value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.format-quick-facts__label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.format-body {
+  padding: 48px;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.format-body h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.format-body h3 {
+  font-size: 1rem;
+  color: var(--ink);
+  margin: 20px 0 6px;
+}
+
+.format-body p {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.format-body p:last-child {
+  margin-bottom: 0;
+}
+
+.format-body--callout {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 52rem;
+}
+
+.format-station-grid {
+  padding: 48px;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.format-station-grid h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 24px;
+}
+
+.format-station-grid__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.format-station-grid__item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.format-station-grid__index {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--lime);
+}
+
+.format-station-grid__item h3 {
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin: 8px 0 6px;
+}
+
+.format-station-grid__item p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .format-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .format-hero__text {
+    padding: 36px 24px;
+  }
+
+  .format-hero__photo {
+    height: 200px;
+    background-image:
+      linear-gradient(180deg, rgba(8, 16, 13, 0) 40%, #08100d 100%),
+      var(--format-hero-photo);
+  }
+
+  .format-quick-facts,
+  .format-body,
+  .format-station-grid {
+    padding: 32px 24px;
+  }
+
+  .format-station-grid__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy - Ocht",
   description: "How Ocht handles account, billing and race report data.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
@@ -59,10 +60,6 @@ export default function PrivacyPage() {
       <p>
         For privacy requests, email{" "}
         <a href="mailto:support@ocht.app">support@ocht.app</a>.
-      </p>
-      <p className="legal-page__note">
-        Last updated: May 4, 2026. Replace this page with lawyer-reviewed copy
-        before broad public launch.
       </p>
     </main>
   );

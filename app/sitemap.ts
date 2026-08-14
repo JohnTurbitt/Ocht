@@ -9,15 +9,24 @@ const staticRoutes = [
   "/privacy",
   "/refunds",
   "/terms",
+  "/what-is-hyrox",
+  "/what-is-tryka",
 ];
+
+const formatGuideRoutes = new Set(["/what-is-hyrox", "/what-is-tryka"]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return staticRoutes.map((route) => ({
-    url: `${appUrl}${route}`,
-    lastModified,
-    changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : 0.5,
-  }));
+  return staticRoutes.map((route) => {
+    const isHome = route === "";
+    const isFormatGuide = formatGuideRoutes.has(route);
+
+    return {
+      url: `${appUrl}${route}`,
+      lastModified,
+      changeFrequency: isHome ? "weekly" : "monthly",
+      priority: isHome ? 1 : isFormatGuide ? 0.6 : 0.5,
+    };
+  });
 }

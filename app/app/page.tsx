@@ -1246,8 +1246,14 @@ export default function Home() {
           </span>
         </Link>
         {process.env.NODE_ENV !== "production" && <DevModeBadge />}
-        <nav className="site-header__nav" aria-label="Race calendar">
+        <nav className="site-header__nav" aria-label="Race calendar and guides">
           <UpcomingEventsMenu />
+          <Link className="events-menu__trigger" href="/what-is-hyrox">
+            HYROX
+          </Link>
+          <Link className="events-menu__trigger" href="/what-is-tryka">
+            TRYKA
+          </Link>
         </nav>
         <div className="site-header__actions">
           <AuthPanel
