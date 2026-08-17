@@ -26,7 +26,8 @@ export function PacingCalculator() {
     return buildPacingScenarios({ targetSeconds, level, raceFormat });
   }, [targetSeconds, level, raceFormat]);
 
-  const balanced = scenarios[0];
+  const [activeScenarioId, setActiveScenarioId] = useState<PacingScenario["id"]>("balanced");
+  const activeScenario = scenarios.find((s) => s.id === activeScenarioId) ?? scenarios[0];
 
   return (
     <div className="pacing-calculator">
@@ -72,22 +73,43 @@ export function PacingCalculator() {
         </div>
       </div>
 
-      {balanced ? (
-        <div className="pacing-calculator__scenario">
-          <p className="pacing-calculator__note">{balanced.note}</p>
-          <div className="pacing-calculator__grid">
-            {balanced.segments.map((segment) => (
-              <div className="pacing-calculator__row" key={segment.id}>
-                <span>{segment.label}</span>
-                <span>{formatSegmentTime(segment.seconds)}</span>
-              </div>
+      {activeScenario ? (
+        <>
+          <div className="pacing-calculator__tabs" role="tablist" aria-label="Pacing strategy">
+            {scenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                role="tab"
+                aria-selected={scenario.id === activeScenario.id}
+                className={
+                  scenario.id === activeScenario.id
+                    ? "pacing-calculator__tab is-active"
+                    : "pacing-calculator__tab"
+                }
+                onClick={() => setActiveScenarioId(scenario.id)}
+              >
+                {scenario.label}
+              </button>
             ))}
           </div>
-          <div className="pacing-calculator__total">
-            <span>Projected finish</span>
-            <span>{balanced.totalLabel}</span>
+
+          <div className="pacing-calculator__scenario">
+            <p className="pacing-calculator__note">{activeScenario.note}</p>
+            <div className="pacing-calculator__grid">
+              {activeScenario.segments.map((segment) => (
+                <div className="pacing-calculator__row" key={segment.id}>
+                  <span>{segment.label}</span>
+                  <span>{formatSegmentTime(segment.seconds)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="pacing-calculator__total">
+              <span>Projected finish</span>
+              <span>{activeScenario.totalLabel}</span>
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         <p className="pacing-calculator__empty">Enter a target finish time to build a plan.</p>
       )}
