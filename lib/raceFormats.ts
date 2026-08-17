@@ -1,7 +1,18 @@
-import type { Station, StationKey } from "./analysis";
+import type { Level, Station, StationKey } from "./analysis";
 import { stations } from "./analysis";
 
 export type RaceFormat = "hyrox" | "tryka800" | "tryka500" | "custom";
+
+// Baseline running pace per level, seconds per km, at a controlled
+// race-day effort (not a max-effort standalone 1km time). Used only by
+// the pacing predictor (lib/pacingPredictor.ts) to project a plan for
+// someone who hasn't raced yet — real races always use actual splits
+// instead of this baseline.
+export const runPaceSecPerKm: Record<Level, number> = {
+  starter: 345,
+  competitive: 280,
+  elite: 235,
+};
 
 export type RaceFormatOption = {
   id: RaceFormat;
