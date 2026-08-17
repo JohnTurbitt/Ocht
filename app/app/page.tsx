@@ -1254,6 +1254,9 @@ export default function Home() {
           <Link className="events-menu__trigger" href="/what-is-tryka">
             TRYKA
           </Link>
+          <Link className="events-menu__trigger" href="/hyrox-pacing-calculator">
+            Pacing calculator
+          </Link>
         </nav>
         <div className="site-header__actions">
           <AuthPanel
