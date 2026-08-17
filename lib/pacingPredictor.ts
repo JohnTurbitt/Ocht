@@ -66,6 +66,12 @@ export function buildPacingScenarios({
   level,
   raceFormat,
 }: PacingScenarioInput): PacingScenario[] {
+  if (raceFormat === "custom") {
+    throw new Error(
+      "buildPacingScenarios does not support raceFormat \"custom\" — it has no stations to pace against.",
+    );
+  }
+
   const format = getRaceFormatOption(raceFormat);
   const legDistanceKm = getRunDistanceKm(raceFormat);
   const runBenchmarkPerLeg = runPaceSecPerKm[level] * legDistanceKm;

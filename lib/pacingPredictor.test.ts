@@ -94,4 +94,14 @@ describe("buildPacingScenarios", () => {
     expect(balanced.segments[0].label).toBe("Run 1");
     expect(balanced.segments[1].label).toBe("SkiErg");
   });
+
+  it("throws for raceFormat \"custom\" instead of silently returning a broken total", () => {
+    expect(() =>
+      buildPacingScenarios({
+        targetSeconds: parseTime("1:15:00"),
+        level: "competitive",
+        raceFormat: "custom",
+      }),
+    ).toThrow();
+  });
 });
