@@ -4,6 +4,18 @@
 // the input controls — this partial only covers the parts unique to
 // this page: scenario tabs, the split-plan grid, and the CTA band.
 
+// .format-hero (in _hybrid-racing.scss) is a shared two-column grid built
+// for /what-is-hyrox and /what-is-tryka, which both render a
+// .format-hero__photo alongside .format-hero__text. This page has no hero
+// photo — only .format-hero__text — so the second (42%) column would sit
+// empty and reserved at desktop widths, confining the hero text to ~58% of
+// the container. Scope a single-column override to this page only via the
+// .pacing-calculator-page wrapper class on <main>, so /what-is-hyrox and
+// /what-is-tryka keep their two-column layout untouched.
+.pacing-calculator-page .format-hero {
+  grid-template-columns: 1fr;
+}
+
 .pacing-calculator {
   max-width: 52rem;
   margin: 0 auto;

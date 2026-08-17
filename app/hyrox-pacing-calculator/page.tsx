@@ -34,7 +34,7 @@ const articleJsonLd = {
 
 export default function PacingCalculatorPage() {
   return (
-    <main className="format-page">
+    <main className="format-page pacing-calculator-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
