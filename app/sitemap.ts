@@ -11,6 +11,7 @@ const staticRoutes = [
   "/terms",
   "/what-is-hyrox",
   "/what-is-tryka",
+  "/hyrox-pacing-calculator",
 ];
 
 const formatGuideRoutes = new Set(["/what-is-hyrox", "/what-is-tryka"]);
