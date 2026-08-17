@@ -307,6 +307,15 @@
   color: var(--ink);
   text-decoration: none;
   opacity: 0.75;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.landing-header__actions a:not(.btn):hover,
+.landing-header__actions a:not(.btn):focus-visible {
+  opacity: 1;
+  border-bottom-color: var(--lime);
 }
 
 .landing-footer-cta {

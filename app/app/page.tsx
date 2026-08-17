@@ -1248,13 +1248,13 @@ export default function Home() {
         {process.env.NODE_ENV !== "production" && <DevModeBadge />}
         <nav className="site-header__nav" aria-label="Race calendar and guides">
           <UpcomingEventsMenu />
-          <Link className="events-menu__trigger" href="/what-is-hyrox">
+          <Link className="site-header__nav-link" href="/what-is-hyrox">
             HYROX
           </Link>
-          <Link className="events-menu__trigger" href="/what-is-tryka">
+          <Link className="site-header__nav-link" href="/what-is-tryka">
             TRYKA
           </Link>
-          <Link className="events-menu__trigger" href="/hyrox-pacing-calculator">
+          <Link className="site-header__nav-link" href="/hyrox-pacing-calculator">
             Pacing calculator
           </Link>
         </nav>
