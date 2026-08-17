@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Level, levelLabels } from "@/lib/analysis";
+import { getPacingCtaContent } from "@/lib/pacingCta";
 import { buildPacingScenarios, PacingScenario } from "@/lib/pacingPredictor";
 import { RaceFormat, raceFormatOptions } from "@/lib/raceFormats";
 import { maskTimeInput, normalizeTimeInput } from "@/lib/validation";
@@ -28,6 +29,17 @@ export function PacingCalculator() {
 
   const [activeScenarioId, setActiveScenarioId] = useState<PacingScenario["id"]>("balanced");
   const activeScenario = scenarios.find((s) => s.id === activeScenarioId) ?? scenarios[0];
+
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((response) => response.json() as Promise<{ user: unknown }>)
+      .then((data) => setSignedIn(Boolean(data.user)))
+      .catch(() => setSignedIn(false));
+  }, []);
+
+  const cta = getPacingCtaContent(signedIn);
 
   return (
     <div className="pacing-calculator">
@@ -113,6 +125,14 @@ export function PacingCalculator() {
       ) : (
         <p className="pacing-calculator__empty">Enter a target finish time to build a plan.</p>
       )}
+
+      <div className="pacing-calculator__cta">
+        <h2>{cta.heading}</h2>
+        <p>{cta.body}</p>
+        <a className="btn btn--primary btn--lg" href={cta.buttonHref}>
+          {cta.buttonLabel}
+        </a>
+      </div>
     </div>
   );
 }
