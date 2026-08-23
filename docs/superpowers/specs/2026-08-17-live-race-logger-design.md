@@ -27,11 +27,20 @@ Works whether signed in or not, matching existing behavior — `lib/reportStorag
 1. **Setup screen** (new) — format picker (reusing the `.format-picker`/`.format-card` pattern already used by `SplitForm` and `PacingCalculator`), level select, optional target time (reusing `maskTimeInput`/`normalizeTimeInput`). "Start session" begins the live screen and requests a Screen Wake Lock.
 2. **Live-tap screen** (new) — see "Live screen design" below.
 3. **Finish beat** (new, brief — a few hundred ms) — once the final segment is tapped, the station-progress octagon (built during the session) plays a short "all 8 lit" glow animation before handing off.
-4. **Report generation** (existing, reused unchanged) — `ReportGenerationOverlay`, driven by calling `buildAnalysis` with the logged `runs[]`/`stationSplits`/`level`/`raceFormat`/optional `targetTime`, exactly as `SplitForm`'s submit path does today.
+3.5. **Official finish time prompt** (new, optional) — immediately after the finish beat, a single optional field: "Official finish time (from the results board or your chip)". This is the same `officialFinishTime` input `buildAnalysis` already accepts for manual entry — capturing it here is what lets the live session produce a real roxzone-tax number (see "Roxzone" below), not a new analysis feature. Left blank, the report generates exactly as it does today without one.
+4. **Report generation** (existing, reused unchanged) — `ReportGenerationOverlay`, driven by calling `buildAnalysis` with the logged `runs[]`/`stationSplits`/`level`/`raceFormat`/optional `targetTime`/optional `officialFinishTime`, exactly as `SplitForm`'s submit path does today.
 5. **Results reveal** (existing, reused unchanged) — `ResultsReveal`, same as the manual flow.
 6. **Report / history** (existing, reused unchanged) — the normal `ReportPanel`, saved via the existing `SavedReport`/`lib/reportStorage.ts` mechanism.
 
 Steps 4-6 require **zero new code** — the live logger's only job is to produce a valid `runs[]`/`stationSplits` pair and call into the same pipeline `SplitForm` already calls.
+
+## Roxzone
+
+Roxzone tax is never entered directly anywhere in this app — `buildAnalysis` always *derives* it as `officialFinishTime − (sum of all run/station splits)`. That's unchanged by this feature. Without capturing an official finish time, the live logger would produce splits with no roxzone number at all, identical to manual entry today.
+
+**Decision (confirmed before implementation began):** capture `officialFinishTime` as a single optional field at step 3.5 above, feeding the same unmodified `buildAnalysis` parameter manual entry already uses. This gives a real roxzone-tax number — and a *more accurate* one than manual entry, since the run/station splits feeding the calculation were captured live rather than reconstructed afterward — but still only as one lump total for the whole race, not broken down per-transition.
+
+**Explicitly deferred (a separate future feature, not part of this build):** true per-transition roxzone tracking, where each of the 15 gaps between the 16 run/station segments gets its own captured duration. That would require doubling the number of taps needed (up to 31), which conflicts with this feature's core race-day-reliability goal ("one big button, minimize taps, minimize room for error"), and would need real changes to `lib/analysis.ts` (which has no concept of pre-computed per-transition roxzone today) plus new report UI to surface it. Worth its own spec later if lump-sum roxzone proves insufficient in practice — not folded into this build.
 
 ## Live screen design
 
@@ -84,7 +93,7 @@ The live screen requests `navigator.wakeLock.request('screen')` on mount (sessio
 
 **New:**
 - `components/LiveSessionSetup.tsx` — the setup screen (format/level/target, reusing existing `.format-picker`/`.field` patterns).
-- `components/LiveSessionTracker.tsx` — the live-tap screen (octagon + timer button + split list + undo).
+- `components/LiveSessionTracker.tsx` — the live-tap screen (octagon + timer button + split list + undo), plus the post-finish optional official-finish-time prompt (step 3.5).
 - `components/StationProgressOctagon.tsx` — the 8-side octagon progress shape described above. **Distinct from** the `StationOctagon` component already spec'd in `docs/superpowers/specs/2026-08-14-report-training-visuals-design.md` — that one is a post-race radar comparing performance against benchmark; this one is a live completion tracker with different data (`doneCount`/`inProgress`, not gap-vs-benchmark). Different purpose, different props, kept as separate components rather than overloading one.
 - `lib/liveSession.ts` — pure logic: `LiveSessionDraft`/`LiveSessionSegment` types, the fixed segment sequence for a given format (derived from `raceFormatOptions`, same source `PacingCalculator` already reads), tap-to-segment mapping, draft-to-`runs[]`/`stationSplits` conversion, localStorage read/write for the draft.
 - `lib/wakeLock.ts` — thin, feature-detected wrapper around the Screen Wake Lock API.
