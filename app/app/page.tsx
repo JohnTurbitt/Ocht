@@ -685,29 +685,28 @@ export default function Home() {
     applyReportPreset(sampleReportPreset);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const validation = validateReportInput({
+  async function generateAndSaveReport(input: {
+    goal: string;
+    targetTime: string;
+    level: Level;
+    runs: string[];
+    stationSplits: Record<StationKey, string>;
+    stationDefinitions: Station[];
+    raceFormat: RaceFormat;
+    officialFinishTime: string;
+    trainingContext: TrainingContext;
+  }) {
+    const {
+      goal,
       targetTime,
+      level,
       runs,
       stationSplits,
-      stationDefinitions: activeStationDefinitions,
-    });
-
-    if (!validation.valid) {
-      setValidationErrors(validation.errors);
-      setFieldErrors(validation.fieldErrors);
-      setToast({
-        id: Date.now(),
-        title: "Report not generated",
-        message:
-          validation.errors.length === 1
-            ? validation.errors[0]
-            : `${validation.errors.length} fields need valid times before Ocht can calculate the report.`,
-        tone: "error",
-      });
-      return;
-    }
+      stationDefinitions,
+      raceFormat,
+      officialFinishTime,
+      trainingContext,
+    } = input;
 
     setGeneratingReport(true);
     // Hold the generation overlay long enough to read as intentional, even
@@ -722,7 +721,7 @@ export default function Home() {
       level,
       runs,
       stationSplits,
-      activeStationDefinitions,
+      stationDefinitions,
       raceFormat,
       officialFinishTime,
     );
@@ -736,7 +735,7 @@ export default function Home() {
       level,
       runs,
       stationDefinitions:
-        raceFormat === "custom" ? activeStationDefinitions : undefined,
+        raceFormat === "custom" ? stationDefinitions : undefined,
       stationSplits,
       trainingContext: hasTrainingContext(trainingContext)
         ? trainingContext
@@ -756,7 +755,7 @@ export default function Home() {
           raceFormat,
           runs,
           stationDefinitions:
-            raceFormat === "custom" ? activeStationDefinitions : undefined,
+            raceFormat === "custom" ? stationDefinitions : undefined,
           stationSplits,
           trainingContext: hasTrainingContext(trainingContext)
             ? trainingContext
@@ -820,13 +819,50 @@ export default function Home() {
       premium: fullReportUnlocked,
       saved_remote: Boolean(user),
       run_count: runs.length,
-      station_count: activeStationDefinitions.length,
+      station_count: stationDefinitions.length,
     });
     window.requestAnimationFrame(() => {
       reportRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
+    });
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const validation = validateReportInput({
+      targetTime,
+      runs,
+      stationSplits,
+      stationDefinitions: activeStationDefinitions,
+    });
+
+    if (!validation.valid) {
+      setValidationErrors(validation.errors);
+      setFieldErrors(validation.fieldErrors);
+      setToast({
+        id: Date.now(),
+        title: "Report not generated",
+        message:
+          validation.errors.length === 1
+            ? validation.errors[0]
+            : `${validation.errors.length} fields need valid times before Ocht can calculate the report.`,
+        tone: "error",
+      });
+      return;
+    }
+
+    await generateAndSaveReport({
+      goal,
+      targetTime,
+      level,
+      runs,
+      stationSplits,
+      stationDefinitions: activeStationDefinitions,
+      raceFormat,
+      officialFinishTime,
+      trainingContext,
     });
   }
 
