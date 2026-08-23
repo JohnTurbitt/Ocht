@@ -1,0 +1,131 @@
+// Styles for the live tap-to-lap session (setup + tracker screens). Reuses
+// .field/.input-row/.format-picker/.format-card from _forms.scss and
+// .btn/.btn--primary/.btn--secondary from _buttons.scss for shared controls
+// — this partial only covers what's unique to these two screens.
+
+.live-session-setup {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.live-session-setup__guide {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 8px 0 24px;
+}
+
+.live-session-setup__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.live-session-tracker {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.live-session-tracker__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.live-session-tracker__header h1 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin: 2px 0 0;
+  color: var(--ink);
+}
+
+.live-session-tracker__status {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.live-session-tracker__tap {
+  width: 100%;
+  min-height: 112px;
+  border-radius: 16px;
+  background: var(--lime);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 0 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.live-session-tracker__tap:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.live-session-tracker__timer {
+  font-family: var(--font-mono);
+  color: #08100d;
+  font-weight: 800;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.live-session-tracker__tap-label {
+  color: #08100d;
+  opacity: 0.6;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.live-session-tracker__undo {
+  width: auto;
+  min-height: 0;
+  margin: 0 0 20px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.live-session-tracker__undo:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.live-session-tracker__splits-heading {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.live-session-tracker__split-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.live-session-tracker__finish-time {
+  margin-bottom: 20px;
+}
+
+.live-session-tracker__finish-time-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 8px 0 16px;
+}
