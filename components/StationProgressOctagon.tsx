@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 type StationProgressOctagonProps = {
   doneCount: number; // 0-8 stations completed
   inProgress: boolean; // is a station currently underway (the (doneCount+1)th side pulses)
@@ -23,7 +25,7 @@ export function StationProgressOctagon({
     polarPoint(cx, cy, r, i, STATION_COUNT),
   );
   const fillPoints = points.map(([x, y]) => `${x},${y}`).join(" ");
-  const glowId = "station-octagon-glow";
+  const glowId = useId();
 
   const shieldW = 30;
   const shieldH = (shieldW * 78) / 64;
