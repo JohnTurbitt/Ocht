@@ -737,7 +737,7 @@ git commit -m "Add LiveSessionSetup component"
 **Files:**
 - Create: `components/LiveSessionTracker.tsx`
 
-This is the live-tap screen: octagon + segment label, live-ticking tap button, undo, scrolling split list, wake lock while active, autosave to the draft on every lap/undo, and a brief "all done" beat before calling `onFinish`.
+This is the live-tap screen: octagon + segment label, live-ticking tap button, undo, scrolling split list, wake lock while active, autosave to the draft on every lap/undo, a brief "all done" beat, then an optional official-finish-time prompt (for roxzone tax — see the spec's "Roxzone" section) before calling `onFinish`.
 
 - [ ] **Step 1: Write the component**
 
@@ -762,6 +762,7 @@ import {
   undoLastLap,
 } from "@/lib/liveSession";
 import { StationKey } from "@/lib/analysis";
+import { maskTimeInput, normalizeTimeInput } from "@/lib/validation";
 import { releaseWakeLock, requestWakeLock } from "@/lib/wakeLock";
 
 type LiveSessionTrackerProps = {
@@ -769,7 +770,11 @@ type LiveSessionTrackerProps = {
   level: Level;
   targetTime: string;
   initialDraft?: LiveSessionDraft;
-  onFinish: (input: { runs: string[]; stationSplits: Record<StationKey, string> }) => void;
+  onFinish: (input: {
+    runs: string[];
+    stationSplits: Record<StationKey, string>;
+    officialFinishTime: string;
+  }) => void;
 };
 
 function formatSegmentTime(seconds: number) {
@@ -790,7 +795,9 @@ export function LiveSessionTracker({
     () => initialDraft ?? startDraft(raceFormat, level, targetTime),
   );
   const [elapsedOnCurrent, setElapsedOnCurrent] = useState(0);
-  const [justFinished, setJustFinished] = useState(false);
+  const [stage, setStage] = useState<"tapping" | "beat" | "finishTime">("tapping");
+  const [officialFinishTime, setOfficialFinishTime] = useState("");
+  const justFinished = stage !== "tapping";
   const segmentStartRef = useRef<number>(Date.now());
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
@@ -839,12 +846,16 @@ export function LiveSessionTracker({
     setElapsedOnCurrent(0);
 
     if (isSessionComplete(nextDraft)) {
-      setJustFinished(true);
+      setStage("beat");
       window.setTimeout(() => {
-        clearDraft();
-        onFinish(draftToReportInputs(nextDraft));
+        setStage("finishTime");
       }, 700);
     }
+  }
+
+  function handleFinishTimeSubmit() {
+    clearDraft();
+    onFinish({ ...draftToReportInputs(draft), officialFinishTime });
   }
 
   function handleUndo() {
@@ -876,24 +887,56 @@ export function LiveSessionTracker({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="live-session-tracker__tap"
-        onClick={handleTap}
-        disabled={justFinished || !currentSegment}
-      >
-        <span className="live-session-tracker__timer">{formatSegmentTime(elapsedOnCurrent)}</span>
-        <span className="live-session-tracker__tap-label">TAP TO LAP</span>
-      </button>
+      {stage === "finishTime" ? (
+        <div className="live-session-tracker__finish-time">
+          <label className="field">
+            <span>Official finish time (optional)</span>
+            <input
+              value={officialFinishTime}
+              onChange={(event) =>
+                setOfficialFinishTime(maskTimeInput(event.target.value, "race"))
+              }
+              onBlur={(event) =>
+                setOfficialFinishTime(normalizeTimeInput(event.target.value, "race"))
+              }
+              inputMode="numeric"
+              placeholder="From the results board or your chip"
+            />
+          </label>
+          <p className="live-session-tracker__finish-time-hint">
+            Enter this to see your roxzone tax in the report — or leave it
+            blank and continue without one.
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary btn--lg"
+            onClick={handleFinishTimeSubmit}
+          >
+            Continue
+          </button>
+        </div>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="live-session-tracker__tap"
+            onClick={handleTap}
+            disabled={justFinished || !currentSegment}
+          >
+            <span className="live-session-tracker__timer">{formatSegmentTime(elapsedOnCurrent)}</span>
+            <span className="live-session-tracker__tap-label">TAP TO LAP</span>
+          </button>
 
-      <button
-        type="button"
-        className="live-session-tracker__undo"
-        onClick={handleUndo}
-        disabled={draft.segments.length === 0 || justFinished}
-      >
-        Undo last lap
-      </button>
+          <button
+            type="button"
+            className="live-session-tracker__undo"
+            onClick={handleUndo}
+            disabled={draft.segments.length === 0 || justFinished}
+          >
+            Undo last lap
+          </button>
+        </>
+      )}
 
       <div className="live-session-tracker__splits">
         <p className="live-session-tracker__splits-heading">Splits so far</p>
@@ -1034,6 +1077,16 @@ Create `styles/_live-session.scss`:
   border-bottom: 1px solid var(--line);
   font-size: 0.85rem;
   color: var(--ink);
+}
+
+.live-session-tracker__finish-time {
+  margin-bottom: 20px;
+}
+
+.live-session-tracker__finish-time-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 8px 0 16px;
 }
 ```
 
@@ -1416,7 +1469,11 @@ to:
                 level={liveSessionConfig.level}
                 targetTime={liveSessionConfig.targetTime}
                 initialDraft={liveSessionDraftToResume ?? undefined}
-                onFinish={({ runs: liveRuns, stationSplits: liveStationSplits }) => {
+                onFinish={({
+                  runs: liveRuns,
+                  stationSplits: liveStationSplits,
+                  officialFinishTime: liveOfficialFinishTime,
+                }) => {
                   setLiveSessionStage("idle");
                   setLiveSessionConfig(null);
                   setLiveSessionDraftToResume(null);
@@ -1428,7 +1485,7 @@ to:
                     stationSplits: liveStationSplits,
                     stationDefinitions: getRaceFormatStations(liveSessionConfig.raceFormat),
                     raceFormat: liveSessionConfig.raceFormat,
-                    officialFinishTime: "",
+                    officialFinishTime: liveOfficialFinishTime,
                     trainingContext: emptyTrainingContext,
                   });
                 }}
@@ -1458,7 +1515,8 @@ Expected:
 - Clicking it shows the setup screen (format/level/target picker).
 - "Start session" moves to the live-tap screen: octagon top-left, current segment label, tap button with a live-ticking timer, undo button, empty split list.
 - Tapping the button 16 times in sequence (HYROX) advances through all runs/stations, each appearing in the split list; the octagon fills a side for each completed station and pulses on the current one.
-- After the 16th tap, a brief "FINISHED" beat plays (all 8 octagon sides lit), then the screen transitions into the normal `ReportGenerationOverlay` → `ResultsReveal` → report flow — the same as a manually-submitted report.
+- After the 16th tap, a brief "FINISHED" beat plays (all 8 octagon sides lit), then an optional "Official finish time" prompt appears. Entering a time longer than the sum of the logged splits and clicking "Continue" should produce a report showing a nonzero roxzone tax; leaving it blank and continuing should produce a report with no roxzone tax, identical to today's manual-entry behavior with no official finish time.
+- After the finish-time prompt, the screen transitions into the normal `ReportGenerationOverlay` → `ResultsReveal` → report flow — the same as a manually-submitted report.
 - The resulting report appears in "History" like any other saved report.
 - Clicking "Undo last lap" during a session correctly removes the most recent tap and lets you re-tap it.
 - Start a new live session, tap a few laps, then reload the page (simulating an interrupted session) *without* finishing. Click "Log live" again — a confirm dialog should appear offering to resume; confirming should drop you straight into the live-tap screen with the earlier taps already present in the split list (skipping the setup screen). Declining should discard the draft and show the normal setup screen instead.
@@ -1492,7 +1550,7 @@ Expected: build succeeds, no SCSS/type errors.
 - [ ] **Step 3: Manual browser pass**
 
 Run: `npm run dev`, then in a browser:
-1. Complete a full live session end to end (as in Task 7's Step 5) for HYROX, confirm the resulting report's numbers make sense (each run/station split matches what was displayed on the live screen).
+1. Complete a full live session end to end (as in Task 7's Step 5) for HYROX, confirm the resulting report's numbers make sense (each run/station split matches what was displayed on the live screen), and confirm entering an official finish time at the post-finish prompt produces a roxzone tax figure in the report.
 2. Repeat for a TRYKA format, confirm the TRYKA-relabeled station names appear correctly on the live screen and in the resulting report.
 3. Start a live session, tap a few laps, then use "Undo last lap" — confirm it removes exactly the last tap and lets you continue.
 4. Confirm manual entry (`SplitForm`'s own "Generate report" submit) still works exactly as before — this is the regression check for Task 6's extraction.
