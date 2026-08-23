@@ -40,9 +40,27 @@ describe("buildSegmentSequence", () => {
       "run", "station", "run", "station", "run", "station", "run", "station",
       "run", "station", "run", "station", "run", "station", "run", "station",
     ]);
-    expect(sequence[0]).toEqual({ type: "run", key: "run-1", label: "Run 1" });
-    expect(sequence[1].type).toBe("station");
-    expect(sequence[1].label).toBe("SkiErg");
+    // Full sequence, in order, cross-checked against the real HYROX station
+    // list in lib/analysis.ts (ski, sledPush, sledPull, burpees, row,
+    // farmers, lunges, wallBalls) — not just the first pair.
+    expect(sequence).toEqual([
+      { type: "run", key: "run-1", label: "Run 1" },
+      { type: "station", key: "ski", label: "SkiErg" },
+      { type: "run", key: "run-2", label: "Run 2" },
+      { type: "station", key: "sledPush", label: "Sled push" },
+      { type: "run", key: "run-3", label: "Run 3" },
+      { type: "station", key: "sledPull", label: "Sled pull" },
+      { type: "run", key: "run-4", label: "Run 4" },
+      { type: "station", key: "burpees", label: "Burpee broad jumps" },
+      { type: "run", key: "run-5", label: "Run 5" },
+      { type: "station", key: "row", label: "Row" },
+      { type: "run", key: "run-6", label: "Run 6" },
+      { type: "station", key: "farmers", label: "Farmers carry" },
+      { type: "run", key: "run-7", label: "Run 7" },
+      { type: "station", key: "lunges", label: "Sandbag lunges" },
+      { type: "run", key: "run-8", label: "Run 8" },
+      { type: "station", key: "wallBalls", label: "Wall balls" },
+    ]);
   });
 
   it("returns 16 segments for tryka800 with TRYKA-relabeled stations", () => {
@@ -111,10 +129,23 @@ describe("draftToReportInputs", () => {
 
     const { runs, stationSplits } = draftToReportInputs(draft);
 
-    expect(runs).toHaveLength(8);
-    expect(runs[0]).toBe("4:40");
-    expect(stationSplits.ski).toBe("4:10");
-    expect(stationSplits.wallBalls).toBe("6:50");
+    // Full runs array and full stationSplits object, in the real HYROX
+    // station order from lib/analysis.ts (ski, sledPush, sledPull, burpees,
+    // row, farmers, lunges, wallBalls) — not just the first and last
+    // segments, so an off-by-one in the interleaving loop can't slip through.
+    expect(runs).toEqual([
+      "4:40", "4:45", "4:50", "4:48", "4:52", "4:49", "4:51", "4:53",
+    ]);
+    expect(stationSplits).toEqual({
+      ski: "4:10",
+      sledPush: "5:00",
+      sledPull: "4:00",
+      burpees: "5:50",
+      row: "3:10",
+      farmers: "3:30",
+      lunges: "5:35",
+      wallBalls: "6:50",
+    });
   });
 });
 

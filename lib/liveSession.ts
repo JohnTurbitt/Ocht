@@ -62,6 +62,10 @@ export function startDraft(
   };
 }
 
+// Once the draft is complete (all 16 segments recorded), this is a no-op
+// that returns the same draft reference — callers (e.g. LiveSessionTracker)
+// can rely on that reference equality to know a tap past completion did
+// nothing, without needing to check isSessionComplete themselves first.
 export function recordLap(draft: LiveSessionDraft, seconds: number): LiveSessionDraft {
   const sequence = buildSegmentSequence(draft.raceFormat);
   const next = sequence[draft.segments.length];
@@ -110,6 +114,22 @@ export function saveDraft(draft: LiveSessionDraft): void {
   window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
 }
 
+function isValidDraftShape(value: unknown): value is LiveSessionDraft {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const draft = value as Partial<LiveSessionDraft>;
+
+  return (
+    typeof draft.raceFormat === "string" &&
+    draft.raceFormat.length > 0 &&
+    typeof draft.level === "string" &&
+    draft.level.length > 0 &&
+    Array.isArray(draft.segments)
+  );
+}
+
 export function loadDraft(): LiveSessionDraft | null {
   if (typeof window === "undefined") {
     return null;
@@ -122,7 +142,8 @@ export function loadDraft(): LiveSessionDraft | null {
   }
 
   try {
-    return JSON.parse(raw) as LiveSessionDraft;
+    const parsed: unknown = JSON.parse(raw);
+    return isValidDraftShape(parsed) ? parsed : null;
   } catch {
     return null;
   }
