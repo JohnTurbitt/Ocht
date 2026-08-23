@@ -3252,3 +3252,17 @@
 .race-blueprint__plan-label { flex:1; font-size:.68rem; color:var(--muted); }
 .race-blueprint__plan-target { font-size:.74rem; font-weight:800; color:var(--lime); .race-blueprint__plan-row--run & { color:var(--teal); } }
 .race-blueprint__plan-pr { font-size:.6rem; color:var(--muted); opacity:.6; }
+
+@keyframes station-octagon-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.station-octagon__pulse {
+  animation: station-octagon-pulse 1.2s ease-in-out infinite;
+}
