@@ -49,7 +49,9 @@ export function LiveSessionTracker({
     () => initialDraft ?? startDraft(raceFormat, level, targetTime),
   );
   const [elapsedOnCurrent, setElapsedOnCurrent] = useState(0);
-  const [stage, setStage] = useState<"tapping" | "beat" | "finishTime">("tapping");
+  const [stage, setStage] = useState<"tapping" | "beat" | "finishTime">(() =>
+    initialDraft && isSessionComplete(initialDraft) ? "finishTime" : "tapping",
+  );
   const [officialFinishTime, setOfficialFinishTime] = useState("");
   const justFinished = stage !== "tapping";
   const segmentStartRef = useRef<number>(Date.now());
