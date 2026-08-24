@@ -1313,6 +1313,25 @@ export default function Home() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [eventsSheetOpen]);
 
+  // The tab bar stays fully interactive during a live session, so switching
+  // away from "New report" and back unmounts/remounts this subtree —
+  // including LiveSessionTracker. liveSessionDraftToResume is only ever
+  // populated by the explicit resume-after-reload flow in startLiveSession(),
+  // so it goes stale the instant a tap saves further progress. Read the
+  // persisted draft fresh on every render instead (guarded to the session
+  // actually in progress, so an unrelated stale draft from localStorage
+  // can't be mistaken for this one) so a remount always resumes real
+  // progress instead of silently resetting it.
+  const persistedLiveDraft = loadDraft();
+  const resumableLiveDraft =
+    persistedLiveDraft &&
+    liveSessionConfig &&
+    persistedLiveDraft.raceFormat === liveSessionConfig.raceFormat &&
+    persistedLiveDraft.level === liveSessionConfig.level &&
+    persistedLiveDraft.targetTime === liveSessionConfig.targetTime
+      ? persistedLiveDraft
+      : liveSessionDraftToResume;
+
   return (
     <main>
       <header className="site-header">
@@ -1521,7 +1540,7 @@ export default function Home() {
                 raceFormat={liveSessionConfig.raceFormat}
                 level={liveSessionConfig.level}
                 targetTime={liveSessionConfig.targetTime}
-                initialDraft={liveSessionDraftToResume ?? undefined}
+                initialDraft={resumableLiveDraft ?? undefined}
                 onFinish={({
                   runs: liveRuns,
                   stationSplits: liveStationSplits,
