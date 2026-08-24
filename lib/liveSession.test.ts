@@ -82,6 +82,41 @@ describe("recordLap / undoLastLap / isSessionComplete", () => {
     ]);
   });
 
+  it("startDraft sets currentSegmentStartedAt to the same moment as startedAt", () => {
+    const draft = startDraft("hyrox", "competitive", "1:15:00", "2026-01-01T00:00:00.000Z");
+    expect(draft.startedAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(draft.currentSegmentStartedAt).toBe("2026-01-01T00:00:00.000Z");
+  });
+
+  it("recordLap advances currentSegmentStartedAt to the moment the lap was recorded", () => {
+    let draft = startDraft("hyrox", "competitive", "1:15:00", "2026-01-01T00:00:00.000Z");
+    draft = recordLap(draft, 280, "2026-01-01T00:04:40.000Z");
+    expect(draft.currentSegmentStartedAt).toBe("2026-01-01T00:04:40.000Z");
+
+    draft = recordLap(draft, 250, "2026-01-01T00:08:50.000Z");
+    expect(draft.currentSegmentStartedAt).toBe("2026-01-01T00:08:50.000Z");
+  });
+
+  it("recordLap past completion leaves currentSegmentStartedAt untouched (no-op)", () => {
+    let draft = startDraft("hyrox", "competitive", "", "2026-01-01T00:00:00.000Z");
+    for (let i = 0; i < 16; i++) {
+      draft = recordLap(draft, 200, `2026-01-01T00:0${i % 10}:00.000Z`);
+    }
+    const before = draft.currentSegmentStartedAt;
+
+    const overTapped = recordLap(draft, 999, "2099-01-01T00:00:00.000Z");
+    expect(overTapped.currentSegmentStartedAt).toBe(before);
+  });
+
+  it("undoLastLap resets currentSegmentStartedAt to the moment of the undo", () => {
+    let draft = startDraft("hyrox", "competitive", "", "2026-01-01T00:00:00.000Z");
+    draft = recordLap(draft, 280, "2026-01-01T00:04:40.000Z");
+    draft = recordLap(draft, 250, "2026-01-01T00:08:50.000Z");
+
+    draft = undoLastLap(draft, "2026-01-01T00:10:00.000Z");
+    expect(draft.currentSegmentStartedAt).toBe("2026-01-01T00:10:00.000Z");
+  });
+
   it("ignores taps once the session is already complete", () => {
     let draft = startDraft("hyrox", "competitive", "");
     for (let i = 0; i < 16; i++) {

@@ -38,6 +38,21 @@ function formatSegmentTime(seconds: number) {
   return `${minutes}:${String(secs).padStart(2, "0")}`;
 }
 
+// The current (not-yet-tapped) segment's start time, resolved from the
+// persisted draft when resuming (e.g. after a tab-switch remount) so the
+// elapsed-time clock reflects when the segment actually began rather than
+// resetting to "now". Falls back to "now" for a genuinely fresh session, or
+// for an old/malformed draft that predates the currentSegmentStartedAt field.
+function resolveSegmentStart(initialDraft?: LiveSessionDraft): number {
+  const iso = initialDraft?.currentSegmentStartedAt;
+  if (!iso) {
+    return Date.now();
+  }
+
+  const parsed = new Date(iso).getTime();
+  return Number.isNaN(parsed) ? Date.now() : parsed;
+}
+
 export function LiveSessionTracker({
   raceFormat,
   level,
@@ -48,13 +63,15 @@ export function LiveSessionTracker({
   const [draft, setDraft] = useState<LiveSessionDraft>(
     () => initialDraft ?? startDraft(raceFormat, level, targetTime),
   );
-  const [elapsedOnCurrent, setElapsedOnCurrent] = useState(0);
+  const [elapsedOnCurrent, setElapsedOnCurrent] = useState(() =>
+    Math.round((Date.now() - resolveSegmentStart(initialDraft)) / 1000),
+  );
   const [stage, setStage] = useState<"tapping" | "beat" | "finishTime">(() =>
     initialDraft && isSessionComplete(initialDraft) ? "finishTime" : "tapping",
   );
   const [officialFinishTime, setOfficialFinishTime] = useState("");
   const justFinished = stage !== "tapping";
-  const segmentStartRef = useRef<number>(Date.now());
+  const segmentStartRef = useRef<number>(resolveSegmentStart(initialDraft));
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const sequence = buildSegmentSequence(raceFormat);
@@ -114,11 +131,12 @@ export function LiveSessionTracker({
       return;
     }
 
-    const seconds = (Date.now() - segmentStartRef.current) / 1000;
-    const nextDraft = recordLap(draft, seconds);
+    const nowMs = Date.now();
+    const seconds = (nowMs - segmentStartRef.current) / 1000;
+    const nextDraft = recordLap(draft, seconds, new Date(nowMs).toISOString());
     setDraft(nextDraft);
     saveDraft(nextDraft);
-    segmentStartRef.current = Date.now();
+    segmentStartRef.current = nowMs;
     setElapsedOnCurrent(0);
 
     if (isSessionComplete(nextDraft)) {
@@ -139,10 +157,11 @@ export function LiveSessionTracker({
       return;
     }
 
-    const nextDraft = undoLastLap(draft);
+    const nowMs = Date.now();
+    const nextDraft = undoLastLap(draft, new Date(nowMs).toISOString());
     setDraft(nextDraft);
     saveDraft(nextDraft);
-    segmentStartRef.current = Date.now();
+    segmentStartRef.current = nowMs;
     setElapsedOnCurrent(0);
   }
 

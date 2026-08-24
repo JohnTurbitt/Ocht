@@ -18,6 +18,15 @@ export type LiveSessionDraft = {
   level: Level;
   targetTime: string;
   startedAt: string;
+  // When the current, not-yet-tapped segment began. Optional because drafts
+  // persisted before this field existed won't have it — callers should fall
+  // back to treating the segment as starting "now" in that case. Kept
+  // up to date by startDraft/recordLap/undoLastLap (all of which take an
+  // optional `now` so callers — and tests — can supply a fixed instant
+  // instead of relying on the wall clock at call time) so a component that
+  // remounts mid-segment (e.g. a tab switch) can restore the true elapsed
+  // time instead of resetting it to zero.
+  currentSegmentStartedAt?: string;
   segments: LiveSessionSegment[];
 };
 
@@ -52,12 +61,14 @@ export function startDraft(
   raceFormat: LiveSessionFormat,
   level: Level,
   targetTime: string,
+  now: string = new Date().toISOString(),
 ): LiveSessionDraft {
   return {
     raceFormat,
     level,
     targetTime,
-    startedAt: new Date().toISOString(),
+    startedAt: now,
+    currentSegmentStartedAt: now,
     segments: [],
   };
 }
@@ -66,7 +77,11 @@ export function startDraft(
 // that returns the same draft reference — callers (e.g. LiveSessionTracker)
 // can rely on that reference equality to know a tap past completion did
 // nothing, without needing to check isSessionComplete themselves first.
-export function recordLap(draft: LiveSessionDraft, seconds: number): LiveSessionDraft {
+export function recordLap(
+  draft: LiveSessionDraft,
+  seconds: number,
+  now: string = new Date().toISOString(),
+): LiveSessionDraft {
   const sequence = buildSegmentSequence(draft.raceFormat);
   const next = sequence[draft.segments.length];
 
@@ -77,11 +92,15 @@ export function recordLap(draft: LiveSessionDraft, seconds: number): LiveSession
   return {
     ...draft,
     segments: [...draft.segments, { type: next.type, key: next.key, seconds }],
+    currentSegmentStartedAt: now,
   };
 }
 
-export function undoLastLap(draft: LiveSessionDraft): LiveSessionDraft {
-  return { ...draft, segments: draft.segments.slice(0, -1) };
+export function undoLastLap(
+  draft: LiveSessionDraft,
+  now: string = new Date().toISOString(),
+): LiveSessionDraft {
+  return { ...draft, segments: draft.segments.slice(0, -1), currentSegmentStartedAt: now };
 }
 
 export function isSessionComplete(draft: LiveSessionDraft): boolean {
