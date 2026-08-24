@@ -53,7 +53,10 @@
   width: 100%;
   min-height: 112px;
   border-radius: 16px;
-  background: var(--lime);
+  // --action-bg stays lime in both themes (unlike --lime, which remaps to a
+  // dark teal in light theme) — see the token comment in _base.scss. Pair it
+  // with --action-text, the same convention every other CTA button uses.
+  background: var(--action-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,14 +74,14 @@
 
 .live-session-tracker__timer {
   font-family: var(--font-mono);
-  color: #08100d;
+  color: var(--action-text);
   font-weight: 800;
   font-size: 1.9rem;
   line-height: 1;
 }
 
 .live-session-tracker__tap-label {
-  color: #08100d;
+  color: var(--action-text);
   opacity: 0.6;
   font-weight: 700;
   font-size: 0.7rem;
