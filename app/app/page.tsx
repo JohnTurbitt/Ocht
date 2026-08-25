@@ -9,8 +9,6 @@ import { DemoModal } from "@/components/DemoModal";
 import { DevModeBadge } from "@/components/DevModeBadge";
 import { EventsSheet } from "@/components/EventsSheet";
 import { Hero } from "@/components/Hero";
-import { LiveSessionSetup } from "@/components/LiveSessionSetup";
-import { LiveSessionTracker } from "@/components/LiveSessionTracker";
 import { OchtShield } from "@/components/OchtShield";
 import { ArchetypeAchievements } from "@/components/ArchetypeAchievements";
 import { PBTrophyBadge } from "@/components/PBTrophyBadge";
@@ -39,12 +37,6 @@ import {
   tierFor,
 } from "@/lib/analysis";
 import { calculateRaceReadiness } from "@/lib/readiness";
-import {
-  LiveSessionDraft,
-  LiveSessionFormat,
-  clearDraft,
-  loadDraft,
-} from "@/lib/liveSession";
 import {
   SavedReport,
   loadSavedReports,
@@ -192,14 +184,6 @@ export default function Home() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [showSplash, setShowSplash] = useState(true);
-  const [liveSessionStage, setLiveSessionStage] = useState<"idle" | "setup" | "tracking">("idle");
-  const [liveSessionConfig, setLiveSessionConfig] = useState<{
-    raceFormat: LiveSessionFormat;
-    level: Level;
-    targetTime: string;
-  } | null>(null);
-  const [liveSessionDraftToResume, setLiveSessionDraftToResume] =
-    useState<LiveSessionDraft | null>(null);
   const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
   const [viewingSavedReport, setViewingSavedReport] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -734,31 +718,6 @@ export default function Home() {
     applyReportPreset(sampleReportPreset);
   }
 
-  function startLiveSession() {
-    const existingDraft = loadDraft();
-
-    if (existingDraft) {
-      const resume = window.confirm(
-        "You have an unfinished live session in progress. Resume it? (Cancel starts a new session and discards it.)",
-      );
-
-      if (resume) {
-        setLiveSessionConfig({
-          raceFormat: existingDraft.raceFormat,
-          level: existingDraft.level,
-          targetTime: existingDraft.targetTime,
-        });
-        setLiveSessionDraftToResume(existingDraft);
-        setLiveSessionStage("tracking");
-        return;
-      }
-
-      clearDraft();
-    }
-
-    setLiveSessionStage("setup");
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const validation = validateReportInput({
@@ -1201,25 +1160,6 @@ export default function Home() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [eventsSheetOpen]);
 
-  // The tab bar stays fully interactive during a live session, so switching
-  // away from "New report" and back unmounts/remounts this subtree —
-  // including LiveSessionTracker. liveSessionDraftToResume is only ever
-  // populated by the explicit resume-after-reload flow in startLiveSession(),
-  // so it goes stale the instant a tap saves further progress. Read the
-  // persisted draft fresh on every render instead (guarded to the session
-  // actually in progress, so an unrelated stale draft from localStorage
-  // can't be mistaken for this one) so a remount always resumes real
-  // progress instead of silently resetting it.
-  const persistedLiveDraft = loadDraft();
-  const resumableLiveDraft =
-    persistedLiveDraft &&
-    liveSessionConfig &&
-    persistedLiveDraft.raceFormat === liveSessionConfig.raceFormat &&
-    persistedLiveDraft.level === liveSessionConfig.level &&
-    persistedLiveDraft.targetTime === liveSessionConfig.targetTime
-      ? persistedLiveDraft
-      : liveSessionDraftToResume;
-
   return (
     <main>
       <header className="site-header">
@@ -1415,102 +1355,65 @@ export default function Home() {
 
         {activeTab === "new" ? (
           <>
-            {viewingSavedReport ? null : liveSessionStage === "setup" ? (
-              <LiveSessionSetup
-                onCancel={() => setLiveSessionStage("idle")}
-                onStart={(config) => {
-                  setLiveSessionConfig(config);
-                  setLiveSessionStage("tracking");
+            {viewingSavedReport ? null : (
+              <SplitForm
+                raceFormat={raceFormat}
+                fullReportUnlocked={fullReportUnlocked}
+                showStartGuide={!isExperiencedUser}
+                onShowGuide={() => {
+                  setDemoOpen(true);
+                  trackEvent("beginner_demo_opened");
                 }}
-              />
-            ) : liveSessionStage === "tracking" && liveSessionConfig ? (
-              <LiveSessionTracker
-                raceFormat={liveSessionConfig.raceFormat}
-                level={liveSessionConfig.level}
-                targetTime={liveSessionConfig.targetTime}
-                initialDraft={resumableLiveDraft ?? undefined}
-                onFinish={({
-                  runs: liveRuns,
-                  stationSplits: liveStationSplits,
-                  officialFinishTime: liveOfficialFinishTime,
-                }) => {
-                  const finishedConfig = liveSessionConfig;
-                  setLiveSessionStage("idle");
-                  setLiveSessionConfig(null);
-                  setLiveSessionDraftToResume(null);
-                  void generateAndSaveReport({
-                    goal: "",
-                    targetTime: finishedConfig.targetTime,
-                    level: finishedConfig.level,
-                    runs: liveRuns,
-                    stationSplits: liveStationSplits,
-                    stationDefinitions: getRaceFormatStations(finishedConfig.raceFormat),
-                    raceFormat: finishedConfig.raceFormat,
-                    officialFinishTime: liveOfficialFinishTime,
-                    trainingContext: emptyTrainingContext,
-                  });
+                goal={goal}
+                targetTime={targetTime}
+                officialFinishTime={officialFinishTime}
+                level={level}
+                runs={runs}
+                stationDefinitions={activeStationDefinitions}
+                stationSplits={stationSplits}
+                trainingContext={trainingContext}
+                stravaConnected={stravaConnected}
+                errors={validationErrors}
+                fieldErrors={fieldErrors}
+                customTemplates={customTemplates}
+                onRaceFormatChange={applyRaceFormat}
+                onCustomFormatClick={activateCustomFormat}
+                onAddRun={addRunSplit}
+                onRemoveRun={removeRunSplit}
+                onAddCustomStation={addCustomStation}
+                onRemoveCustomStation={removeCustomStation}
+                onCustomStationLabelChange={updateCustomStationLabel}
+                onSaveCustomTemplate={saveCurrentCustomTemplate}
+                onLoadCustomTemplate={(template) =>
+                  applyReportPreset(template)
+                }
+                onDeleteCustomTemplate={deleteCustomTemplate}
+                onGoalChange={setGoal}
+                onTargetTimeChange={updateTargetTime}
+                onOfficialFinishChange={setOfficialFinishTime}
+                onLevelChange={setLevel}
+                onRunChange={updateRun}
+                onStationChange={updateStation}
+                onTrainingContextChange={updateTrainingContext}
+                onLoadSample={() =>
+                  applyReportPreset(sampleReportPreset)
+                }
+                onResetDefaults={() =>
+                  applyReportPreset(buildUserDefaultPreset(user))
+                }
+                onClearForm={() => {
+                  setTrainingContext(emptyTrainingContext);
+                  applyReportPreset(
+                    buildEmptyPresetForCurrentFormat({
+                      raceFormat,
+                      level,
+                      runCount: runs.length,
+                      stationDefinitions: activeStationDefinitions,
+                    }),
+                  );
                 }}
+                onSubmit={handleSubmit}
               />
-            ) : (
-            <SplitForm
-              raceFormat={raceFormat}
-              fullReportUnlocked={fullReportUnlocked}
-              showStartGuide={!isExperiencedUser}
-              onShowGuide={() => {
-                setDemoOpen(true);
-                trackEvent("beginner_demo_opened");
-              }}
-              goal={goal}
-              targetTime={targetTime}
-              officialFinishTime={officialFinishTime}
-              level={level}
-              runs={runs}
-              stationDefinitions={activeStationDefinitions}
-              stationSplits={stationSplits}
-              trainingContext={trainingContext}
-              stravaConnected={stravaConnected}
-              errors={validationErrors}
-              fieldErrors={fieldErrors}
-              customTemplates={customTemplates}
-              onRaceFormatChange={applyRaceFormat}
-              onCustomFormatClick={activateCustomFormat}
-              onAddRun={addRunSplit}
-              onRemoveRun={removeRunSplit}
-              onAddCustomStation={addCustomStation}
-              onRemoveCustomStation={removeCustomStation}
-              onCustomStationLabelChange={updateCustomStationLabel}
-              onSaveCustomTemplate={saveCurrentCustomTemplate}
-              onLoadCustomTemplate={(template) =>
-                applyReportPreset(template)
-              }
-              onDeleteCustomTemplate={deleteCustomTemplate}
-              onGoalChange={setGoal}
-              onTargetTimeChange={updateTargetTime}
-              onOfficialFinishChange={setOfficialFinishTime}
-              onLevelChange={setLevel}
-              onRunChange={updateRun}
-              onStationChange={updateStation}
-              onTrainingContextChange={updateTrainingContext}
-              onLoadSample={() =>
-                applyReportPreset(sampleReportPreset)
-              }
-              onResetDefaults={() =>
-                applyReportPreset(buildUserDefaultPreset(user))
-              }
-              onClearForm={() => {
-                setTrainingContext(emptyTrainingContext);
-                applyReportPreset(
-                  buildEmptyPresetForCurrentFormat({
-                    raceFormat,
-                    level,
-                    runCount: runs.length,
-                    stationDefinitions: activeStationDefinitions,
-                  }),
-                );
-              }}
-              onStartLiveSession={startLiveSession}
-              onSubmit={handleSubmit}
-            />
             )}
 
             {viewingSavedReport ? (

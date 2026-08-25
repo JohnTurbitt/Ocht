@@ -49,7 +49,6 @@ type SplitFormProps = {
   onLoadSample: () => void;
   onResetDefaults: () => void;
   onClearForm: () => void;
-  onStartLiveSession: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
@@ -90,7 +89,6 @@ export function SplitForm({
   onLoadSample,
   onResetDefaults,
   onClearForm,
-  onStartLiveSession,
   onSubmit,
 }: SplitFormProps) {
   const isCustom = raceFormat === "custom";
@@ -170,15 +168,6 @@ export function SplitForm({
             </button>
             <button type="button" onClick={(e) => { onClearForm(); e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }}>
               Clear form
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                onStartLiveSession();
-                e.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-              }}
-            >
-              Log live
             </button>
             <button
               className="preset-actions__help"
