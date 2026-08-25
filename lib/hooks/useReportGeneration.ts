@@ -175,6 +175,7 @@ export function useReportGeneration({
   return {
     generatingReport,
     analysis,
+    setAnalysis,
     showResultsReveal,
     setShowResultsReveal,
     revealIsPb,

@@ -29,7 +29,6 @@ import { SplitForm } from "@/components/SplitForm";
 import { Toast, ToastMessage } from "@/components/Toast";
 import { UpcomingEventsMenu } from "@/components/UpcomingEventsMenu";
 import {
-  Analysis,
   Level,
   Station,
   StationKey,
@@ -51,7 +50,6 @@ import {
   loadSavedReports,
   saveReports,
 } from "@/lib/reportStorage";
-import { groupKeyForReport, isNewPersonalBest } from "@/lib/progress";
 import {
   ReportPreset,
   cloneReportPreset,
@@ -80,7 +78,6 @@ import {
   loadRemoteReports,
   logIn,
   resendEmailVerification,
-  saveRemoteReport,
   signUp,
   startCheckout,
   syncBillingStatus,
@@ -93,6 +90,7 @@ import {
 } from "@/lib/trainingContext";
 import { validateReportInput } from "@/lib/validation";
 import type { DistanceUnit } from "@/lib/units";
+import { useReportGeneration } from "@/lib/hooks/useReportGeneration";
 
 type ActiveTab = "new" | "history" | "compare" | "records";
 type RecordsFormatTab = "hyrox" | "tryka" | "custom";
@@ -193,10 +191,7 @@ export default function Home() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [showSplash, setShowSplash] = useState(true);
-  const [generatingReport, setGeneratingReport] = useState(false);
-  const [showResultsReveal, setShowResultsReveal] = useState(false);
   const [liveSessionStage, setLiveSessionStage] = useState<"idle" | "setup" | "tracking">("idle");
   const [liveSessionConfig, setLiveSessionConfig] = useState<{
     raceFormat: LiveSessionFormat;
@@ -205,7 +200,6 @@ export default function Home() {
   } | null>(null);
   const [liveSessionDraftToResume, setLiveSessionDraftToResume] =
     useState<LiveSessionDraft | null>(null);
-  const [revealIsPb, setRevealIsPb] = useState(false);
   const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
   const [viewingSavedReport, setViewingSavedReport] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -213,6 +207,45 @@ export default function Home() {
     raceFormat === "custom"
       ? customStations
       : getRaceFormatStations(raceFormat);
+
+  const fullReportUnlocked = user?.subscription === "ACTIVE";
+
+  const {
+    generatingReport,
+    analysis,
+    setAnalysis,
+    showResultsReveal,
+    setShowResultsReveal,
+    revealIsPb,
+    generateAndSaveReport,
+  } = useReportGeneration({
+    user,
+    savedReports,
+    setSavedReports,
+    setToast,
+    fullReportUnlocked,
+    onSaved: () => {
+      setViewingSavedReport(false);
+      setActiveTab("new");
+      if (!beginnerGuideDismissed) {
+        dismissBeginnerGuide("beginner_guide_completed_by_report");
+      }
+      if (!hasGeneratedReportEver) {
+        window.localStorage.setItem(hasGeneratedReportKey, "true");
+        setHasGeneratedReportEver(true);
+      }
+    },
+    onSettled: () => {
+      setValidationErrors([]);
+      setFieldErrors({});
+      window.requestAnimationFrame(() => {
+        reportRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    },
+  });
 
   const preview = useMemo(
     () =>
@@ -701,150 +734,6 @@ export default function Home() {
     applyReportPreset(sampleReportPreset);
   }
 
-  async function generateAndSaveReport(input: {
-    goal: string;
-    targetTime: string;
-    level: Level;
-    runs: string[];
-    stationSplits: Record<StationKey, string>;
-    stationDefinitions: Station[];
-    raceFormat: RaceFormat;
-    officialFinishTime: string;
-    trainingContext: TrainingContext;
-  }) {
-    const {
-      goal,
-      targetTime,
-      level,
-      runs,
-      stationSplits,
-      stationDefinitions,
-      raceFormat,
-      officialFinishTime,
-      trainingContext,
-    } = input;
-
-    setGeneratingReport(true);
-    // Hold the generation overlay long enough to read as intentional, even
-    // though the math is synchronous and any remote save is usually fast.
-    const minimumHold = new Promise<void>((resolve) =>
-      window.setTimeout(resolve, 1700),
-    );
-
-    const generatedAnalysis = buildAnalysis(
-      goal,
-      targetTime,
-      level,
-      runs,
-      stationSplits,
-      stationDefinitions,
-      raceFormat,
-      officialFinishTime,
-    );
-    const savedReport: SavedReport = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      raceFormat,
-      goal,
-      targetTime,
-      officialFinishTime: officialFinishTime || undefined,
-      level,
-      runs,
-      stationDefinitions:
-        raceFormat === "custom" ? stationDefinitions : undefined,
-      stationSplits,
-      trainingContext: hasTrainingContext(trainingContext)
-        ? trainingContext
-        : undefined,
-      finishSeconds: generatedAnalysis.finishSeconds,
-      predictedTargetSeconds: generatedAnalysis.predictedTargetSeconds,
-      topLeakLabel: generatedAnalysis.topLeaks[0]?.label ?? "",
-    };
-    let nextReports = [savedReport, ...savedReports].slice(0, 12);
-
-    if (user) {
-      try {
-        const remoteReport = await saveRemoteReport({
-          goal,
-          targetTime,
-          level,
-          raceFormat,
-          runs,
-          stationDefinitions:
-            raceFormat === "custom" ? stationDefinitions : undefined,
-          stationSplits,
-          trainingContext: hasTrainingContext(trainingContext)
-            ? trainingContext
-            : undefined,
-        });
-
-        nextReports = [remoteReport, ...savedReports];
-      } catch (error) {
-        await minimumHold;
-        setGeneratingReport(false);
-        setAnalysis(generatedAnalysis);
-        setValidationErrors([]);
-        setFieldErrors({});
-        setToast({
-          id: Date.now(),
-          title: "Report generated",
-          message:
-            error instanceof Error
-              ? `${error.message} The report is visible below but was not saved.`
-              : "The report is visible below but was not saved to your account.",
-          tone: "error",
-        });
-        window.requestAnimationFrame(() => {
-          reportRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        });
-        return;
-      }
-    } else {
-      saveReports(nextReports);
-    }
-
-    await minimumHold;
-    setGeneratingReport(false);
-    setAnalysis(generatedAnalysis);
-    setViewingSavedReport(false);
-    setRevealIsPb(
-      isNewPersonalBest(
-        savedReports,
-        generatedAnalysis.finishSeconds,
-        groupKeyForReport(savedReport),
-      ),
-    );
-    setShowResultsReveal(true);
-    if (!beginnerGuideDismissed) {
-      dismissBeginnerGuide("beginner_guide_completed_by_report");
-    }
-    setValidationErrors([]);
-    setFieldErrors({});
-    setSavedReports(nextReports);
-    setActiveTab("new");
-    if (!hasGeneratedReportEver) {
-      window.localStorage.setItem(hasGeneratedReportKey, "true");
-      setHasGeneratedReportEver(true);
-    }
-    trackEvent("report_generated", {
-      race_format: raceFormat,
-      signed_in: Boolean(user),
-      premium: fullReportUnlocked,
-      saved_remote: Boolean(user),
-      run_count: runs.length,
-      station_count: stationDefinitions.length,
-    });
-    window.requestAnimationFrame(() => {
-      reportRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  }
-
   function startLiveSession() {
     const existingDraft = loadDraft();
 
@@ -977,7 +866,6 @@ export default function Home() {
   }
 
   const activeAnalysis = analysis ?? preview;
-  const fullReportUnlocked = user?.subscription === "ACTIVE";
   const isExperiencedUser = hasGeneratedReportEver || savedReports.length > 0;
   const hasReportInput =
     Boolean(analysis) ||
