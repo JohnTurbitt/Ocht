@@ -1,0 +1,25 @@
+.record-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  // Always brand lime in both themes (like --action-bg), not var(--lime) —
+  // this is a filled action button, not themed content.
+  background: radial-gradient(circle at 35% 30%, #d8ff6a, #b6ef00 60%, #94c700 100%);
+}
+
+.record-badge__icon {
+  width: 60%;
+  height: 60%;
+}
+
+.record-badge__shield {
+  fill: rgba(14, 25, 20, 0.08);
+  stroke: #0e1914;
+  stroke-width: 2;
+}
+
+.record-badge__glyph {
+  fill: #0e1914;
+}
