@@ -14,6 +14,7 @@ import { ArchetypeAchievements } from "@/components/ArchetypeAchievements";
 import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { RecordBadge } from "@/components/RecordBadge";
 import {
   readAvatarColor,
   readAvatarIcon,
@@ -1303,6 +1304,20 @@ export default function Home() {
             </svg>
             <span className="tab-bar__label">Compare</span>
           </button>
+          <Link
+            href="/app/live"
+            className="tab-bar__tab tab-bar__record"
+            onClick={() =>
+              trackEvent("live_session_entry_clicked", { signed_in: Boolean(user) })
+            }
+          >
+            <span className="tab-bar__record-rings" aria-hidden="true">
+              <span className="tab-bar__record-ring" />
+              <span className="tab-bar__record-ring" />
+            </span>
+            <RecordBadge className="tab-bar__record-badge" />
+            <span className="tab-bar__label">Record</span>
+          </Link>
           <button
             className={
               activeTab === "records" ? "tab-bar__tab is-active" : "tab-bar__tab"
@@ -1330,26 +1345,6 @@ export default function Home() {
               <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
             </svg>
             <span className="tab-bar__label">Records</span>
-          </button>
-          <button
-            className="tab-bar__tab tab-bar__tab--events"
-            type="button"
-            onClick={() => setEventsSheetOpen(true)}
-          >
-            <svg
-              className="tab-bar__icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="4" width="18" height="17" rx="2" />
-              <path d="M3 9h18M8 2v4M16 2v4" />
-            </svg>
-            <span className="tab-bar__label">Events</span>
           </button>
         </nav>
 
