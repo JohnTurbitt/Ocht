@@ -957,7 +957,8 @@
   color: var(--ink);
 }
 
-.tab-bar__tab span:not(.tab-bar__label) {
+.tab-bar__tab
+  span:not(.tab-bar__label):not(.tab-bar__record-badge):not(.tab-bar__record-ring):not(.tab-bar__record-rings) {
   display: inline-grid;
   min-width: 24px;
   height: 24px;
@@ -1149,7 +1150,8 @@
     font-size: 0.66rem;
   }
 
-  .tab-bar__tab span:not(.tab-bar__label):not(.tab-bar__record-rings) {
+  .tab-bar__tab
+    span:not(.tab-bar__label):not(.tab-bar__record-badge):not(.tab-bar__record-ring):not(.tab-bar__record-rings) {
     position: absolute;
     top: 2px;
     right: 50%;
