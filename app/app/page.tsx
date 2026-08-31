@@ -726,6 +726,7 @@ export default function Home() {
       runs,
       stationSplits,
       stationDefinitions: activeStationDefinitions,
+      raceFormat,
     });
 
     if (!validation.valid) {
