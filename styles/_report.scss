@@ -176,6 +176,12 @@
   font-style: normal;
 }
 
+.results-reveal__panel .results-reveal__confidence {
+  margin: 2px 0 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
 @media (max-width: 460px) {
   .results-reveal__grid {
     grid-template-columns: 1fr;
