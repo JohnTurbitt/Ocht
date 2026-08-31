@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Level, levelLabels } from "@/lib/analysis";
 import { LiveSessionFormat } from "@/lib/liveSession";
 import { raceFormatOptions } from "@/lib/raceFormats";
-import { maskTimeInput, normalizeTimeInput } from "@/lib/validation";
+import { isValidTime, maskTimeInput, normalizeTimeInput } from "@/lib/validation";
 
 type LiveSessionSetupProps = {
   onStart: (input: { raceFormat: LiveSessionFormat; level: Level; targetTime: string }) => void;
@@ -15,6 +15,17 @@ export function LiveSessionSetup({ onStart, onCancel }: LiveSessionSetupProps) {
   const [raceFormat, setRaceFormat] = useState<LiveSessionFormat>("hyrox");
   const [level, setLevel] = useState<Level>("competitive");
   const [targetTime, setTargetTime] = useState("");
+  const [targetTimeError, setTargetTimeError] = useState("");
+
+  function handleStart() {
+    if (!isValidTime(targetTime)) {
+      setTargetTimeError("Enter a target time, for example 1:15:00.");
+      return;
+    }
+
+    setTargetTimeError("");
+    onStart({ raceFormat, level, targetTime });
+  }
 
   return (
     <div className="live-page">
@@ -83,8 +94,9 @@ export function LiveSessionSetup({ onStart, onCancel }: LiveSessionSetupProps) {
           </label>
 
           <label className="field">
-            <span>Target time (optional)</span>
+            <span>Target time</span>
             <input
+              className={targetTimeError ? "is-invalid" : undefined}
               value={targetTime}
               onChange={(event) =>
                 setTargetTime(maskTimeInput(event.target.value, "race"))
@@ -94,14 +106,18 @@ export function LiveSessionSetup({ onStart, onCancel }: LiveSessionSetupProps) {
               }
               inputMode="numeric"
               placeholder="1:15:00"
+              aria-invalid={Boolean(targetTimeError)}
             />
+            {targetTimeError ? (
+              <small className="field-error">{targetTimeError}</small>
+            ) : null}
           </label>
         </div>
 
         <button
           type="button"
           className="live-session-setup__start"
-          onClick={() => onStart({ raceFormat, level, targetTime })}
+          onClick={handleStart}
         >
           Start session
         </button>
