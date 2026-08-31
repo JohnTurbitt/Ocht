@@ -66,6 +66,7 @@ export type AthleteArchetype = {
   description: string;
   scores: ArchetypeScores;
   traits: string[];
+  confidence: "low" | "medium" | "high";
 };
 
 export type Analysis = {
@@ -259,6 +260,88 @@ function standardDeviation(values: number[]) {
   return Math.sqrt(variance);
 }
 
+// Local copies of lib/raceFormats.ts's runPaceSecPerKm/RaceFormatOption
+// distances and lib/validation.ts's plausibility-floor formula — NOT
+// imported, deliberately. lib/raceFormats.ts already imports `stations`
+// from this file at module-evaluation time (to build raceFormatOptions),
+// and lib/validation.ts already imports `stations`/`parseTime` from this
+// file too. If this file imported the floor helpers back from either of
+// those, it would create a circular module dependency that breaks at load
+// time, not just lint. Keep these four values in sync with
+// lib/raceFormats.ts's `runPaceSecPerKm`/`RaceFormatOption.runDistanceKm`
+// and lib/validation.ts's FLAT_MIN_PLAUSIBLE_SECONDS/RUN_FLOOR_PACE_RATIO/
+// STATION_FLOOR_RATIO if those ever change.
+const ARCHETYPE_RUN_PACE_SEC_PER_KM: Record<Level, number> = {
+  starter: 345,
+  competitive: 280,
+  elite: 235,
+};
+const ARCHETYPE_RUN_DISTANCE_KM: Partial<Record<RaceFormat, number>> = {
+  hyrox: 1,
+  tryka800: 0.8,
+  tryka500: 0.5,
+};
+const FLAT_MIN_PLAUSIBLE_SECONDS = 12;
+const RUN_FLOOR_PACE_RATIO = 0.5;
+const STATION_FLOOR_RATIO = 0.5;
+const NEAR_FLOOR_RATIO = 1.2;
+const MIN_COMPARATIVE_MARGIN_SECONDS = 30;
+
+function minPlausibleRunSeconds(raceFormat: RaceFormat): number {
+  const distanceKm = ARCHETYPE_RUN_DISTANCE_KM[raceFormat];
+
+  if (distanceKm == null) {
+    return FLAT_MIN_PLAUSIBLE_SECONDS;
+  }
+
+  return Math.max(
+    FLAT_MIN_PLAUSIBLE_SECONDS,
+    Math.round(ARCHETYPE_RUN_PACE_SEC_PER_KM.elite * RUN_FLOOR_PACE_RATIO * distanceKm),
+  );
+}
+
+function minPlausibleStationSeconds(
+  station: Station,
+  raceFormat: RaceFormat,
+): number {
+  if (raceFormat === "custom") {
+    return FLAT_MIN_PLAUSIBLE_SECONDS;
+  }
+
+  return Math.max(
+    FLAT_MIN_PLAUSIBLE_SECONDS,
+    Math.round(station.benchmarkSec.elite * STATION_FLOOR_RATIO),
+  );
+}
+
+function tierToConfidence(tier: number): AthleteArchetype["confidence"] {
+  if (tier >= 2) {
+    return "high";
+  }
+
+  return tier === 1 ? "medium" : "low";
+}
+
+// "Worst signal wins": near-floor data quality and (when relevant) how
+// comfortably a comparative archetype's margin clears its minimum both map
+// to a 0/1/2 tier, and the final confidence is the lower of the two. A
+// report with clean data but a bare-minimum comparative margin should not
+// read as fully confident, and vice versa.
+function computeConfidence(
+  nearFloorCount: number,
+  comparativeMarginSeconds: number | null,
+): AthleteArchetype["confidence"] {
+  const nearFloorTier = nearFloorCount >= 3 ? 0 : nearFloorCount >= 1 ? 1 : 2;
+  const marginTier =
+    comparativeMarginSeconds == null
+      ? 2
+      : comparativeMarginSeconds >= MIN_COMPARATIVE_MARGIN_SECONDS * 2
+        ? 2
+        : 1;
+
+  return tierToConfidence(Math.min(nearFloorTier, marginTier));
+}
+
 function buildStationLeak(result: StationResult): Leak {
   return {
     id: result.key,
@@ -411,6 +494,7 @@ type ArchetypeInputs = {
   hasRoxzone: boolean;
   roxzonePercent: number;
   hasData: boolean;
+  nearFloorCount: number;
 };
 
 function buildArchetype({
@@ -422,6 +506,7 @@ function buildArchetype({
   hasRoxzone,
   roxzonePercent,
   hasData,
+  nearFloorCount,
 }: ArchetypeInputs): AthleteArchetype {
   const scores: ArchetypeScores = {
     engine: clampScore(100 - runVolatilitySeconds * 2.4 - runFadeSeconds * 2),
@@ -439,8 +524,11 @@ function buildArchetype({
         "Enter your run and station splits and Ocht will profile the kind of hybrid athlete your race data describes.",
       scores,
       traits: [],
+      confidence: "low",
     };
   }
+
+  const baselineConfidence = computeConfidence(nearFloorCount, null);
 
   const pick = (
     id: string,
@@ -448,7 +536,16 @@ function buildArchetype({
     tagline: string,
     description: string,
     traits: string[],
-  ): AthleteArchetype => ({ id, label, tagline, description, scores, traits });
+    confidence: AthleteArchetype["confidence"] = baselineConfidence,
+  ): AthleteArchetype => ({
+    id,
+    label,
+    tagline,
+    description,
+    scores,
+    traits,
+    confidence,
+  });
 
   // The Morrígan — transition chaos bleeds the clock
   if (hasRoxzone && roxzonePercent >= 0.08) {
@@ -506,24 +603,36 @@ function buildArchetype({
   }
 
   // Fionn mac Cumhaill — strong engine, stations the limiter
-  if (stationLeakTotal > runLeakTotal * 1.4) {
+  const fionnMargin = stationLeakTotal - runLeakTotal;
+
+  if (
+    stationLeakTotal > runLeakTotal * 1.4 &&
+    fionnMargin >= MIN_COMPARATIVE_MARGIN_SECONDS
+  ) {
     return pick(
       "fionn",
       "Fionn mac Cumhaill",
       "The run engine leads. The stations are the gap.",
       "Entry to the Fianna required a warrior to run at full pace through a dense forest without breaking a single twig underfoot or disturbing their braided hair. Fionn led this band of elite warrior-runners, and his ability across the ground was their standard. Your race shows the same quality: the runs carry you. The strength stations are where time is left behind. Strength-endurance work and station technique under fatigue are where your next gains live.",
       ["Strong run engine", "Station-limited", "Targets workout stations"],
+      computeConfidence(nearFloorCount, fionnMargin),
     );
   }
 
   // The Dagda — strong stations, running is the limiter
-  if (runLeakTotal > stationLeakTotal * 1.4) {
+  const dagdaMargin = runLeakTotal - stationLeakTotal;
+
+  if (
+    runLeakTotal > stationLeakTotal * 1.4 &&
+    dagdaMargin >= MIN_COMPARATIVE_MARGIN_SECONDS
+  ) {
     return pick(
       "dagda",
       "The Dagda",
       "Immovable at the stations. The runs cost you.",
       "The Dagda was the father of the gods: enormous, immovable and endlessly powerful. He carried a club so heavy it had to be dragged on a cart, and his cauldron never ran empty. He was not built for grace or speed. He was built to endure and to outlast. Your stations show that same quality. The runs are where time slips away. Aerobic running volume and pacing discipline are your biggest opportunity.",
       ["Strong stations", "Run-limited", "Needs aerobic running base"],
+      computeConfidence(nearFloorCount, dagdaMargin),
     );
   }
 
@@ -742,7 +851,33 @@ export function buildAnalysis(
     (total, station) => total + station.gap,
     0,
   );
-  const runLeakTotal = runFadeSeconds * 4 + runVolatilitySeconds * 3.2;
+  const archetypeRunDistanceKm = ARCHETYPE_RUN_DISTANCE_KM[raceFormat];
+  const runBenchmarkSeconds =
+    archetypeRunDistanceKm == null
+      ? null
+      : ARCHETYPE_RUN_PACE_SEC_PER_KM[level] * archetypeRunDistanceKm;
+  const runGapTotal =
+    runBenchmarkSeconds == null
+      ? null
+      : runSeconds.reduce(
+          (total, seconds) => total + Math.max(0, seconds - runBenchmarkSeconds),
+          0,
+        );
+  // For a custom format (no fixed run distance), there's no external
+  // benchmark to compare against, so the run side of the Fionn/Dagda
+  // comparison falls back to the old self-relative fade+volatility measure
+  // — the only signal available without a real distance to anchor to.
+  const runLeakTotal = runGapTotal ?? runFadeSeconds * 4 + runVolatilitySeconds * 3.2;
+  const runFloorSeconds = minPlausibleRunSeconds(raceFormat);
+  const nearFloorRunCount = runSeconds.filter(
+    (seconds) => seconds <= runFloorSeconds * NEAR_FLOOR_RATIO,
+  ).length;
+  const nearFloorStationCount = orderedStationResults.filter(
+    (station) =>
+      station.seconds <=
+      minPlausibleStationSeconds(station, raceFormat) * NEAR_FLOOR_RATIO,
+  ).length;
+  const nearFloorCount = nearFloorRunCount + nearFloorStationCount;
   const archetype = buildArchetype({
     runFadeSeconds,
     runVolatilitySeconds,
@@ -752,6 +887,7 @@ export function buildAnalysis(
     hasRoxzone,
     roxzonePercent,
     hasData: finishSeconds > 0,
+    nearFloorCount,
   });
 
   return {
