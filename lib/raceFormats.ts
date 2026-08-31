@@ -19,6 +19,7 @@ export type RaceFormatOption = {
   label: string;
   description: string;
   runLabel: string;
+  runDistanceKm: number | null;
   stationHeading: string;
   stations: Station[];
 };
@@ -57,6 +58,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "HYROX",
     description: "8 x 1km runs and the standard HYROX station order.",
     runLabel: "1km run",
+    runDistanceKm: 1,
     stationHeading: "Stations",
     stations,
   },
@@ -65,6 +67,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "TRYKA 800",
     description: "8 x 800m runs with TRYKA stations.",
     runLabel: "800m run",
+    runDistanceKm: 0.8,
     stationHeading: "TRYKA stations",
     stations: buildTrykaStations(),
   },
@@ -73,6 +76,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "TRYKA 500",
     description: "8 x 500m runs with TRYKA stations.",
     runLabel: "500m run",
+    runDistanceKm: 0.5,
     stationHeading: "TRYKA stations",
     stations: buildTrykaStations(),
   },
@@ -92,6 +96,7 @@ export function getRaceFormatOption(format: RaceFormat) {
       label: "Custom",
       description: "Build your own race format.",
       runLabel: "run",
+      runDistanceKm: null,
       stationHeading: "Custom stations",
       stations: [],
     } satisfies RaceFormatOption;
