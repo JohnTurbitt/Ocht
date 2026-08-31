@@ -127,6 +127,7 @@ function parseReportPayload(payload: unknown): {
     runs,
     stationSplits,
     stationDefinitions,
+    raceFormat,
   });
 
   errors.push(...timeValidation.errors);
