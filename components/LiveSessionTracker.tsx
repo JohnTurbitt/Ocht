@@ -24,6 +24,7 @@ type LiveSessionTrackerProps = {
   level: Level;
   targetTime: string;
   initialDraft?: LiveSessionDraft;
+  onExit: () => void;
   onFinish: (input: {
     runs: string[];
     stationSplits: Record<StationKey, string>;
@@ -58,6 +59,7 @@ export function LiveSessionTracker({
   level,
   targetTime,
   initialDraft,
+  onExit,
   onFinish,
 }: LiveSessionTrackerProps) {
   const [draft, setDraft] = useState<LiveSessionDraft>(
@@ -70,6 +72,7 @@ export function LiveSessionTracker({
     initialDraft && isSessionComplete(initialDraft) ? "finishTime" : "tapping",
   );
   const [officialFinishTime, setOfficialFinishTime] = useState("");
+  const [splitsOpen, setSplitsOpen] = useState(false);
   const justFinished = stage !== "tapping";
   const segmentStartRef = useRef<number>(resolveSegmentStart(initialDraft));
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -166,20 +169,22 @@ export function LiveSessionTracker({
   }
 
   return (
-    <div className="live-session-tracker">
-      <div className="live-session-tracker__header">
-        <StationProgressOctagon
-          doneCount={justFinished ? 8 : doneStationCount}
-          inProgress={!justFinished && currentIsStation}
-        />
-        <div>
-          <p className="live-session-tracker__status">
-            {justFinished
-              ? "FINISHED"
-              : `STATION ${Math.min(doneStationCount + (currentIsStation ? 1 : 0), 8)} OF 8 · SEGMENT ${currentIndex + 1}/16`}
-          </p>
-          <h1>{justFinished ? "Nice work." : (currentSegment?.label ?? "")}</h1>
-        </div>
+    <div className="live-page">
+      <div className="live-page__topbar">
+        <button
+          type="button"
+          className="live-page__exit"
+          onClick={onExit}
+          aria-label="Exit session"
+        >
+          {stage === "finishTime" ? "✕" : "‹"}
+        </button>
+        <span className="live-page__topbar-label">
+          {justFinished
+            ? "FINISHED"
+            : `STATION ${Math.min(doneStationCount + (currentIsStation ? 1 : 0), 8)}/8 · SEG ${currentIndex + 1}/16`}
+        </span>
+        <span className="live-page__topbar-spacer" aria-hidden="true" />
       </div>
 
       {stage === "finishTime" ? (
@@ -204,7 +209,7 @@ export function LiveSessionTracker({
           </p>
           <button
             type="button"
-            className="btn btn--primary btn--lg"
+            className="live-session-tracker__continue"
             onClick={handleFinishTimeSubmit}
           >
             Continue
@@ -212,36 +217,89 @@ export function LiveSessionTracker({
         </div>
       ) : (
         <>
-          <button
-            type="button"
-            className="live-session-tracker__tap"
-            onClick={handleTap}
-            disabled={justFinished || !currentSegment}
-          >
-            <span className="live-session-tracker__timer">{formatSegmentTime(elapsedOnCurrent)}</span>
-            <span className="live-session-tracker__tap-label">TAP TO LAP</span>
-          </button>
+          <div className="live-session-tracker__hero">
+            <div className="live-session-tracker__badge">
+              <StationProgressOctagon
+                doneCount={justFinished ? 8 : doneStationCount}
+                inProgress={!justFinished && currentIsStation}
+                size={44}
+              />
+            </div>
+            <p className="live-session-tracker__segment-name">
+              {justFinished ? "" : "Currently on"}
+            </p>
+            <h1 className="live-session-tracker__segment-title">
+              {justFinished ? "Nice work." : (currentSegment?.label ?? "")}
+            </h1>
+            <p className="live-session-tracker__timer">
+              {formatSegmentTime(elapsedOnCurrent)}
+            </p>
+            <p className="live-session-tracker__timer-label">
+              Elapsed on this segment
+            </p>
+          </div>
 
-          <button
-            type="button"
-            className="live-session-tracker__undo"
-            onClick={handleUndo}
-            disabled={draft.segments.length === 0 || justFinished}
-          >
-            Undo last lap
-          </button>
+          <div className="live-session-tracker__bottom">
+            <button
+              type="button"
+              className="live-session-tracker__drawer-handle"
+              onClick={() => setSplitsOpen(true)}
+              aria-expanded={splitsOpen}
+              disabled={draft.segments.length === 0}
+            >
+              <span className="live-session-tracker__grabber" aria-hidden="true" />
+              <span>Splits</span>
+            </button>
+
+            <button
+              type="button"
+              className="live-session-tracker__tap"
+              onClick={handleTap}
+              disabled={justFinished || !currentSegment}
+            >
+              <span className="live-session-tracker__tap-label">TAP TO LAP</span>
+            </button>
+
+            <button
+              type="button"
+              className="live-session-tracker__undo"
+              onClick={handleUndo}
+              disabled={draft.segments.length === 0 || justFinished}
+            >
+              Undo last lap
+            </button>
+          </div>
         </>
       )}
 
-      <div className="live-session-tracker__splits">
-        <p className="live-session-tracker__splits-heading">Splits so far</p>
-        {draft.segments.map((segment, index) => (
-          <div className="live-session-tracker__split-row" key={`${segment.key}-${index}`}>
-            <span>{sequence[index]?.label ?? segment.key}</span>
-            <span>{formatSegmentTime(segment.seconds)}</span>
+      {splitsOpen ? (
+        <div
+          className="live-session-tracker__drawer"
+          role="dialog"
+          aria-label="Splits so far"
+        >
+          <button
+            type="button"
+            className="live-session-tracker__drawer-close"
+            onClick={() => setSplitsOpen(false)}
+            aria-label="Close splits"
+          >
+            <span className="live-session-tracker__grabber" aria-hidden="true" />
+          </button>
+          <p className="live-session-tracker__drawer-title">Splits so far</p>
+          <div className="live-session-tracker__split-rows">
+            {draft.segments.map((segment, index) => (
+              <div
+                className="live-session-tracker__split-row"
+                key={`${segment.key}-${index}`}
+              >
+                <span>{sequence[index]?.label ?? segment.key}</span>
+                <span>{formatSegmentTime(segment.seconds)}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
