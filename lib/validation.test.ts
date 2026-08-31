@@ -97,4 +97,64 @@ describe("validateReportInput", () => {
       "Use a valid time like 5:00.",
     );
   });
+
+  it("rejects a run split faster than physically possible", () => {
+    const result = validateReportInput({
+      targetTime: "1:25:00",
+      runs: ["0:05", ...initialRuns.slice(1)],
+      stationSplits: initialStations,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain(
+      "Run 1 is faster than physically possible — check this split.",
+    );
+    expect(result.fieldErrors["run-0"]).toBe(
+      "That's faster than physically possible.",
+    );
+  });
+
+  it("rejects a station split faster than physically possible", () => {
+    const result = validateReportInput({
+      targetTime: "1:25:00",
+      runs: initialRuns,
+      stationSplits: { ...initialStations, wallBalls: "0:05" },
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain(
+      "Wall balls is faster than physically possible — check this split.",
+    );
+    expect(result.fieldErrors["station-wallBalls"]).toBe(
+      "That's faster than physically possible.",
+    );
+  });
+
+  it("uses a flat floor (not a distance-based one) for a custom format run", () => {
+    const result = validateReportInput({
+      targetTime: "1:25:00",
+      runs: ["0:20"],
+      stationSplits: {},
+      stationDefinitions: [],
+      raceFormat: "custom",
+    });
+
+    expect(result.errors).not.toContain(
+      "Run 1 is faster than physically possible — check this split.",
+    );
+  });
+
+  it("still rejects an outright-impossible run for a custom format", () => {
+    const result = validateReportInput({
+      targetTime: "1:25:00",
+      runs: ["0:05"],
+      stationSplits: {},
+      stationDefinitions: [],
+      raceFormat: "custom",
+    });
+
+    expect(result.errors).toContain(
+      "Run 1 is faster than physically possible — check this split.",
+    );
+  });
 });
