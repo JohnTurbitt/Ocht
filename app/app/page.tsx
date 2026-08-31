@@ -1277,6 +1277,20 @@ export default function Home() {
             <span className="tab-bar__label">Progress</span>
             {savedReports.length > 0 ? <span>{savedReports.length}</span> : null}
           </button>
+          <Link
+            href="/app/live"
+            className="tab-bar__tab tab-bar__record"
+            onClick={() =>
+              trackEvent("live_session_entry_clicked", { signed_in: Boolean(user) })
+            }
+          >
+            <span className="tab-bar__record-rings" aria-hidden="true">
+              <span className="tab-bar__record-ring" />
+              <span className="tab-bar__record-ring" />
+            </span>
+            <RecordBadge className="tab-bar__record-badge" />
+            <span className="tab-bar__label">Record</span>
+          </Link>
           <button
             className={
               activeTab === "compare" ? "tab-bar__tab is-active" : "tab-bar__tab"
@@ -1304,20 +1318,6 @@ export default function Home() {
             </svg>
             <span className="tab-bar__label">Compare</span>
           </button>
-          <Link
-            href="/app/live"
-            className="tab-bar__tab tab-bar__record"
-            onClick={() =>
-              trackEvent("live_session_entry_clicked", { signed_in: Boolean(user) })
-            }
-          >
-            <span className="tab-bar__record-rings" aria-hidden="true">
-              <span className="tab-bar__record-ring" />
-              <span className="tab-bar__record-ring" />
-            </span>
-            <RecordBadge className="tab-bar__record-badge" />
-            <span className="tab-bar__label">Record</span>
-          </Link>
           <button
             className={
               activeTab === "records" ? "tab-bar__tab is-active" : "tab-bar__tab"
