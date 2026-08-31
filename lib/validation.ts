@@ -1,11 +1,14 @@
+import type { RaceFormat } from "./raceFormats";
 import type { Station, StationKey } from "./analysis";
-import { stations } from "./analysis";
+import { parseTime, stations } from "./analysis";
+import { getRaceFormatOption, runPaceSecPerKm } from "./raceFormats";
 
 export type ValidationInput = {
   targetTime: string;
   runs: string[];
   stationSplits: Record<StationKey, string>;
   stationDefinitions?: Station[];
+  raceFormat?: RaceFormat;
 };
 
 export type ValidationResult = {
@@ -15,6 +18,43 @@ export type ValidationResult = {
 };
 
 const timePattern = /^\d+(?::\d{1,2}){0,2}$/;
+
+// No plausible race-day run/station effort beats the elite baseline by 2x —
+// these floors exist purely to catch impossible/placeholder entries (e.g.
+// "0:00"), not to be a tight bound. FLAT_MIN_PLAUSIBLE_SECONDS is the
+// fallback used when there's no real calibrated data to derive a floor from
+// (a custom race's run distance is unknown, and its stations use a flat
+// placeholder benchmark — see createCustomStation in lib/raceFormats.ts).
+const FLAT_MIN_PLAUSIBLE_SECONDS = 12;
+const RUN_FLOOR_PACE_RATIO = 0.5;
+const STATION_FLOOR_RATIO = 0.5;
+
+function minPlausibleRunSeconds(raceFormat: RaceFormat): number {
+  const { runDistanceKm } = getRaceFormatOption(raceFormat);
+
+  if (runDistanceKm == null) {
+    return FLAT_MIN_PLAUSIBLE_SECONDS;
+  }
+
+  return Math.max(
+    FLAT_MIN_PLAUSIBLE_SECONDS,
+    Math.round(runPaceSecPerKm.elite * RUN_FLOOR_PACE_RATIO * runDistanceKm),
+  );
+}
+
+function minPlausibleStationSeconds(
+  station: Station,
+  raceFormat: RaceFormat,
+): number {
+  if (raceFormat === "custom") {
+    return FLAT_MIN_PLAUSIBLE_SECONDS;
+  }
+
+  return Math.max(
+    FLAT_MIN_PLAUSIBLE_SECONDS,
+    Math.round(station.benchmarkSec.elite * STATION_FLOOR_RATIO),
+  );
+}
 
 export function normalizeTimeInput(value: string, format: "split" | "race" = "split") {
   const trimmed = value.trim();
@@ -95,6 +135,7 @@ export function validateReportInput({
   runs,
   stationSplits,
   stationDefinitions = stations,
+  raceFormat = "hyrox",
 }: ValidationInput): ValidationResult {
   const errors: string[] = [];
   const fieldErrors: Record<string, string> = {};
@@ -105,11 +146,17 @@ export function validateReportInput({
     fieldErrors.targetTime = message;
   }
 
+  const runFloorSeconds = minPlausibleRunSeconds(raceFormat);
+
   runs.forEach((split, index) => {
     if (!isValidTime(split)) {
       const message = `Run ${index + 1} needs a valid time, for example 5:30.`;
       errors.push(message);
       fieldErrors[`run-${index}`] = "Use a valid time like 5:30.";
+    } else if (parseTime(split) < runFloorSeconds) {
+      const message = `Run ${index + 1} is faster than physically possible — check this split.`;
+      errors.push(message);
+      fieldErrors[`run-${index}`] = "That's faster than physically possible.";
     }
   });
 
@@ -124,6 +171,14 @@ export function validateReportInput({
       const message = `${station.label} needs a valid time, for example 5:00.`;
       errors.push(message);
       fieldErrors[`station-${station.key}`] = "Use a valid time like 5:00.";
+    } else if (
+      parseTime(stationSplits[station.key]) <
+      minPlausibleStationSeconds(station, raceFormat)
+    ) {
+      const message = `${station.label} is faster than physically possible — check this split.`;
+      errors.push(message);
+      fieldErrors[`station-${station.key}`] =
+        "That's faster than physically possible.";
     }
   });
 
