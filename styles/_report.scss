@@ -2558,6 +2558,15 @@
   text-transform: uppercase;
 }
 
+.archetype-card__confidence {
+  margin: 2px 0 0;
+  font-family: var(--font-mono), var(--font-body), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .archetype-card__tagline {
   margin: 4px 0 0;
   font-family: var(--font-mono), var(--font-body), monospace;

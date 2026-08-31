@@ -38,6 +38,9 @@ export function AthleteArchetypeCard({ analysis }: AthleteArchetypeCardProps) {
         <div>
           <p className="archetype-card__eyebrow">Athlete archetype</p>
           <h3 className="archetype-card__name">{archetype.label}</h3>
+          <p className="archetype-card__confidence">
+            {archetype.confidence} confidence
+          </p>
           <p className="archetype-card__tagline">{archetype.tagline}</p>
         </div>
       </div>
