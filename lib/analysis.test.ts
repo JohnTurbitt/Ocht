@@ -316,4 +316,62 @@ describe("athlete archetype", () => {
       },
     );
   });
+
+  it("does not classify a comparative archetype from near-floor placeholder splits, and marks confidence low", () => {
+    const nearFloorRuns = Array.from({ length: 8 }, () => "0:15");
+    const nearFloorStations: Record<StationKey, string> = {
+      ski: "0:15",
+      sledPush: "0:15",
+      sledPull: "0:15",
+      burpees: "0:15",
+      row: "0:15",
+      farmers: "0:15",
+      lunges: "0:15",
+      wallBalls: "0:15",
+    };
+    const analysis = buildAnalysis(
+      "Test data",
+      "1:00:00",
+      "competitive",
+      nearFloorRuns,
+      nearFloorStations,
+    );
+
+    expect(analysis.archetype.id).not.toBe("fionn");
+    expect(analysis.archetype.id).not.toBe("dagda");
+    expect(analysis.archetype.confidence).toBe("low");
+  });
+
+  it("does not classify a comparative archetype when the leak margin is under the minimum threshold", () => {
+    const runs = [
+      "4:40",
+      "4:40",
+      "4:40",
+      "4:40",
+      "4:40",
+      "4:40",
+      "4:40",
+      "4:55",
+    ];
+    const marginStationSplits: Record<StationKey, string> = {
+      ski: "4:40",
+      sledPush: "4:45",
+      sledPull: "5:00",
+      burpees: "5:30",
+      row: "4:20",
+      farmers: "3:30",
+      lunges: "5:00",
+      wallBalls: "6:00",
+    };
+    const analysis = buildAnalysis(
+      "Thin margin",
+      "1:20:00",
+      "competitive",
+      runs,
+      marginStationSplits,
+    );
+
+    expect(analysis.archetype.id).not.toBe("fionn");
+    expect(analysis.archetype.id).not.toBe("dagda");
+  });
 });
