@@ -286,6 +286,21 @@ $live-action-text: #10130f;
   opacity: 0.4;
 }
 
+.live-session-tracker__stop {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  margin: 6px 0 0;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: #d97a6c;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
 .live-session-tracker__finish-time {
   flex: 1;
   max-width: 28rem;
@@ -315,13 +330,20 @@ $live-action-text: #10130f;
 
 // ── Splits drawer ──
 
+.live-session-tracker__drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.4);
+}
+
 .live-session-tracker__drawer {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 5;
-  max-height: 55dvh;
+  max-height: 45dvh;
   display: flex;
   flex-direction: column;
   background: #14241d;
@@ -332,12 +354,21 @@ $live-action-text: #10130f;
 }
 
 .live-session-tracker__drawer-close {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   align-self: center;
   min-height: 0;
   margin: 0 0 14px;
   padding: 6px;
   border: none;
   background: transparent;
+  color: $live-muted;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .live-session-tracker__drawer-title {
@@ -366,4 +397,76 @@ $live-action-text: #10130f;
 .live-session-tracker__split-row span:last-child {
   font-variant-numeric: tabular-nums;
   color: $live-muted;
+}
+
+// ── Shared confirm modal (LiveConfirmModal) ──
+// Used both inside the tracker (stop session) and at the page level
+// (resume an unfinished session on load) — kept generic rather than
+// scoped under .live-session-tracker__ since it's not tracker-only.
+
+.live-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.live-confirm {
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  z-index: 7;
+  max-width: 26rem;
+  margin: 0 auto;
+  background: #14241d;
+  border: 1px solid $live-line;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.live-confirm__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+  color: $live-ink;
+}
+
+.live-confirm__body {
+  color: $live-muted;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.live-confirm__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.live-confirm__primary {
+  width: 100%;
+  min-height: 0;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: $live-lime;
+  color: $live-action-text;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.live-confirm__secondary {
+  width: 100%;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid $live-line;
+  border-radius: 14px;
+  background: transparent;
+  color: #d97a6c;
+  font-weight: 600;
+  font-size: 0.86rem;
 }

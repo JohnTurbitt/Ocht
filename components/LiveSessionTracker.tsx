@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LiveConfirmModal } from "./LiveConfirmModal";
 import { StationProgressOctagon } from "./StationProgressOctagon";
 import { Level } from "@/lib/analysis";
 import {
@@ -73,6 +74,7 @@ export function LiveSessionTracker({
   );
   const [officialFinishTime, setOfficialFinishTime] = useState("");
   const [splitsOpen, setSplitsOpen] = useState(false);
+  const [stopConfirmOpen, setStopConfirmOpen] = useState(false);
   const justFinished = stage !== "tapping";
   const segmentStartRef = useRef<number>(resolveSegmentStart(initialDraft));
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -153,6 +155,16 @@ export function LiveSessionTracker({
   function handleFinishTimeSubmit() {
     clearDraft();
     onFinish({ ...draftToReportInputs(draft), officialFinishTime });
+  }
+
+  function handleStop() {
+    setStopConfirmOpen(true);
+  }
+
+  function confirmStop() {
+    setStopConfirmOpen(false);
+    clearDraft();
+    onExit();
   }
 
   function handleUndo() {
@@ -268,9 +280,27 @@ export function LiveSessionTracker({
             >
               Undo last lap
             </button>
+
+            {!justFinished ? (
+              <button
+                type="button"
+                className="live-session-tracker__stop"
+                onClick={handleStop}
+              >
+                Stop session
+              </button>
+            ) : null}
           </div>
         </>
       )}
+
+      {splitsOpen ? (
+        <div
+          className="live-session-tracker__drawer-backdrop"
+          onClick={() => setSplitsOpen(false)}
+          aria-hidden="true"
+        />
+      ) : null}
 
       {splitsOpen ? (
         <div
@@ -285,6 +315,7 @@ export function LiveSessionTracker({
             aria-label="Close splits"
           >
             <span className="live-session-tracker__grabber" aria-hidden="true" />
+            <span>Close</span>
           </button>
           <p className="live-session-tracker__drawer-title">Splits so far</p>
           <div className="live-session-tracker__split-rows">
@@ -299,6 +330,17 @@ export function LiveSessionTracker({
             ))}
           </div>
         </div>
+      ) : null}
+
+      {stopConfirmOpen ? (
+        <LiveConfirmModal
+          title="Stop session?"
+          body="Your progress won't be saved and you'll be taken back to home."
+          primaryLabel="Keep going"
+          onPrimary={() => setStopConfirmOpen(false)}
+          secondaryLabel="Stop & go home"
+          onSecondary={confirmStop}
+        />
       ) : null}
     </div>
   );

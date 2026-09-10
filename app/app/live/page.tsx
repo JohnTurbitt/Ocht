@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LiveConfirmModal } from "@/components/LiveConfirmModal";
 import { LiveSessionSetup } from "@/components/LiveSessionSetup";
 import { LiveSessionTracker } from "@/components/LiveSessionTracker";
 import { ReportGenerationOverlay } from "@/components/ReportGenerationOverlay";
@@ -35,6 +36,9 @@ export default function LiveSessionPage() {
     targetTime: string;
   } | null>(null);
   const [draftToResume, setDraftToResume] = useState<LiveSessionDraft | null>(
+    null,
+  );
+  const [resumePrompt, setResumePrompt] = useState<LiveSessionDraft | null>(
     null,
   );
 
@@ -89,31 +93,36 @@ export default function LiveSessionPage() {
 
   // On load, offer to resume an interrupted session rather than silently
   // discarding it — the same check the old embedded startLiveSession() did,
-  // relocated to this page's mount instead of a button click.
+  // relocated to this page's mount instead of a button click. The decision
+  // itself is deferred to the LiveConfirmModal below rather than decided
+  // synchronously here.
   useEffect(() => {
     const existingDraft = loadDraft();
 
-    if (!existingDraft) {
-      return;
+    if (existingDraft) {
+      setResumePrompt(existingDraft);
     }
-
-    const resume = window.confirm(
-      "You have an unfinished live session in progress. Resume it? (Cancel starts a new session and discards it.)",
-    );
-
-    if (resume) {
-      setConfig({
-        raceFormat: existingDraft.raceFormat,
-        level: existingDraft.level,
-        targetTime: existingDraft.targetTime,
-      });
-      setDraftToResume(existingDraft);
-      setStage("tracking");
-      return;
-    }
-
-    clearDraft();
   }, []);
+
+  function handleResumeDraft() {
+    if (!resumePrompt) {
+      return;
+    }
+
+    setConfig({
+      raceFormat: resumePrompt.raceFormat,
+      level: resumePrompt.level,
+      targetTime: resumePrompt.targetTime,
+    });
+    setDraftToResume(resumePrompt);
+    setStage("tracking");
+    setResumePrompt(null);
+  }
+
+  function handleDiscardDraft() {
+    clearDraft();
+    setResumePrompt(null);
+  }
 
   return (
     <>
@@ -167,6 +176,17 @@ export default function LiveSessionPage() {
         />
       ) : null}
       {toast ? <Toast toast={toast} onDismiss={() => setToast(null)} /> : null}
+
+      {resumePrompt ? (
+        <LiveConfirmModal
+          title="Unfinished session"
+          body="You have an unfinished live session in progress. Resume it, or start a new session and discard it?"
+          primaryLabel="Resume session"
+          onPrimary={handleResumeDraft}
+          secondaryLabel="Start new session"
+          onSecondary={handleDiscardDraft}
+        />
+      ) : null}
     </>
   );
 }
