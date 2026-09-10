@@ -34,6 +34,7 @@ export default function LandingPage() {
         <nav className="landing-header__actions" aria-label="Site">
           <Link href="/what-is-hyrox">What is HYROX?</Link>
           <Link href="/what-is-tryka">What is TRYKA?</Link>
+          <Link href="/hyrox-pacing-calculator">Pacing calculator</Link>
           <Link href="/app?auth=login">Log in</Link>
           <Link className="btn btn--primary btn--sm" href="/app?auth=signup">
             Sign up free

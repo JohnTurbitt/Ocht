@@ -86,6 +86,9 @@ export function ResultsReveal({
             >
               <span>Athlete archetype</span>
               <strong>{archetype.label}</strong>
+              <small className="results-reveal__confidence">
+                {archetype.confidence} confidence
+              </small>
               <em>{archetype.tagline}</em>
             </button>
             {topLeak ? (

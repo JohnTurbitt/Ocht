@@ -1,0 +1,154 @@
+// styles/_pacing-calculator.scss
+// Styles for the /hyrox-pacing-calculator predictor page. Reuses
+// .field/.input-row/.format-picker/.format-card from _forms.scss for
+// the input controls — this partial only covers the parts unique to
+// this page: scenario tabs, the split-plan grid, and the CTA band.
+
+// .format-hero (in _hybrid-racing.scss) is a shared two-column grid built
+// for /what-is-hyrox and /what-is-tryka, which both render a
+// .format-hero__photo alongside .format-hero__text. This page has no hero
+// photo — only .format-hero__text — so the second (42%) column would sit
+// empty and reserved at desktop widths, confining the hero text to ~58% of
+// the container. Scope a single-column override to this page only via the
+// .pacing-calculator-page wrapper class on <main>, so /what-is-hyrox and
+// /what-is-tryka keep their two-column layout untouched.
+.pacing-calculator-page .format-hero {
+  grid-template-columns: 1fr;
+}
+
+.pacing-calculator {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 48px 56px;
+}
+
+.pacing-calculator__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.pacing-calculator__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.pacing-calculator__tab {
+  width: auto;
+  min-height: 0;
+  margin-top: 0;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pacing-calculator__tab.is-active {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.pacing-calculator__scenario {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0 10px 10px 10px;
+  padding: 28px;
+  margin-bottom: 48px;
+}
+
+.pacing-calculator__note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 44rem;
+  margin: 0 0 20px;
+}
+
+.pacing-calculator__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 32px;
+}
+
+.pacing-calculator__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+.pacing-calculator__row span:first-child {
+  color: var(--muted);
+}
+
+.pacing-calculator__row span:last-child {
+  font-family: var(--font-mono);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pacing-calculator__total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px solid var(--lime);
+  font-size: 1rem;
+}
+
+.pacing-calculator__total span:last-child {
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.pacing-calculator__empty {
+  color: var(--muted);
+  padding: 28px;
+  text-align: center;
+}
+
+.pacing-calculator__cta {
+  text-align: center;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 0%,
+    var(--accent-soft),
+    transparent
+  );
+}
+
+.pacing-calculator__cta h2 {
+  font-family: var(--font-display);
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+}
+
+.pacing-calculator__cta p {
+  color: var(--muted);
+  margin: 0 0 20px;
+}
+
+@media (max-width: 760px) {
+  .pacing-calculator {
+    padding: 0 24px 40px;
+  }
+
+  .pacing-calculator__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -91,10 +91,6 @@ function parseReportPayload(payload: unknown): {
       ? parseStationDefinitions(stationDefinitionsValue)
       : getRaceFormatStations(raceFormat);
 
-  if (!goal) {
-    errors.push("Goal is required.");
-  }
-
   if (!levels.includes(levelValue as Level)) {
     errors.push("Choose a valid athlete level.");
   }
@@ -131,6 +127,7 @@ function parseReportPayload(payload: unknown): {
     runs,
     stationSplits,
     stationDefinitions,
+    raceFormat,
   });
 
   errors.push(...timeValidation.errors);

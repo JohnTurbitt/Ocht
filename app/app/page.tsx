@@ -14,6 +14,7 @@ import { ArchetypeAchievements } from "@/components/ArchetypeAchievements";
 import { PBTrophyBadge } from "@/components/PBTrophyBadge";
 import { PersonalRecords } from "@/components/PersonalRecords";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { RecordBadge } from "@/components/RecordBadge";
 import {
   readAvatarColor,
   readAvatarIcon,
@@ -27,7 +28,6 @@ import { SplitForm } from "@/components/SplitForm";
 import { Toast, ToastMessage } from "@/components/Toast";
 import { UpcomingEventsMenu } from "@/components/UpcomingEventsMenu";
 import {
-  Analysis,
   Level,
   Station,
   StationKey,
@@ -43,7 +43,6 @@ import {
   loadSavedReports,
   saveReports,
 } from "@/lib/reportStorage";
-import { groupKeyForReport, isNewPersonalBest } from "@/lib/progress";
 import {
   ReportPreset,
   cloneReportPreset,
@@ -72,7 +71,6 @@ import {
   loadRemoteReports,
   logIn,
   resendEmailVerification,
-  saveRemoteReport,
   signUp,
   startCheckout,
   syncBillingStatus,
@@ -85,6 +83,7 @@ import {
 } from "@/lib/trainingContext";
 import { validateReportInput } from "@/lib/validation";
 import type { DistanceUnit } from "@/lib/units";
+import { useReportGeneration } from "@/lib/hooks/useReportGeneration";
 
 type ActiveTab = "new" | "history" | "compare" | "records";
 type RecordsFormatTab = "hyrox" | "tryka" | "custom";
@@ -185,11 +184,7 @@ export default function Home() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [showSplash, setShowSplash] = useState(true);
-  const [generatingReport, setGeneratingReport] = useState(false);
-  const [showResultsReveal, setShowResultsReveal] = useState(false);
-  const [revealIsPb, setRevealIsPb] = useState(false);
   const [eventsSheetOpen, setEventsSheetOpen] = useState(false);
   const [viewingSavedReport, setViewingSavedReport] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -197,6 +192,45 @@ export default function Home() {
     raceFormat === "custom"
       ? customStations
       : getRaceFormatStations(raceFormat);
+
+  const fullReportUnlocked = user?.subscription === "ACTIVE";
+
+  const {
+    generatingReport,
+    analysis,
+    setAnalysis,
+    showResultsReveal,
+    setShowResultsReveal,
+    revealIsPb,
+    generateAndSaveReport,
+  } = useReportGeneration({
+    user,
+    savedReports,
+    setSavedReports,
+    setToast,
+    fullReportUnlocked,
+    onSaved: () => {
+      setViewingSavedReport(false);
+      setActiveTab("new");
+      if (!beginnerGuideDismissed) {
+        dismissBeginnerGuide("beginner_guide_completed_by_report");
+      }
+      if (!hasGeneratedReportEver) {
+        window.localStorage.setItem(hasGeneratedReportKey, "true");
+        setHasGeneratedReportEver(true);
+      }
+    },
+    onSettled: () => {
+      setValidationErrors([]);
+      setFieldErrors({});
+      window.requestAnimationFrame(() => {
+        reportRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    },
+  });
 
   const preview = useMemo(
     () =>
@@ -692,6 +726,7 @@ export default function Home() {
       runs,
       stationSplits,
       stationDefinitions: activeStationDefinitions,
+      raceFormat,
     });
 
     if (!validation.valid) {
@@ -709,124 +744,16 @@ export default function Home() {
       return;
     }
 
-    setGeneratingReport(true);
-    // Hold the generation overlay long enough to read as intentional, even
-    // though the math is synchronous and any remote save is usually fast.
-    const minimumHold = new Promise<void>((resolve) =>
-      window.setTimeout(resolve, 1700),
-    );
-
-    const generatedAnalysis = buildAnalysis(
+    await generateAndSaveReport({
       goal,
       targetTime,
       level,
       runs,
       stationSplits,
-      activeStationDefinitions,
+      stationDefinitions: activeStationDefinitions,
       raceFormat,
       officialFinishTime,
-    );
-    const savedReport: SavedReport = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      raceFormat,
-      goal,
-      targetTime,
-      officialFinishTime: officialFinishTime || undefined,
-      level,
-      runs,
-      stationDefinitions:
-        raceFormat === "custom" ? activeStationDefinitions : undefined,
-      stationSplits,
-      trainingContext: hasTrainingContext(trainingContext)
-        ? trainingContext
-        : undefined,
-      finishSeconds: generatedAnalysis.finishSeconds,
-      predictedTargetSeconds: generatedAnalysis.predictedTargetSeconds,
-      topLeakLabel: generatedAnalysis.topLeaks[0]?.label ?? "",
-    };
-    let nextReports = [savedReport, ...savedReports].slice(0, 12);
-
-    if (user) {
-      try {
-        const remoteReport = await saveRemoteReport({
-          goal,
-          targetTime,
-          level,
-          raceFormat,
-          runs,
-          stationDefinitions:
-            raceFormat === "custom" ? activeStationDefinitions : undefined,
-          stationSplits,
-          trainingContext: hasTrainingContext(trainingContext)
-            ? trainingContext
-            : undefined,
-        });
-
-        nextReports = [remoteReport, ...savedReports];
-      } catch (error) {
-        await minimumHold;
-        setGeneratingReport(false);
-        setAnalysis(generatedAnalysis);
-        setValidationErrors([]);
-        setFieldErrors({});
-        setToast({
-          id: Date.now(),
-          title: "Report generated",
-          message:
-            error instanceof Error
-              ? `${error.message} The report is visible below but was not saved.`
-              : "The report is visible below but was not saved to your account.",
-          tone: "error",
-        });
-        window.requestAnimationFrame(() => {
-          reportRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        });
-        return;
-      }
-    } else {
-      saveReports(nextReports);
-    }
-
-    await minimumHold;
-    setGeneratingReport(false);
-    setAnalysis(generatedAnalysis);
-    setViewingSavedReport(false);
-    setRevealIsPb(
-      isNewPersonalBest(
-        savedReports,
-        generatedAnalysis.finishSeconds,
-        groupKeyForReport(savedReport),
-      ),
-    );
-    setShowResultsReveal(true);
-    if (!beginnerGuideDismissed) {
-      dismissBeginnerGuide("beginner_guide_completed_by_report");
-    }
-    setValidationErrors([]);
-    setFieldErrors({});
-    setSavedReports(nextReports);
-    setActiveTab("new");
-    if (!hasGeneratedReportEver) {
-      window.localStorage.setItem(hasGeneratedReportKey, "true");
-      setHasGeneratedReportEver(true);
-    }
-    trackEvent("report_generated", {
-      race_format: raceFormat,
-      signed_in: Boolean(user),
-      premium: fullReportUnlocked,
-      saved_remote: Boolean(user),
-      run_count: runs.length,
-      station_count: activeStationDefinitions.length,
-    });
-    window.requestAnimationFrame(() => {
-      reportRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      trainingContext,
     });
   }
 
@@ -900,7 +827,6 @@ export default function Home() {
   }
 
   const activeAnalysis = analysis ?? preview;
-  const fullReportUnlocked = user?.subscription === "ACTIVE";
   const isExperiencedUser = hasGeneratedReportEver || savedReports.length > 0;
   const hasReportInput =
     Boolean(analysis) ||
@@ -1248,11 +1174,14 @@ export default function Home() {
         {process.env.NODE_ENV !== "production" && <DevModeBadge />}
         <nav className="site-header__nav" aria-label="Race calendar and guides">
           <UpcomingEventsMenu />
-          <Link className="events-menu__trigger" href="/what-is-hyrox">
+          <Link className="site-header__nav-link" href="/what-is-hyrox">
             HYROX
           </Link>
-          <Link className="events-menu__trigger" href="/what-is-tryka">
+          <Link className="site-header__nav-link" href="/what-is-tryka">
             TRYKA
+          </Link>
+          <Link className="site-header__nav-link" href="/hyrox-pacing-calculator">
+            Pacing calculator
           </Link>
         </nav>
         <div className="site-header__actions">
@@ -1349,6 +1278,20 @@ export default function Home() {
             <span className="tab-bar__label">Progress</span>
             {savedReports.length > 0 ? <span>{savedReports.length}</span> : null}
           </button>
+          <Link
+            href="/app/live"
+            className="tab-bar__tab tab-bar__record"
+            onClick={() =>
+              trackEvent("live_session_entry_clicked", { signed_in: Boolean(user) })
+            }
+          >
+            <span className="tab-bar__record-rings" aria-hidden="true">
+              <span className="tab-bar__record-ring" />
+              <span className="tab-bar__record-ring" />
+            </span>
+            <RecordBadge className="tab-bar__record-badge" />
+            <span className="tab-bar__label">Record</span>
+          </Link>
           <button
             className={
               activeTab === "compare" ? "tab-bar__tab is-active" : "tab-bar__tab"
@@ -1404,89 +1347,69 @@ export default function Home() {
             </svg>
             <span className="tab-bar__label">Records</span>
           </button>
-          <button
-            className="tab-bar__tab tab-bar__tab--events"
-            type="button"
-            onClick={() => setEventsSheetOpen(true)}
-          >
-            <svg
-              className="tab-bar__icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="4" width="18" height="17" rx="2" />
-              <path d="M3 9h18M8 2v4M16 2v4" />
-            </svg>
-            <span className="tab-bar__label">Events</span>
-          </button>
         </nav>
 
         {activeTab === "new" ? (
           <>
             {viewingSavedReport ? null : (
-            <SplitForm
-              raceFormat={raceFormat}
-              fullReportUnlocked={fullReportUnlocked}
-              showStartGuide={!isExperiencedUser}
-              onShowGuide={() => {
-                setDemoOpen(true);
-                trackEvent("beginner_demo_opened");
-              }}
-              goal={goal}
-              targetTime={targetTime}
-              officialFinishTime={officialFinishTime}
-              level={level}
-              runs={runs}
-              stationDefinitions={activeStationDefinitions}
-              stationSplits={stationSplits}
-              trainingContext={trainingContext}
-              stravaConnected={stravaConnected}
-              errors={validationErrors}
-              fieldErrors={fieldErrors}
-              customTemplates={customTemplates}
-              onRaceFormatChange={applyRaceFormat}
-              onCustomFormatClick={activateCustomFormat}
-              onAddRun={addRunSplit}
-              onRemoveRun={removeRunSplit}
-              onAddCustomStation={addCustomStation}
-              onRemoveCustomStation={removeCustomStation}
-              onCustomStationLabelChange={updateCustomStationLabel}
-              onSaveCustomTemplate={saveCurrentCustomTemplate}
-              onLoadCustomTemplate={(template) =>
-                applyReportPreset(template)
-              }
-              onDeleteCustomTemplate={deleteCustomTemplate}
-              onGoalChange={setGoal}
-              onTargetTimeChange={updateTargetTime}
-              onOfficialFinishChange={setOfficialFinishTime}
-              onLevelChange={setLevel}
-              onRunChange={updateRun}
-              onStationChange={updateStation}
-              onTrainingContextChange={updateTrainingContext}
-              onLoadSample={() =>
-                applyReportPreset(sampleReportPreset)
-              }
-              onResetDefaults={() =>
-                applyReportPreset(buildUserDefaultPreset(user))
-              }
-              onClearForm={() => {
-                setTrainingContext(emptyTrainingContext);
-                applyReportPreset(
-                  buildEmptyPresetForCurrentFormat({
-                    raceFormat,
-                    level,
-                    runCount: runs.length,
-                    stationDefinitions: activeStationDefinitions,
-                  }),
-                );
-              }}
-              onSubmit={handleSubmit}
-            />
+              <SplitForm
+                raceFormat={raceFormat}
+                fullReportUnlocked={fullReportUnlocked}
+                showStartGuide={!isExperiencedUser}
+                onShowGuide={() => {
+                  setDemoOpen(true);
+                  trackEvent("beginner_demo_opened");
+                }}
+                goal={goal}
+                targetTime={targetTime}
+                officialFinishTime={officialFinishTime}
+                level={level}
+                runs={runs}
+                stationDefinitions={activeStationDefinitions}
+                stationSplits={stationSplits}
+                trainingContext={trainingContext}
+                stravaConnected={stravaConnected}
+                errors={validationErrors}
+                fieldErrors={fieldErrors}
+                customTemplates={customTemplates}
+                onRaceFormatChange={applyRaceFormat}
+                onCustomFormatClick={activateCustomFormat}
+                onAddRun={addRunSplit}
+                onRemoveRun={removeRunSplit}
+                onAddCustomStation={addCustomStation}
+                onRemoveCustomStation={removeCustomStation}
+                onCustomStationLabelChange={updateCustomStationLabel}
+                onSaveCustomTemplate={saveCurrentCustomTemplate}
+                onLoadCustomTemplate={(template) =>
+                  applyReportPreset(template)
+                }
+                onDeleteCustomTemplate={deleteCustomTemplate}
+                onGoalChange={setGoal}
+                onTargetTimeChange={updateTargetTime}
+                onOfficialFinishChange={setOfficialFinishTime}
+                onLevelChange={setLevel}
+                onRunChange={updateRun}
+                onStationChange={updateStation}
+                onTrainingContextChange={updateTrainingContext}
+                onLoadSample={() =>
+                  applyReportPreset(sampleReportPreset)
+                }
+                onResetDefaults={() =>
+                  applyReportPreset(buildUserDefaultPreset(user))
+                }
+                onClearForm={() => {
+                  setTrainingContext(emptyTrainingContext);
+                  applyReportPreset(
+                    buildEmptyPresetForCurrentFormat({
+                      raceFormat,
+                      level,
+                      runCount: runs.length,
+                      stationDefinitions: activeStationDefinitions,
+                    }),
+                  );
+                }}
+                onSubmit={handleSubmit}
+              />
             )}
 
             {viewingSavedReport ? (

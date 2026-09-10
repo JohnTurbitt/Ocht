@@ -1,0 +1,472 @@
+// Styles for the dedicated live tap-to-lap session pages (setup + tracker).
+// Deliberately dark-only, hardcoded (not var(--panel)/var(--ink)/etc.) —
+// per docs/superpowers/specs/2026-08-24-live-logger-dedicated-page-design.md's
+// "Theming" section, this screen always renders dark regardless of the
+// user's light/dark preference, matching Strava's own recording screen
+// (dark for outdoor visibility/battery, not reactive to system theme).
+// These values match the app's real dark-theme tokens (styles/_base.scss)
+// but are literal here since var(--panel) etc. would flip in light mode.
+
+$live-panel: #0e1914;
+$live-ink: #f4f7ef;
+$live-muted: #adbaaa;
+$live-line: #284237;
+$live-lime: #c8ff2e;
+$live-action-text: #10130f;
+
+.live-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: $live-panel;
+  color: $live-ink;
+}
+
+.live-page__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(20px, env(safe-area-inset-top, 0px)) 20px 0;
+}
+
+.live-page__exit {
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: $live-muted;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-page__topbar-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: $live-muted;
+}
+
+.live-page__topbar-spacer {
+  width: 34px;
+}
+
+// ── Setup screen ──
+
+.live-session-setup {
+  flex: 1;
+  max-width: 30rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 24px 34px;
+  display: flex;
+  flex-direction: column;
+}
+
+.live-session-setup__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $live-lime;
+  margin: 8px 0 10px;
+}
+
+.live-session-setup__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1.05;
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.live-session-setup__guide {
+  color: $live-muted;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+
+.live-session-setup__field-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $live-muted;
+  margin: 0 0 10px;
+}
+
+.live-session-setup__format-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.live-session-setup__format-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid $live-line;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: transparent;
+  color: $live-ink;
+  min-height: 0;
+}
+
+.live-session-setup__format-card.is-active {
+  border-color: $live-lime;
+  background: rgba(200, 255, 46, 0.06);
+}
+
+.live-session-setup__format-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.live-session-setup__format-sub {
+  color: $live-muted;
+  font-size: 0.78rem;
+}
+
+.live-session-setup__row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.live-session-setup__start {
+  margin-top: auto;
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  background: $live-lime;
+  color: $live-action-text;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  min-height: 0;
+}
+
+// ── Tracker screen ──
+
+.live-session-tracker__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 24px 0;
+}
+
+.live-session-tracker__badge {
+  margin-bottom: 12px;
+}
+
+.live-session-tracker__segment-name {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $live-muted;
+  margin: 0 0 6px;
+  min-height: 1em;
+}
+
+.live-session-tracker__segment-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 0 0 22px;
+}
+
+.live-session-tracker__timer {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 4.4rem;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: $live-ink;
+  margin: 0 0 6px;
+}
+
+.live-session-tracker__timer-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5c6655;
+  margin: 0 0 30px;
+}
+
+.live-session-tracker__bottom {
+  margin-top: auto;
+  padding: 0 24px max(24px, env(safe-area-inset-bottom, 0px));
+}
+
+.live-session-tracker__drawer-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 0;
+  margin: 0 0 14px;
+  border: none;
+  background: transparent;
+  color: #5c6655;
+}
+
+.live-session-tracker__drawer-handle:disabled {
+  opacity: 0.4;
+}
+
+.live-session-tracker__drawer-handle span:last-child {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-session-tracker__grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: $live-line;
+}
+
+.live-session-tracker__tap {
+  width: 100%;
+  min-height: 92px;
+  border-radius: 20px;
+  background: $live-lime;
+  border: none;
+  box-shadow: 0 0 0 8px rgba(200, 255, 46, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 14px;
+}
+
+.live-session-tracker__tap:disabled {
+  opacity: 0.6;
+}
+
+.live-session-tracker__tap-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: $live-action-text;
+  opacity: 0.75;
+}
+
+.live-session-tracker__undo {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: $live-muted;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.live-session-tracker__undo:disabled {
+  opacity: 0.4;
+}
+
+.live-session-tracker__stop {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  margin: 6px 0 0;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: #d97a6c;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.live-session-tracker__finish-time {
+  flex: 1;
+  max-width: 28rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 24px 0;
+}
+
+.live-session-tracker__finish-time-hint {
+  color: $live-muted;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 8px 0 24px;
+}
+
+.live-session-tracker__continue {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  background: $live-lime;
+  color: $live-action-text;
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-height: 0;
+}
+
+// ── Splits drawer ──
+
+.live-session-tracker__drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.live-session-tracker__drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  max-height: 45dvh;
+  display: flex;
+  flex-direction: column;
+  background: #14241d;
+  border-top: 1px solid $live-line;
+  border-radius: 22px 22px 0 0;
+  padding: 14px 22px max(20px, env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.live-session-tracker__drawer-close {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  min-height: 0;
+  margin: 0 0 14px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: $live-muted;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-session-tracker__drawer-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $live-muted;
+  margin: 0 0 12px;
+}
+
+.live-session-tracker__split-rows {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.live-session-tracker__split-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #1c2a21;
+  font-size: 0.86rem;
+  color: $live-ink;
+}
+
+.live-session-tracker__split-row span:last-child {
+  font-variant-numeric: tabular-nums;
+  color: $live-muted;
+}
+
+// ── Shared confirm modal (LiveConfirmModal) ──
+// Used both inside the tracker (stop session) and at the page level
+// (resume an unfinished session on load) — kept generic rather than
+// scoped under .live-session-tracker__ since it's not tracker-only.
+
+.live-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.live-confirm {
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  z-index: 7;
+  max-width: 26rem;
+  margin: 0 auto;
+  background: #14241d;
+  border: 1px solid $live-line;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.live-confirm__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+  color: $live-ink;
+}
+
+.live-confirm__body {
+  color: $live-muted;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.live-confirm__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.live-confirm__primary {
+  width: 100%;
+  min-height: 0;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: $live-lime;
+  color: $live-action-text;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.live-confirm__secondary {
+  width: 100%;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid $live-line;
+  border-radius: 14px;
+  background: transparent;
+  color: #d97a6c;
+  font-weight: 600;
+  font-size: 0.86rem;
+}

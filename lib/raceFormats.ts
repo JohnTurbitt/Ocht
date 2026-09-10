@@ -1,13 +1,25 @@
-import type { Station, StationKey } from "./analysis";
+import type { Level, Station, StationKey } from "./analysis";
 import { stations } from "./analysis";
 
 export type RaceFormat = "hyrox" | "tryka800" | "tryka500" | "custom";
+
+// Baseline running pace per level, seconds per km, at a controlled
+// race-day effort (not a max-effort standalone 1km time). Used only by
+// the pacing predictor (lib/pacingPredictor.ts) to project a plan for
+// someone who hasn't raced yet — real races always use actual splits
+// instead of this baseline.
+export const runPaceSecPerKm: Record<Level, number> = {
+  starter: 345,
+  competitive: 280,
+  elite: 235,
+};
 
 export type RaceFormatOption = {
   id: RaceFormat;
   label: string;
   description: string;
   runLabel: string;
+  runDistanceKm: number | null;
   stationHeading: string;
   stations: Station[];
 };
@@ -46,6 +58,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "HYROX",
     description: "8 x 1km runs and the standard HYROX station order.",
     runLabel: "1km run",
+    runDistanceKm: 1,
     stationHeading: "Stations",
     stations,
   },
@@ -54,6 +67,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "TRYKA 800",
     description: "8 x 800m runs with TRYKA stations.",
     runLabel: "800m run",
+    runDistanceKm: 0.8,
     stationHeading: "TRYKA stations",
     stations: buildTrykaStations(),
   },
@@ -62,6 +76,7 @@ export const raceFormatOptions: RaceFormatOption[] = [
     label: "TRYKA 500",
     description: "8 x 500m runs with TRYKA stations.",
     runLabel: "500m run",
+    runDistanceKm: 0.5,
     stationHeading: "TRYKA stations",
     stations: buildTrykaStations(),
   },
@@ -81,6 +96,7 @@ export function getRaceFormatOption(format: RaceFormat) {
       label: "Custom",
       description: "Build your own race format.",
       runLabel: "run",
+      runDistanceKm: null,
       stationHeading: "Custom stations",
       stations: [],
     } satisfies RaceFormatOption;

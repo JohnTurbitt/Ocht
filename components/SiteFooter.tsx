@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { resetCookieConsent } from "@/lib/cookieConsent";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  // The live tap-to-lap tracker is a full-screen, dark-only recording
+  // screen (styles/_live-session.scss) — the marketing/legal footer has
+  // no place there and just eats space below the fold.
+  if (pathname?.startsWith("/app/live")) {
+    return null;
+  }
+
   return (
     <footer className="site-footer">
       <div>

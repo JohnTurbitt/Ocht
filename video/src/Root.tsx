@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { InstagramReveal, INSTAGRAM_REVEAL_DURATION_IN_FRAMES } from "./InstagramReveal";
 import { OchtDemo, TOTAL_DURATION_IN_FRAMES } from "./OchtDemo";
+import { RecordReveal, RECORD_REVEAL_DURATION_IN_FRAMES } from "./RecordReveal";
 import { SneakPeekVideo } from "./SneakPeekVideo";
 import { SNEAK_PEEK_TOTAL_DURATION_IN_FRAMES } from "./sneakPeekBeats";
 
@@ -22,6 +23,14 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1080}
+      />
+      <Composition
+        id="RecordReveal"
+        component={RecordReveal}
+        durationInFrames={RECORD_REVEAL_DURATION_IN_FRAMES}
+        fps={30}
+        width={1080}
+        height={1920}
       />
       <Composition
         id="InstagramSneakPeekVertical"

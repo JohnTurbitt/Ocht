@@ -10,7 +10,9 @@
     "render:ig-vertical": "remotion render src/index.ts InstagramSneakPeekVertical out/ocht-sneak-peek-vertical.mp4",
     "render:ig-square": "remotion render src/index.ts InstagramSneakPeekSquare out/ocht-sneak-peek-square.mp4",
     "still:ig-vertical": "remotion still src/index.ts InstagramSneakPeekVertical out/sneak-peek-vertical-still.png",
-    "still:ig-square": "remotion still src/index.ts InstagramSneakPeekSquare out/sneak-peek-square-still.png"
+    "still:ig-square": "remotion still src/index.ts InstagramSneakPeekSquare out/sneak-peek-square-still.png",
+    "render:record": "remotion render src/index.ts RecordReveal out/ocht-record-reveal.mp4",
+    "still:record": "remotion still src/index.ts RecordReveal out/record-still.png"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
