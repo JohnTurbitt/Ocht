@@ -509,7 +509,14 @@ function buildArchetype({
   nearFloorCount,
 }: ArchetypeInputs): AthleteArchetype {
   const scores: ArchetypeScores = {
-    engine: clampScore(100 - runVolatilitySeconds * 2.4 - runFadeSeconds * 2),
+    // Volatility and fade are summed here (unlike the dedicated
+    // `consistency`/`durability` scores below, which penalize one factor
+    // each), so a race with both the usual fast-start fade AND some normal
+    // split-to-split noise was hitting negative raw totals and clamping to a
+    // flat 0 for completely ordinary pacing. Coefficients halved (ratio kept
+    // at 1.2:1, same relative emphasis) so the combined penalty needs a
+    // genuinely wild/severe pattern — not just an everyday fade — to floor.
+    engine: clampScore(100 - runVolatilitySeconds * 1.2 - runFadeSeconds * 1),
     strength: clampScore(100 - averageStationGap * 1.15),
     durability: clampScore(100 - runFadeSeconds * 3.6),
     consistency: clampScore(100 - runVolatilitySeconds * 3),

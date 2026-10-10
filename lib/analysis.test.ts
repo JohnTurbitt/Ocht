@@ -317,6 +317,30 @@ describe("athlete archetype", () => {
     );
   });
 
+  it("does not floor the run engine score to 0 for an ordinary fast-start fade", () => {
+    // A hot opening km settling into a steady pace is normal pacing, not a
+    // "zero engine" — regression test for the engine score's volatility/fade
+    // coefficients being harsh enough to clamp an everyday fade to 0.
+    const fastStartRuns = [
+      "2:19",
+      "3:00",
+      "3:00",
+      "3:12",
+      "3:12",
+      "3:17",
+      "3:27",
+    ];
+    const analysis = buildAnalysis(
+      "Sub 1:25",
+      "1:25:00",
+      "competitive",
+      fastStartRuns,
+      stationSplits,
+    );
+
+    expect(analysis.archetype.scores.engine).toBeGreaterThan(0);
+  });
+
   it("does not classify a comparative archetype from near-floor placeholder splits, and marks confidence low", () => {
     const nearFloorRuns = Array.from({ length: 8 }, () => "0:15");
     const nearFloorStations: Record<StationKey, string> = {
